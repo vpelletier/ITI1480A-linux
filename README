@@ -1,0 +1,21 @@
+- Fetch "1480A USB Protocol Analyzer Software" from
+  http://www.internationaltestinstruments.com/
+  This creates, among other things, 2 files needed for the rest of this procedure:
+    ITI1480A.spt
+    ulpitest.rbf
+- Install it
+- Run
+    sptreader.py /path/to/ITI1480A.spt
+  This generates 2 files (as of v3.6 of ITI software)
+- Run
+    lsusb -d 16c0:07a8
+  And use the bus and device adresses in following commands.
+- As root, run
+    cycfx2prog -d=<bus>.<device> prg:ITI1480A_1.hex run
+  This loads the USB chip firmware into the USB analyser.
+- As root, run
+    rbfsend.py <bus> <device> /path/to/ulpitest.rbf
+  This loads the FPGA initialisation file.
+
+Your USB analyser is ready to go...
+
