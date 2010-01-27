@@ -8,6 +8,7 @@ VENDOR_ID = 0x16C0
 DEVICE_ID = 0x07A9
 
 COMMAND_DATA_LEN = 61
+COMMAND_STOP = '\x01'
 COMMAND_FPGA = '\x00'
 COMMAND_FPGA_CONFIGURE_START = '\x00'
 COMMAND_FPGA_CONFIGURE_WRITE = '\x01'
@@ -56,6 +57,9 @@ def sendFirmware(firmware_file, usb_handle):
     writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
       conf_data)
   writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
+
+def stopCapture(usb_handle):
+  writeCommand(usb_handle, COMMAND_STOP)
 
 def main(
       firmware_path,
