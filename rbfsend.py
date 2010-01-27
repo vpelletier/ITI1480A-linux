@@ -2,6 +2,8 @@
 import sys
 import os
 import usb1
+import libusb1
+import select
 from struct import pack
 
 VENDOR_ID = 0x16C0
@@ -61,15 +63,80 @@ def sendFirmware(firmware_file, usb_handle):
 def stopCapture(usb_handle):
   writeCommand(usb_handle, COMMAND_STOP)
 
+def transferFailedCallback(transfer, data):
+  global exit
+  exit = True
+  return usb1.DEFAULT_ASYNC_TRANSFER_ERROR_CALLBACK
+
+def hexdump(data):
+  return ' '.join('%02x' % (ord(x), ) for x in data)
+
+class TransferDumpCallback(object):
+  def __init__(self, stream):
+    self.stream = stream
+    self.transfer_end_count = 0
+
+  def __call__(self, transfer, data):
+    endpoint = transfer.endpoint
+    size = transfer.actual_length
+    actual_data = data[:size]
+    if self.isEndOfTransfer(actual_data):
+      self.transfer_end_count += 1
+      result = self.transfer_end_count < 2
+    else:
+      self.transfer_end_count = 0
+      result = True
+    #sys.stderr.write('Recv E:0x%02x S:0x%03x %s\n' % (endpoint, size,
+    #  hexdump(actual_data)))
+    sys.stderr.write('Recv E:0x%02x S:0x%04x\n' % (endpoint, size))
+    self.stream.write(actual_data)
+    return result
+
+  def isEndOfTransfer(self, data):
+    return self.isEndOfTransferMarker(data, 0) or \
+           self.isEndOfTransferMarker(data, 1)
+
+  def isEndOfTransferMarker(self, data, offset):
+    return ord(data[offset]) & 0xf0 == 0xf0 and ord(data[offset + 1]) == 0x41
+
+exit = False
+
 def main(
       firmware_path,
       usb_device=None,
+      out_file=None,
     ):
+  global exit
+
   context = usb1.LibUSBContext()
   handle = getDeviceHandle(context, usb_device)
   handle.claimInterface(0)
   sendFirmware(open(firmware_path, 'rb'), handle)
 
+  poller = usb1.USBPoller(context, select.poll())
+
+  usb_file_data_reader = usb1.USBAsyncBulkReader(
+    handle,
+    0x82,
+    0x200,
+  )
+  usb_file_data_reader.setDefaultCallback(transferFailedCallback)
+  usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
+    TransferDumpCallback(out_file))
+  usb_file_data_reader.submit()
+
+  try:
+    while not exit:
+      poller.poll()
+      if not usb_file_data_reader.isSubmited():
+        exit = True
+  finally:
+    print 'Exiting...'
+    exit = True
+    stopCapture(handle)
+    while usb_file_data_reader.isSubmited():
+        poller.poll()
+    handle.releaseInterface(0)
 
 if __name__ == '__main__':
   from optparse import OptionParser
@@ -79,6 +146,8 @@ if __name__ == '__main__':
     help='Path to firmware file to upload. (required)')
   parser.add_option('-d', '--device',
     help='USB device to use, in "bus.dev" format')
+  parser.add_option('-o', '--out',
+    help='File to write dump data to. Default: stdout')
   (options, args) = parser.parse_args()
   if option.device is None:
   if options.firmware is None:
@@ -89,8 +158,13 @@ if __name__ == '__main__':
     usb_device = option.device.split('.')
     assert len(usb_device) == 2
     usb_device = (int(usb_device[0]), int(usb_device[1]))
+  if options.out is None:
+    out_file = sys.stdout
+  else:
+    out_file = open(options.out, 'wb')
   main(
     firmware_path=options.firmware_path,
     usb_device=usb_device,
+    out_file=out_file,
   )
 
