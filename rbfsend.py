@@ -94,6 +94,9 @@ class TransferDumpCallback(object):
   def isEndOfTransferMarker(self, data, offset):
     return ord(data[offset]) & 0xf0 == 0xf0 and ord(data[offset + 1]) == 0x41
 
+def transferTimeoutHandler(transfer, data):
+  return not exit
+
 exit = False
 
 def main(
@@ -114,9 +117,12 @@ def main(
     handle,
     0x82,
     0x200,
+    timeout=1000,
   )
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
     TransferDumpCallback(out_file))
+  usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_TIMED_OUT,
+    transferTimeoutHandler)
   usb_file_data_reader.submit()
 
   try:
