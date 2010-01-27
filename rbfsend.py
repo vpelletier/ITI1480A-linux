@@ -70,11 +70,14 @@ if __name__ == '__main__':
 
   parser = OptionParser()
   parser.add_option('-f', '--firmware',
-    help='Path to firmware file to upload.')
+    help='Path to firmware file to upload. (required)')
   parser.add_option('-d', '--device',
     help='USB device to use, in "bus.dev" format')
   (options, args) = parser.parse_args()
   if option.device is None:
+  if options.firmware is None:
+    parser.print_help()
+    sys.exit(1)
     usb_device = None
   else:
     usb_device = option.device.split('.')
