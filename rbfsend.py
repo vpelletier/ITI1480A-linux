@@ -4,11 +4,37 @@ import os
 import usb1
 from struct import pack
 
+VENDOR_ID = 0x16C0
+DEVICE_ID = 0x07A9
+
 DATA_LEN = 61
 COMMAND_FPGA = '\x00'
 COMMAND_FPGA_CONFIGURE_START = '\x00'
 COMMAND_FPGA_CONFIGURE_WRITE = '\x01'
 COMMAND_FPGA_CONFIGURE_STOP = '\x02'
+
+def getDeviceHandle(context, usb_device=None):
+  if usb_device is None:
+    handle = context.openByVendorIDAndProductID(VENDOR_ID, DEVICE_ID)
+  else:
+    handle = None
+    bus_number, device_address = usb_device
+    for device in context.getDeviceList():
+      if bus_number != device.getBusNumber() \
+         or device_address != device.getDeviceAddress():
+        continue
+      else:
+        if (device.getVendorID(), device.getProductID()) == (
+           VENDOR_ID, DEVICE_ID):
+          handle = device.open()
+          break
+        else:
+          raise ValueError, 'Device at %03i.%03i is not a known analyzer ' \
+            'device.' % usb_device
+  if handle is None:
+    raise ValueError, 'Unable to find usb analyzer.'
+  handle.claimInterface(0)
+  return handle
 
 def sendFirmware(firmware_file, usb_handle):
   read = firmware_file.read
@@ -30,16 +56,33 @@ def sendFirmware(firmware_file, usb_handle):
       pack('B', data_len))
   writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
 
-firmware_path = os.path.join(os.path.dirname(sys.argv[0]), 'blobs',
-  'ulpitest.rbf')
-firmware_file = open(firmware_path, 'rb')
+def main(
+      firmware_path,
+      usb_device=None,
+    ):
+  context = usb1.LibUSBContext()
+  handle = getDeviceHandle(context, usb_device)
+  sendFirmware(open(firmware_path, 'rb'), handle)
 
-# TODO: wrap in a class
-context = usb1.LibUSBContext()
-handle = context.openByVendorIDAndProductID(0x16C0, 0x07A9)
-handle.claimInterface(0)
+  import pdb; pdb.set_trace()
 
-sendFirmware(firmware_file, handle)
+if __name__ == '__main__':
+  from optparse import OptionParser
 
-import pdb; pdb.set_trace()
+  parser = OptionParser()
+  parser.add_option('-f', '--firmware',
+    help='Path to firmware file to upload.')
+  parser.add_option('-d', '--device',
+    help='USB device to use, in "bus.dev" format')
+  (options, args) = parser.parse_args()
+  if option.device is None:
+    usb_device = None
+  else:
+    usb_device = option.device.split('.')
+    assert len(usb_device) == 2
+    usb_device = (int(usb_device[0]), int(usb_device[1]))
+  main(
+    firmware_path=options.firmware_path,
+    usb_device=usb_device,
+  )
 
