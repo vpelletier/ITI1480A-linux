@@ -15,3 +15,7 @@ ulpitest.rbf
   Its structure is unknown, and hopefully it won't be needed to understand it
   to upload it.
 
+Note: this directory is commited without any actual blob, but a partial symlink
+structure. Feel free to use any layout that suits you, it's just a skeleton and
+might disapear at some point.
+
