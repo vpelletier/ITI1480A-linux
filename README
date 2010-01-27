@@ -15,8 +15,9 @@
     cycfx2prog -d=<bus>.<device> prg:ITI1480A_1.hex run
   This loads the USB chip firmware into the USB analyser.
 - As root, run
-    rbfsend.py <bus> <device> /path/to/ulpitest.rbf
-  This loads the FPGA initialisation file.
+    rbfsend.py -f /path/to/ulpitest.rbf > out.usb
+  This loads the FPGA initialisation file and starts dumping data sent by the
+  analyzer.
+  Kill it (ctrl-c) when you want to stop the capture.
 
-Your USB analyser is ready to go...
 
