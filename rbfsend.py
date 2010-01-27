@@ -30,7 +30,7 @@ def writeCommand(command, sub_command, data='\x00' * DATA_LEN, tail='\x00'):
 writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
 while True:
   conf_data = read(DATA_LEN)
-  if len(conf_data):
+  if not conf_data:
     break
   data_len = len(conf_data)
   if data_len < DATA_LEN:
