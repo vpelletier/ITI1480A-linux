@@ -1,6 +1,7 @@
 - Fetch "1480A USB Protocol Analyzer Software" from
   http://www.internationaltestinstruments.com/
-  This creates, among other things, 2 files needed for the rest of this procedure:
+  This creates, among other things, 2 files needed for the rest of this
+  procedure:
     ITI1480A.spt
     ulpitest.rbf
 - Install it
