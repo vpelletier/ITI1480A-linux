@@ -143,13 +143,13 @@ if __name__ == '__main__':
   parser.add_option('-o', '--out',
     help='File to write dump data to. Default: stdout')
   (options, args) = parser.parse_args()
-  if option.device is None:
   if options.firmware is None:
     parser.print_help()
     sys.exit(1)
+  if options.device is None:
     usb_device = None
   else:
-    usb_device = option.device.split('.')
+    usb_device = options.device.split('.')
     assert len(usb_device) == 2
     usb_device = (int(usb_device[0]), int(usb_device[1]))
   if options.out is None:
@@ -157,7 +157,7 @@ if __name__ == '__main__':
   else:
     out_file = open(options.out, 'wb')
   main(
-    firmware_path=options.firmware_path,
+    firmware_path=options.firmware,
     usb_device=usb_device,
     out_file=out_file,
   )
