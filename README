@@ -20,4 +20,10 @@
   analyzer.
   Kill it (ctrl-c) when you want to stop the capture.
 
+Note: This is a work in progress, so it is not stable yet.
+
+Note 2: I am not afiliated with International Test Instruments at all. They
+kindly accepted that I start reverse-engineering their windows-only software
+so I could try to use a device I bought from them with Linux only. I had no
+privileged access to any documentation of any kind.
 
