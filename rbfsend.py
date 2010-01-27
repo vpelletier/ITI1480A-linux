@@ -70,7 +70,6 @@ def main(
   handle.claimInterface(0)
   sendFirmware(open(firmware_path, 'rb'), handle)
 
-  import pdb; pdb.set_trace()
 
 if __name__ == '__main__':
   from optparse import OptionParser
