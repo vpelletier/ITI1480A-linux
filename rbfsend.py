@@ -125,7 +125,7 @@ def main(
       if not usb_file_data_reader.isSubmited():
         exit = True
   finally:
-    print 'Exiting...'
+    sys.stderr.write('Exiting...\n')
     exit = True
     stopCapture(handle)
     while usb_file_data_reader.isSubmited():
