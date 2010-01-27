@@ -63,11 +63,6 @@ def sendFirmware(firmware_file, usb_handle):
 def stopCapture(usb_handle):
   writeCommand(usb_handle, COMMAND_STOP)
 
-def transferFailedCallback(transfer, data):
-  global exit
-  exit = True
-  return usb1.DEFAULT_ASYNC_TRANSFER_ERROR_CALLBACK
-
 def hexdump(data):
   return ' '.join('%02x' % (ord(x), ) for x in data)
 
@@ -120,7 +115,6 @@ def main(
     0x82,
     0x200,
   )
-  usb_file_data_reader.setDefaultCallback(transferFailedCallback)
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
     TransferDumpCallback(out_file))
   usb_file_data_reader.submit()
