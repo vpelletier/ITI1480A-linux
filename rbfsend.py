@@ -7,7 +7,7 @@ from struct import pack
 VENDOR_ID = 0x16C0
 DEVICE_ID = 0x07A9
 
-DATA_LEN = 61
+COMMAND_DATA_LEN = 61
 COMMAND_FPGA = '\x00'
 COMMAND_FPGA_CONFIGURE_START = '\x00'
 COMMAND_FPGA_CONFIGURE_WRITE = '\x01'
@@ -39,21 +39,20 @@ def getDeviceHandle(context, usb_device=None):
 def sendFirmware(firmware_file, usb_handle):
   read = firmware_file.read
 
-  def writeCommand(command, sub_command, data='\x00' * DATA_LEN, tail='\x00'):
-    to_write = ''.join((command, sub_command, data, tail))
+  def writeCommand(command, sub_command, data=''):
+    data_len = len(data)
+    if data_len < COMMAND_DATA_LEN:
+      data = data + '\x00' * (COMMAND_DATA_LEN - data_len)
+    to_write = ''.join((command, sub_command, data, pack('B', data_len)))
     assert len(to_write) == 64, repr(to_write)
     usb_handle.bulkWrite(1, to_write)
 
   writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
   while True:
-    conf_data = read(DATA_LEN)
+    conf_data = read(COMMAND_DATA_LEN)
     if not conf_data:
       break
-    data_len = len(conf_data)
-    if data_len < DATA_LEN:
-      conf_data = conf_data + '\x00' * (DATA_LEN - data_len)
-    writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE, conf_data,
-      pack('B', data_len))
+    writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE, conf_data)
   writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
 
 def main(
