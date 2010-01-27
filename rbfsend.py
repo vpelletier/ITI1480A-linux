@@ -75,16 +75,17 @@ class TransferDumpCallback(object):
     endpoint = transfer.endpoint
     size = transfer.actual_length
     actual_data = data[:size]
+    result = True
     if self.isEndOfTransfer(actual_data):
-      self.transfer_end_count += 1
-      result = self.transfer_end_count < 2
+      if exit:
+        self.transfer_end_count += 1
+        result = self.transfer_end_count < 2
     else:
       self.transfer_end_count = 0
-      result = True
-    #sys.stderr.write('Recv E:0x%02x S:0x%03x %s\n' % (endpoint, size,
-    #  hexdump(actual_data)))
-    sys.stderr.write('Recv E:0x%02x S:0x%04x\n' % (endpoint, size))
-    self.stream.write(actual_data)
+      #sys.stderr.write('Recv E:0x%02x S:0x%03x %s\n' % (endpoint, size,
+      #  hexdump(actual_data)))
+      sys.stderr.write('Recv E:0x%02x S:0x%04x\n' % (endpoint, size))
+      self.stream.write(actual_data)
     return result
 
   def isEndOfTransfer(self, data):
