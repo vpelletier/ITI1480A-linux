@@ -35,24 +35,27 @@ def getDeviceHandle(context, usb_device=None):
     raise ValueError, 'Unable to find usb analyzer.'
   return handle
 
+def writeCommand(usb_handle, command, sub_command='\x00', data=''):
+  data_len = len(data)
+  if data_len < COMMAND_DATA_LEN:
+    data = data + '\x00' * (COMMAND_DATA_LEN - data_len)
+  to_write = ''.join((command, sub_command, data, pack('B', data_len)))
+  assert len(to_write) == 64, repr(to_write)
+  #sys.stderr.write(hexdump(to_write))
+  #sys.stderr.write('\n')
+  usb_handle.bulkWrite(1, to_write)
+
 def sendFirmware(firmware_file, usb_handle):
   read = firmware_file.read
 
-  def writeCommand(command, sub_command, data=''):
-    data_len = len(data)
-    if data_len < COMMAND_DATA_LEN:
-      data = data + '\x00' * (COMMAND_DATA_LEN - data_len)
-    to_write = ''.join((command, sub_command, data, pack('B', data_len)))
-    assert len(to_write) == 64, repr(to_write)
-    usb_handle.bulkWrite(1, to_write)
-
-  writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
+  writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
   while True:
     conf_data = read(COMMAND_DATA_LEN)
     if not conf_data:
       break
-    writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE, conf_data)
-  writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
+    writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
+      conf_data)
+  writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
 
 def main(
       firmware_path,
