@@ -33,7 +33,6 @@ def getDeviceHandle(context, usb_device=None):
             'device.' % usb_device
   if handle is None:
     raise ValueError, 'Unable to find usb analyzer.'
-  handle.claimInterface(0)
   return handle
 
 def sendFirmware(firmware_file, usb_handle):
@@ -61,6 +60,7 @@ def main(
     ):
   context = usb1.LibUSBContext()
   handle = getDeviceHandle(context, usb_device)
+  handle.claimInterface(0)
   sendFirmware(open(firmware_path, 'rb'), handle)
 
   import pdb; pdb.set_trace()
