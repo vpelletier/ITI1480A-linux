@@ -11,6 +11,7 @@ VENDOR_ID = 0x16C0
 DEVICE_ID = 0x07A9
 
 COMMAND_DATA_LEN = 61
+COMMAND_STATUS = '\x02'
 COMMAND_STOP = '\x01'
 COMMAND_FPGA = '\x00'
 COMMAND_FPGA_CONFIGURE_START = '\x00'
@@ -49,6 +50,9 @@ def writeCommand(usb_handle, command, sub_command='\x00', data=''):
   #sys.stderr.write('\n')
   usb_handle.bulkWrite(1, to_write)
 
+def readResult(usb_handle, length):
+  return usb_handle.bulkRead(1, 64)[:length]
+
 def sendFirmware(firmware_file, usb_handle):
   read = firmware_file.read
 
@@ -67,6 +71,10 @@ def sendFirmware(firmware_file, usb_handle):
 
 def stopCapture(usb_handle):
   writeCommand(usb_handle, COMMAND_STOP)
+
+def getStatus(usb_handle):
+  writeCommand(usb_handle, COMMAND_STATUS)
+  return ord(readResult(usb_handle, 1))
 
 def hexdump(data):
   return ' '.join('%02x' % (ord(x), ) for x in data)
