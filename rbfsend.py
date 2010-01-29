@@ -82,9 +82,8 @@ class TransferDumpCallback(object):
     actual_data = data[:size]
     result = True
     if self.isEndOfTransfer(actual_data):
-      if exit:
-        self.transfer_end_count += 1
-        result = self.transfer_end_count < 2
+      self.transfer_end_count += 1
+      result = self.transfer_end_count < 2
     else:
       self.transfer_end_count = 0
       #sys.stderr.write('Recv E:0x%02x S:0x%03x %s\n' % (endpoint, size,
@@ -101,17 +100,13 @@ class TransferDumpCallback(object):
     return ord(data[offset]) & 0xf0 == 0xf0 and ord(data[offset + 1]) == 0x41
 
 def transferTimeoutHandler(transfer, data):
-  return not exit
-
-exit = False
+  return True
 
 def main(
       firmware_path,
       usb_device=None,
       out_file=None,
     ):
-  global exit
-
   context = usb1.LibUSBContext()
   handle = getDeviceHandle(context, usb_device)
   handle.claimInterface(0)
@@ -132,13 +127,10 @@ def main(
   usb_file_data_reader.submit()
 
   try:
-    while not exit:
+    while usb_file_data_reader.isSubmited():
       poller.poll()
-      if not usb_file_data_reader.isSubmited():
-        exit = True
   finally:
     sys.stderr.write('Exiting...\n')
-    exit = True
     stopCapture(handle)
     while usb_file_data_reader.isSubmited():
         poller.poll()
