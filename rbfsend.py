@@ -5,6 +5,7 @@ import usb1
 import libusb1
 import select
 from struct import pack
+import time
 
 VENDOR_ID = 0x16C0
 DEVICE_ID = 0x07A9
@@ -59,6 +60,10 @@ def sendFirmware(firmware_file, usb_handle):
     writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
       conf_data)
   writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
+  # Experimental duration: measured delay between COMMAND_FPGA_CONFIGURE_STOP
+  # and async "read capture data" query, as sent by original software.
+  # It seems that accessing the device too early confuses it.
+  time.sleep(0.1)
 
 def stopCapture(usb_handle):
   writeCommand(usb_handle, COMMAND_STOP)
