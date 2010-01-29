@@ -46,8 +46,6 @@ def writeCommand(usb_handle, command, sub_command='\x00', data=''):
     data = data + '\x00' * (COMMAND_DATA_LEN - data_len)
   to_write = ''.join((command, sub_command, data, pack('B', data_len)))
   assert len(to_write) == 64, repr(to_write)
-  #sys.stderr.write(hexdump(to_write))
-  #sys.stderr.write('\n')
   usb_handle.bulkWrite(1, to_write)
 
 def readResult(usb_handle, length):
@@ -76,9 +74,6 @@ def getStatus(usb_handle):
   writeCommand(usb_handle, COMMAND_STATUS)
   return ord(readResult(usb_handle, 1))
 
-def hexdump(data):
-  return ' '.join('%02x' % (ord(x), ) for x in data)
-
 class TransferDumpCallback(object):
   def __init__(self, stream):
     self.stream = stream
@@ -94,8 +89,6 @@ class TransferDumpCallback(object):
       result = self.transfer_end_count < 2
     else:
       self.transfer_end_count = 0
-      #sys.stderr.write('Recv E:0x%02x S:0x%03x %s\n' % (endpoint, size,
-      #  hexdump(actual_data)))
       sys.stderr.write('Recv E:0x%02x S:0x%04x\n' % (endpoint, size))
       self.stream.write(actual_data)
     return result
