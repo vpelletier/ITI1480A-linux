@@ -78,9 +78,9 @@ class TransferDumpCallback(object):
   def __init__(self, stream):
     self.stream = stream
     self.transfer_end_count = 0
+    self.capture_size = 0
 
   def __call__(self, transfer, data):
-    endpoint = transfer.endpoint
     size = transfer.actual_length
     actual_data = data[:size]
     result = True
@@ -89,7 +89,8 @@ class TransferDumpCallback(object):
       result = self.transfer_end_count < 2
     else:
       self.transfer_end_count = 0
-      sys.stderr.write('Recv E:0x%02x S:0x%04x\n' % (endpoint, size))
+      self.capture_size += size
+      sys.stderr.write('Capture size: %i\r' % (self.capture_size, ))
       self.stream.write(actual_data)
     return result
 
@@ -131,7 +132,7 @@ def main(
     while usb_file_data_reader.isSubmited():
       poller.poll()
   finally:
-    sys.stderr.write('Exiting...\n')
+    sys.stderr.write('\nExiting...\n')
     stopCapture(handle)
     while usb_file_data_reader.isSubmited():
         poller.poll()
