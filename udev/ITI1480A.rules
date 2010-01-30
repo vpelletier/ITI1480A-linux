@@ -1,0 +1,7 @@
+ACTION!="add", GOTO="ITI_rules_end"
+SUBSYSTEM!="usb", GOTO="ITI_rules_end"
+ATTR{idVendor}!="16c0", GOTO="ITI_rules_end"
+
+ATTR{idProduct}=="07a8", RUN+="ITI1480A.sh '$attr{busnum}' '$attr{devnum}' '/lib/firmware/ITI1480A.ihx'"
+
+LABEL="ITI_rules_end"
