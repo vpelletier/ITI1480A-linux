@@ -18,9 +18,9 @@ COMMAND_FPGA_CONFIGURE_START = '\x00'
 COMMAND_FPGA_CONFIGURE_WRITE = '\x01'
 COMMAND_FPGA_CONFIGURE_STOP = '\x02'
 
-def getDeviceHandle(context, usb_device=None):
+def getDeviceHandle(context, vendor_id, device_id, usb_device=None):
   if usb_device is None:
-    handle = context.openByVendorIDAndProductID(VENDOR_ID, DEVICE_ID)
+    handle = context.openByVendorIDAndProductID(vendor_id, device_id)
   else:
     handle = None
     bus_number, device_address = usb_device
@@ -30,12 +30,13 @@ def getDeviceHandle(context, usb_device=None):
         continue
       else:
         if (device.getVendorID(), device.getProductID()) == (
-           VENDOR_ID, DEVICE_ID):
+           vendor_id, device_id):
           handle = device.open()
           break
         else:
-          raise ValueError, 'Device at %03i.%03i is not a known analyzer ' \
-            'device.' % usb_device
+          raise ValueError, 'Device at %03i.%03i is not of expected type: ' \
+            '%04x.%04x, %04x.%04x expected' % (usb_device + (
+              vendor_id, device_id))
   return handle
 
 def writeCommand(usb_handle, command, sub_command='\x00', data=''):
@@ -111,7 +112,7 @@ def main(
       out_file=None,
     ):
   context = usb1.LibUSBContext()
-  handle = getDeviceHandle(context, usb_device)
+  handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
   if handle is None:
     raise ValueError, 'Unable to find usb analyzer.'
   handle.claimInterface(0)
