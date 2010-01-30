@@ -7,6 +7,7 @@ import select
 from struct import pack
 import time
 import signal
+import errno
 
 VENDOR_ID = 0x16C0
 DEVICE_ID = 0x07A9
@@ -126,6 +127,23 @@ class Terminate(Exception):
 def terminatingSignalHandler(sig, stack):
   raise Terminate(sig)
 
+class pausingSignalHandler(object):
+  def __init__(self, analyzer):
+    self._analyzer = analyzer
+
+  def __call__(self, sig, stack):
+    self._analyzer.pauseCapture()
+    sys.stderr.write('\nCapture paused')
+    os.kill(os.getpid(), signal.SIGSTOP)
+
+class resumingSignalHandler(object):
+  def __init__(self, analyzer):
+    self._analyzer = analyzer
+
+  def __call__(self, sig, stack):
+    self._analyzer.continueCapture()
+    sys.stderr.write('Capture resumed\n')
+
 def main(
       firmware_path,
       usb_device=None,
@@ -142,6 +160,8 @@ def main(
   # Install signal handlers
   for sig in (signal.SIGINT, signal.SIGTERM):
     signal.signal(sig, terminatingSignalHandler)
+  signal.signal(signal.SIGTSTP, pausingSignalHandler(analyzer))
+  signal.signal(signal.SIGCONT, resumingSignalHandler(analyzer))
 
   poller = usb1.USBPoller(context, select.poll())
 
@@ -162,7 +182,11 @@ def main(
   try:
     try:
       while usb_file_data_reader.isSubmited():
-        poller.poll()
+        try:
+          poller.poll()
+        except select.error, (select_errno, error_text):
+          if select_errno != errno.EINTR:
+            raise
     finally:
       sys.stderr.write('\nExiting...\n')
       analyzer.stopCapture()
