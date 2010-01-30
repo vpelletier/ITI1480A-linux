@@ -148,6 +148,8 @@ def main(
     transferTimeoutHandler)
   usb_file_data_reader.submit()
 
+  sys.stderr.write('Capture started\n')
+
   try:
     try:
       while usb_file_data_reader.isSubmited():
