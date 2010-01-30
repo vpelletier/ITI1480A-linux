@@ -40,39 +40,43 @@ def getDeviceHandle(context, vendor_id, device_id, usb_device=None):
               vendor_id, device_id))
   return handle
 
-def writeCommand(usb_handle, command, sub_command='\x00', data=''):
-  data_len = len(data)
-  if data_len < COMMAND_DATA_LEN:
-    data = data + '\x00' * (COMMAND_DATA_LEN - data_len)
-  to_write = ''.join((command, sub_command, data, pack('B', data_len)))
-  assert len(to_write) == 64, repr(to_write)
-  usb_handle.bulkWrite(1, to_write)
+class USBAnalyzer(object):
+  def __init__(self, usb_handle):
+    self._handle = usb_handle
 
-def readResult(usb_handle, length):
-  return usb_handle.bulkRead(1, 64)[:length]
+  def writeCommand(self, command, sub_command='\x00', data=''):
+    data_len = len(data)
+    if data_len < COMMAND_DATA_LEN:
+      data = data + '\x00' * (COMMAND_DATA_LEN - data_len)
+    to_write = ''.join((command, sub_command, data, pack('B', data_len)))
+    assert len(to_write) == 64, repr(to_write)
+    self._handle.bulkWrite(1, to_write)
 
-def sendFirmware(firmware_file, usb_handle):
-  read = firmware_file.read
+  def readResult(self, length):
+    return self._handle.bulkRead(1, 64)[:length]
 
-  writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
-  while True:
-    conf_data = read(COMMAND_DATA_LEN)
-    if not conf_data:
-      break
-    writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
-      conf_data)
-  writeCommand(usb_handle, COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
-  # Experimental duration: measured delay between COMMAND_FPGA_CONFIGURE_STOP
-  # and async "read capture data" query, as sent by original software.
-  # It seems that accessing the device too early confuses it.
-  time.sleep(0.1)
+  def sendFirmware(self, firmware_file):
+    read = firmware_file.read
 
-def stopCapture(usb_handle):
-  writeCommand(usb_handle, COMMAND_STOP)
+    self.writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
+    while True:
+      conf_data = read(COMMAND_DATA_LEN)
+      if not conf_data:
+        break
+      self.writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
+        conf_data)
+    self.writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
+    # Experimental duration: measured delay between COMMAND_FPGA_CONFIGURE_STOP
+    # and async "read capture data" query, as sent by original software.
+    # It seems that accessing the device too early confuses it.
+    time.sleep(0.1)
 
-def getStatus(usb_handle):
-  writeCommand(usb_handle, COMMAND_STATUS)
-  return ord(readResult(usb_handle, 1))
+  def stopCapture(self):
+    self.writeCommand(COMMAND_STOP)
+
+  def getStatus(self):
+    self.writeCommand(COMMAND_STATUS)
+    return ord(self.readResult(1))
 
 class TransferDumpCallback(object):
   def __init__(self, stream):
@@ -123,7 +127,8 @@ def main(
   if handle is None:
     raise ValueError, 'Unable to find usb analyzer.'
   handle.claimInterface(0)
-  sendFirmware(open(firmware_path, 'rb'), handle)
+  analyzer = USBAnalyzer(handle)
+  analyzer.sendFirmware(open(firmware_path, 'rb'))
 
   # Install signal handlers
   for sig in (signal.SIGINT, signal.SIGTERM):
@@ -149,7 +154,7 @@ def main(
         poller.poll()
     finally:
       sys.stderr.write('\nExiting...\n')
-      stopCapture(handle)
+      analyzer.stopCapture()
       while usb_file_data_reader.isSubmited():
           poller.poll()
       handle.releaseInterface(0)
