@@ -84,6 +84,8 @@ class TransferDumpCallback(object):
     size = transfer.actual_length
     if len(data) > size:
       data = data[:size]
+    else:
+      data = data.raw
     if self.isEndOfTransfer(data):
       self.transfer_end_count += 1
       result = self.transfer_end_count < 2
