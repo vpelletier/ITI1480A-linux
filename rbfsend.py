@@ -36,8 +36,6 @@ def getDeviceHandle(context, usb_device=None):
         else:
           raise ValueError, 'Device at %03i.%03i is not a known analyzer ' \
             'device.' % usb_device
-  if handle is None:
-    raise ValueError, 'Unable to find usb analyzer.'
   return handle
 
 def writeCommand(usb_handle, command, sub_command='\x00', data=''):
@@ -114,6 +112,8 @@ def main(
     ):
   context = usb1.LibUSBContext()
   handle = getDeviceHandle(context, usb_device)
+  if handle is None:
+    raise ValueError, 'Unable to find usb analyzer.'
   handle.claimInterface(0)
   sendFirmware(open(firmware_path, 'rb'), handle)
 
