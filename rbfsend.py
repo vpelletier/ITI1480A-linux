@@ -12,6 +12,9 @@ VENDOR_ID = 0x16C0
 DEVICE_ID = 0x07A9
 
 COMMAND_DATA_LEN = 61
+COMMAND_PAUSE = '\x03'
+COMMAND_PAUSE_CONTINUE = '\x00'
+COMMAND_PAUSE_PAUSE = '\x01'
 COMMAND_STATUS = '\x02'
 COMMAND_STOP = '\x01'
 COMMAND_FPGA = '\x00'
@@ -77,6 +80,12 @@ class USBAnalyzer(object):
   def getStatus(self):
     self.writeCommand(COMMAND_STATUS)
     return ord(self.readResult(1))
+
+  def pauseCapture(self):
+    self.writeCommand(COMMAND_PAUSE, COMMAND_PAUSE_PAUSE)
+
+  def continueCapture(self):
+    self.writeCommand(COMMAND_PAUSE, COMMAND_PAUSE_CONTINUE)
 
 class TransferDumpCallback(object):
   def __init__(self, stream):
