@@ -3,5 +3,6 @@ SUBSYSTEM!="usb", GOTO="ITI_rules_end"
 ATTR{idVendor}!="16c0", GOTO="ITI_rules_end"
 
 ATTR{idProduct}=="07a8", RUN+="ITI1480A.sh '$attr{busnum}' '$attr{devnum}' '/lib/firmware/ITI1480A.ihx'"
+ATTR{idProduct}=="07a9", SYMLINK="ITI1480A%n", GROUP="plugdev"
 
 LABEL="ITI_rules_end"
