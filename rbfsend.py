@@ -6,6 +6,7 @@ import libusb1
 import select
 from struct import pack
 import time
+import signal
 
 VENDOR_ID = 0x16C0
 DEVICE_ID = 0x07A9
@@ -106,6 +107,12 @@ class TransferDumpCallback(object):
 def transferTimeoutHandler(transfer, data):
   return True
 
+class Terminate(Exception):
+  pass
+
+def terminatingSignalHandler(sig, stack):
+  raise Terminate(sig)
+
 def main(
       firmware_path,
       usb_device=None,
@@ -117,6 +124,10 @@ def main(
     raise ValueError, 'Unable to find usb analyzer.'
   handle.claimInterface(0)
   sendFirmware(open(firmware_path, 'rb'), handle)
+
+  # Install signal handlers
+  for sig in (signal.SIGINT, signal.SIGTERM):
+    signal.signal(sig, terminatingSignalHandler)
 
   poller = usb1.USBPoller(context, select.poll())
 
@@ -133,14 +144,17 @@ def main(
   usb_file_data_reader.submit()
 
   try:
-    while usb_file_data_reader.isSubmited():
-      poller.poll()
-  finally:
-    sys.stderr.write('\nExiting...\n')
-    stopCapture(handle)
-    while usb_file_data_reader.isSubmited():
+    try:
+      while usb_file_data_reader.isSubmited():
         poller.poll()
-    handle.releaseInterface(0)
+    finally:
+      sys.stderr.write('\nExiting...\n')
+      stopCapture(handle)
+      while usb_file_data_reader.isSubmited():
+          poller.poll()
+      handle.releaseInterface(0)
+  except Terminate:
+    pass
 
 if __name__ == '__main__':
   from optparse import OptionParser
