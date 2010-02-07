@@ -89,10 +89,11 @@ class USBAnalyzer(object):
     self.writeCommand(COMMAND_PAUSE, COMMAND_PAUSE_CONTINUE)
 
 class TransferDumpCallback(object):
-  def __init__(self, stream):
+  def __init__(self, stream, verbose=False):
     self.stream = stream
     self.transfer_end_count = 0
     self.capture_size = 0
+    self.verbose = verbose
 
   def __call__(self, transfer, data):
     size = transfer.actual_length
@@ -107,7 +108,8 @@ class TransferDumpCallback(object):
       result = True
       self.transfer_end_count = 0
       self.capture_size += size
-      sys.stderr.write('Capture size: %i\r' % (self.capture_size, ))
+      if self.verbose:
+        sys.stderr.write('Capture size: %i\r' % (self.capture_size, ))
       self.stream.write(data)
     return result
 
@@ -128,26 +130,31 @@ def terminatingSignalHandler(sig, stack):
   raise Terminate(sig)
 
 class pausingSignalHandler(object):
-  def __init__(self, analyzer):
+  def __init__(self, analyzer, verbose=False):
     self._analyzer = analyzer
+    self._verbose = verbose
 
   def __call__(self, sig, stack):
     self._analyzer.pauseCapture()
-    sys.stderr.write('\nCapture paused')
+    if self._verbose:
+      sys.stderr.write('\nCapture paused')
     os.kill(os.getpid(), signal.SIGSTOP)
 
 class resumingSignalHandler(object):
-  def __init__(self, analyzer):
+  def __init__(self, analyzer, verbose=False):
     self._analyzer = analyzer
+    self._verbose = verbose
 
   def __call__(self, sig, stack):
     self._analyzer.continueCapture()
-    sys.stderr.write('Capture resumed\n')
+    if self._verbose:
+      sys.stderr.write('Capture resumed\n')
 
 def main(
       firmware_path,
       usb_device=None,
       out_file=None,
+      verbose=False,
     ):
   context = usb1.LibUSBContext()
   handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
@@ -160,8 +167,10 @@ def main(
   # Install signal handlers
   for sig in (signal.SIGINT, signal.SIGTERM):
     signal.signal(sig, terminatingSignalHandler)
-  signal.signal(signal.SIGTSTP, pausingSignalHandler(analyzer))
-  signal.signal(signal.SIGCONT, resumingSignalHandler(analyzer))
+  signal.signal(signal.SIGTSTP, pausingSignalHandler(analyzer,
+    verbose=verbose))
+  signal.signal(signal.SIGCONT, resumingSignalHandler(analyzer,
+    verbose=verbose))
 
   poller = usb1.USBPoller(context, select.poll())
 
@@ -172,12 +181,13 @@ def main(
     timeout=1000,
   )
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
-    TransferDumpCallback(out_file))
+    TransferDumpCallback(out_file, verbose=verbose))
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_TIMED_OUT,
     transferTimeoutHandler)
   usb_file_data_reader.submit()
 
-  sys.stderr.write('Capture started\n')
+  if verbose:
+    sys.stderr.write('Capture started\n')
 
   try:
     try:
@@ -188,7 +198,8 @@ def main(
           if select_errno != errno.EINTR:
             raise
     finally:
-      sys.stderr.write('\nExiting...\n')
+      if verbose:
+        sys.stderr.write('\nExiting...\n')
       analyzer.stopCapture()
       while usb_file_data_reader.isSubmited():
           poller.poll()
@@ -206,6 +217,8 @@ if __name__ == '__main__':
     help='USB device to use, in "bus.dev" format')
   parser.add_option('-o', '--out',
     help='File to write dump data to. Default: stdout')
+  parser.add_option('-v', '--verbose', action='store_true',
+    help='Print informative messages to stderr')
   (options, args) = parser.parse_args()
   if options.firmware is None:
     parser.print_help(sys.stderr)
@@ -224,5 +237,6 @@ if __name__ == '__main__':
     firmware_path=options.firmware,
     usb_device=usb_device,
     out_file=out_file,
+    verbose=options.verbose,
   )
 
