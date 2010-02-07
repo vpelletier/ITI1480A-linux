@@ -208,7 +208,7 @@ if __name__ == '__main__':
     help='File to write dump data to. Default: stdout')
   (options, args) = parser.parse_args()
   if options.firmware is None:
-    parser.print_help()
+    parser.print_help(sys.stderr)
     sys.exit(1)
   if options.device is None:
     usb_device = None
