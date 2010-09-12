@@ -95,12 +95,11 @@ class TransferDumpCallback(object):
     self.capture_size = 0
     self.verbose = verbose
 
-  def __call__(self, transfer, data):
-    size = transfer.actual_length
+  def __call__(self, transfer):
+    data = transfer.getBuffer()
+    size = transfer.getActualLength()
     if len(data) > size:
       data = data[:size]
-    else:
-      data = data.raw
     if self.isEndOfTransfer(data):
       self.transfer_end_count += 1
       result = self.transfer_end_count < 2
@@ -120,7 +119,7 @@ class TransferDumpCallback(object):
   def isEndOfTransferMarker(self, data, offset):
     return ord(data[offset]) & 0xf0 == 0xf0 and ord(data[offset + 1]) == 0x41
 
-def transferTimeoutHandler(transfer, data):
+def transferTimeoutHandler(transfer):
   return True
 
 class Terminate(Exception):
@@ -174,12 +173,13 @@ def main(
 
   poller = usb1.USBPoller(context, select.poll())
 
-  usb_file_data_reader = usb1.USBAsyncBulkReader(
-    handle,
+  data_reader = handle.getTransfer()
+  data_reader.setBulk(
     0x82,
     0x200,
     timeout=1000,
   )
+  usb_file_data_reader = usb1.USBTransferHelper(data_reader)
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
     TransferDumpCallback(out_file, verbose=verbose))
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_TIMED_OUT,
