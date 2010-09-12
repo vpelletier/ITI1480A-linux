@@ -177,7 +177,6 @@ def main(
   data_reader.setBulk(
     0x82,
     0x200,
-    timeout=1000,
   )
   usb_file_data_reader = usb1.USBTransferHelper(data_reader)
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
