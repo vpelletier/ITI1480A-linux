@@ -196,6 +196,7 @@ def main(
       )
       data_reader.setCallback(usb_file_data_reader)
       data_reader.submit()
+      append(data_reader)
 
   if verbose:
     sys.stderr.write('Capture started\n')
