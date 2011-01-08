@@ -149,6 +149,12 @@ class resumingSignalHandler(object):
     if self._verbose:
       sys.stderr.write('Capture resumed\n')
 
+def pending(transfer_list):
+    for transfer in transfer_list:
+        if transfer.isSubmitted():
+            return True
+    return False
+
 def main(
       firmware_path,
       usb_device=None,
@@ -173,24 +179,30 @@ def main(
 
   poller = usb1.USBPoller(context, select.poll())
 
-  data_reader = handle.getTransfer()
-  data_reader.setBulk(
-    0x82,
-    0x200,
-  )
-  usb_file_data_reader = usb1.USBTransferHelper(data_reader)
+  usb_file_data_reader = usb1.USBTransferHelper()
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
     TransferDumpCallback(out_file, verbose=verbose))
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_TIMED_OUT,
     transferTimeoutHandler)
-  usb_file_data_reader.submit()
+
+  reader_list = []
+  append = reader_list.append
+  for _ in xrange(64):
+      data_reader = handle.getTransfer()
+      data_reader.setBulk(
+        0x82,
+        0x8000,
+        timeout=500,
+      )
+      data_reader.setCallback(usb_file_data_reader)
+      data_reader.submit()
 
   if verbose:
     sys.stderr.write('Capture started\n')
 
   try:
     try:
-      while usb_file_data_reader.isSubmited():
+      while pending(reader_list):
         try:
           poller.poll()
         except select.error, (select_errno, error_text):
@@ -200,7 +212,7 @@ def main(
       if verbose:
         sys.stderr.write('\nExiting...\n')
       analyzer.stopCapture()
-      while usb_file_data_reader.isSubmited():
+      while pending(reader_list):
           poller.poll()
       handle.releaseInterface(0)
   except Terminate:
