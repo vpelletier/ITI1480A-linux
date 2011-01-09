@@ -42,54 +42,13 @@ def rxcmdDecoder(data):
     return ' '.join(result)
 
 # Event
-# TODO: identify present-but-empty values
 EVENT_DICT = {
-  0x00: '',
-  0x01: '',
-  0x02: '',
-  0x03: '',
-  0x04: '',
-  0x05: '',
-  0x06: '',
-  0x07: '',
-  0x08: '',
-  0x09: '',
-  0x0a: '',
   0x0b: 'LS device connection',
-  0x0c: '',
-  0x0d: '',
-  0x0e: '',
   0x0f: 'FS device connection',
-  0x12: '',
-  0x13: '',
-  0x14: '',
   0x15: 'Device chirp',
-  0x16: '',
-  0x17: '',
   0x18: 'Host chirp',
-  0x19: '',
-  0x1a: '',
-  0x1c: '',
-  0x1d: '',
-  0x1e: '',
-  0x1f: '',
-  0x20: '',
-  0x21: '',
-  0x22: '',
-  0x23: '',
   0x24: 'HS idle',
-  0x25: '',
-  0x26: '',
-  0x27: '',
-  0x28: '',
-  0x29: '',
-  0x2a: '',
-  0x60: '',
-  0x61: '',
   0x62: 'OTG Session request',
-  0x63: '',
-  0x64: '',
-  0x68: '',
   0x69: 'OTG HNP (Host-role changed)',
   0xd0: 'Capture paused',
   0xd1: 'Capture resumed',
@@ -100,9 +59,10 @@ EVENT_DICT = {
 
 def eventDecoder(data):
     try:
-        return EVENT_DICT[data]
+        result = EVENT_DICT[data]
     except KeyError:
-        return '(unk. event 0x%02x)' % (data, )
+        result = '0x%02x' % (data, )
+    return result
 
 # File structure:
 #   A serie of "packets" of variable length (1 to 5 bytes).
