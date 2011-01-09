@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+from struct import unpack, error as struct_error
 
 # RxCmd: see ISP1505A/ISP1505C datasheet
 RXCMD_LIST = (
@@ -166,73 +167,57 @@ LENGTH_MASK = 0x3
 TIC_HEAD_MASK = 0xf
 
 TIME_INITIAL_MULTIPLIER = 100.0 / 6 # 16.666...
-TIME_DIVISOR_LIST = [1000, 1000, 1000, 60]
-
-# XXX: this method is slow (1/3rd of total packet decoding time)
 def tic_to_time(tic):
-    magnitude_list = []
-    append = magnitude_list.append
     tic = int(tic * TIME_INITIAL_MULTIPLIER)
-    for divisor in TIME_DIVISOR_LIST:
-        tic, value = divmod(tic, divisor)
-        append(value)
-    append(tic)
-    magnitude_list.reverse()
-    return '%03i:%02i.%03i\'%03i"%03in' % tuple(magnitude_list)
+    tic, nano = divmod(tic, 1000)
+    tic, micro = divmod(tic, 1000)
+    tic, mili = divmod(tic, 1000)
+    minute, sec = divmod(tic, 60)
+    return '%03i:%02i.%03i\'%03i"%03in' % (minute, sec, mili, micro, nano)
 
 write = sys.stdout.write
 _read = sys.stdin.read
 
-def read_miss():
-    global read
-    global _read_buf
-    try:
-        _read_buf, result = _read(2)
-    except ValueError:
-        return ''
-    read = read_hit
-    return result
-
-def read_hit():
-    global read
-    read = read_miss
-    return _read_buf
-
-read = read_miss 
-
-tic = 0
-while True:
-    data = read()
-    if not data:
-        break
-    data = ord(data)
-    if not data:
-        # Fast path for 0x00 packets (no delay, no data)
-        continue
-    packet_type = data >> TYPE_SHIFT
-
-    if packet_type:
-        write('%02x ' % (data, ))
-
-    packet_len = (data >> LENGTH_SHIFT) & LENGTH_MASK
-    if packet_type:
-        write('   ' * (3 - packet_len))
-    bit_offset = 4
-    tic_count = data & TIC_HEAD_MASK
-    while packet_len:
-        data = ord(read())
-        if packet_type:
-            write('%02x ' % (data, ))
-        tic_count |= data << bit_offset
-        packet_len -= 1
-        bit_offset += 8
-
-    tic += tic_count
-
-    if packet_type:
+def main(read, write):
+    def read16():
+        try:
+            return unpack('<H', read(2))[0]
+        except struct_error:
+            raise EOFError
+    tic = 0
+    while True:
+        packet = read16()
+        head = packet >> 8
+        packet_type = head >> TYPE_SHIFT
+        packet_len = (head >> LENGTH_SHIFT) & LENGTH_MASK
+        tic_count = head & TIC_HEAD_MASK
+        if packet_len:
+            tic_count |= (packet & 0xff) << 4
+            if packet_len > 1:
+                packet = read16()
+                tic_count |= (packet & 0xff00) << 4
+                if packet_len > 2:
+                    tic_count |= (packet & 0xff) << 20
+                    if packet_type == TYPE_TIME_DELTA:
+                        continue
+                    packet = read16()
+                    assert packet & 0xff == 0, hex(packet)
+                    data = packet >> 8
+                else:
+                    data = packet >> 8
+            else:
+                data = read16() & 0xff
+        else:
+            data = packet & 0xff
+        tic += tic_count
         type_title, type_decoder = TYPE_DICT[packet_type]
-        data = ord(read())
-        write('%s %s 0x%02x %s\n' % (tic_to_time(tic), type_title, data,
-            type_decoder(data)
-        ))
+        decoded = type_decoder(data)
+        if decoded is not None:
+            write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
+
+if __name__ == '__main__':
+    try:
+        main(sys.stdin.read, sys.stdout.write)
+    except EOFError:
+        pass
 
