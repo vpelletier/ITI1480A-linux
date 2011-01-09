@@ -23,7 +23,13 @@ RXCMD_EVENT_DICT = {
     0x30: 'RxError RxActive',
 }
 
+_rxcmd_previous_data = None
+
 def rxcmdDecoder(data):
+    global _rxcmd_previous_data
+    if data == _rxcmd_previous_data:
+        return None
+    _rxcmd_previous_data = data
     result = []
     append = result.append
     for mask, caption in RXCMD_LIST:
