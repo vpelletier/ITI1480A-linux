@@ -25,7 +25,8 @@ RXCMD_EVENT_DICT = {
 
 _rxcmd_previous_data = None
 
-def rxcmdDecoder(data):
+def rxcmdDecoder(data, tic, verbose):
+    # TODO: implement quiet (non-verbose) parsing
     global _rxcmd_previous_data
     if data == _rxcmd_previous_data:
         return None
@@ -57,11 +58,14 @@ EVENT_DICT = {
   0xf1: 'Capture stopped (user)',
 }
 
-def eventDecoder(data):
+def eventDecoder(data, _, verbose):
     try:
         result = EVENT_DICT[data]
     except KeyError:
-        result = '0x%02x' % (data, )
+        if verbose:
+            result = '0x%02x' % (data, )
+        else:
+            result = None
     return result
 
 # File structure:
@@ -123,7 +127,7 @@ TYPE_RXCMD = 0x3      # "RxCmd" in UI
 # Payload type identification
 TYPE_DICT = {
     TYPE_EVENT: ('Event', eventDecoder),
-    TYPE_DATA: ('Data ', lambda x: ''),
+    TYPE_DATA: ('Data ', lambda x, y, z: hex(x)),
     TYPE_RXCMD: ('RxCmd', rxcmdDecoder),
 }
 # Packet length occupies the 2 next bits in first packet byte
@@ -144,7 +148,7 @@ def tic_to_time(tic):
 write = sys.stdout.write
 _read = sys.stdin.read
 
-def main(read, write):
+def main(read, write, verbose=False):
     def read16():
         try:
             return unpack('<H', read(2))[0]
@@ -177,7 +181,7 @@ def main(read, write):
             data = packet & 0xff
         tic += tic_count
         type_title, type_decoder = TYPE_DICT[packet_type]
-        decoded = type_decoder(data)
+        decoded = type_decoder(data, tic, verbose)
         if decoded is not None:
             write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
 
