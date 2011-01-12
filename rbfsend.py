@@ -61,15 +61,16 @@ class USBAnalyzer(object):
 
   def sendFirmware(self, firmware_file):
     read = firmware_file.read
+    write = self.writeCommand
 
-    self.writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
+    write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
     while True:
       conf_data = read(COMMAND_DATA_LEN)
       if not conf_data:
         break
-      self.writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
+      write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
         conf_data)
-    self.writeCommand(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
+    write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
     # Experimental duration: measured delay between COMMAND_FPGA_CONFIGURE_STOP
     # and async "read capture data" query, as sent by original software.
     # It seems that accessing the device too early confuses it.
@@ -90,7 +91,7 @@ class USBAnalyzer(object):
 
 class TransferDumpCallback(object):
   def __init__(self, stream, verbose=False):
-    self.stream = stream
+    self.write = stream.write
     self.transfer_end_count = 0
     self.capture_size = 0
     self.verbose = verbose
@@ -100,7 +101,8 @@ class TransferDumpCallback(object):
     size = transfer.getActualLength()
     if len(data) > size:
       data = data[:size]
-    if self.isEndOfTransfer(data):
+    if data[:2] in ('\xf0\x41', '\xf1\x41') or \
+        data[1:3] in ('\xf0\x41', '\xf1\x41'):
       self.transfer_end_count += 1
       result = self.transfer_end_count < 2
     else:
@@ -109,15 +111,8 @@ class TransferDumpCallback(object):
       self.capture_size += size
       if self.verbose:
         sys.stderr.write('Capture size: %i\r' % (self.capture_size, ))
-    self.stream.write(data)
+    self.write(data)
     return result
-
-  def isEndOfTransfer(self, data):
-    return self.isEndOfTransferMarker(data, 0) or \
-           self.isEndOfTransferMarker(data, 1)
-
-  def isEndOfTransferMarker(self, data, offset):
-    return ord(data[offset]) & 0xf0 == 0xf0 and ord(data[offset + 1]) == 0x41
 
 def transferTimeoutHandler(transfer):
   return True
@@ -201,11 +196,12 @@ def main(
   if verbose:
     sys.stderr.write('Capture started\n')
 
+  poll = poller.poll
   try:
     try:
       while pending(reader_list):
         try:
-          poller.poll()
+          poll()
         except select.error, (select_errno, error_text):
           if select_errno != errno.EINTR:
             raise
@@ -214,7 +210,7 @@ def main(
         sys.stderr.write('\nExiting...\n')
       analyzer.stopCapture()
       while pending(reader_list):
-          poller.poll()
+          poll()
       handle.releaseInterface(0)
   except Terminate:
     pass
