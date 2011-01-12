@@ -94,6 +94,8 @@ class TransferDumpCallback(object):
     self.write = stream.write
     self.transfer_end_count = 0
     self.capture_size = 0
+    self.next_measure = time.time()
+    self.last_measure = (None, None)
     self.verbose = verbose
 
   def __call__(self, transfer):
@@ -108,9 +110,20 @@ class TransferDumpCallback(object):
     else:
       result = True
       self.transfer_end_count = 0
+    if self.verbose:
       self.capture_size += size
-      if self.verbose:
-        sys.stderr.write('Capture size: %i\r' % (self.capture_size, ))
+      cap_size = self.capture_size
+      now = time.time()
+      if now > self.next_measure:
+        self.next_measure = now + 2
+        last_time, last_size = self.last_measure
+        self.last_measure = (now, cap_size)
+        if last_size is not None:
+          sdelta = cap_size - last_size
+          if sdelta:
+            tdelta = now - last_time
+            sys.stderr.write('\nSpeed: %i B/s\n' % (sdelta/tdelta, ))
+      sys.stderr.write('Capture size: %i\r' % (cap_size, ))
     self.write(data)
     return result
 
