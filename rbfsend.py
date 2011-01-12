@@ -109,7 +109,7 @@ class TransferDumpCallback(object):
       self.capture_size += size
       if self.verbose:
         sys.stderr.write('Capture size: %i\r' % (self.capture_size, ))
-      self.stream.write(data)
+    self.stream.write(data)
     return result
 
   def isEndOfTransfer(self, data):
