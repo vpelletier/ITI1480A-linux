@@ -174,9 +174,9 @@ def main(read, write, verbose=False):
                     assert packet & 0xff == 0, hex(packet)
                     data = packet >> 8
                 else:
-                    data = packet >> 8
+                    data = packet & 0xff
             else:
-                data = read16() & 0xff
+                data = read16() >> 8
         else:
             data = packet & 0xff
         tic += tic_count
