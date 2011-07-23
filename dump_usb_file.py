@@ -58,7 +58,10 @@ EVENT_DICT = {
   0xf1: 'Capture stopped (user)',
 }
 
+stop_printing = False
 def eventDecoder(data, _, verbose):
+    global stop_printing
+    stop_printing = data & 0xf0 == 0xf0
     try:
         result = EVENT_DICT[data]
     except KeyError:
@@ -184,6 +187,8 @@ def main(read, write, verbose=False):
         decoded = type_decoder(data, tic, verbose)
         if decoded is not None:
             write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
+        if stop_printing:
+            break
 
 if __name__ == '__main__':
     try:
