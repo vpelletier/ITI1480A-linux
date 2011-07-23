@@ -124,7 +124,13 @@ class TransferDumpCallback(object):
             tdelta = now - last_time
             sys.stderr.write('\nSpeed: %i B/s\n' % (sdelta/tdelta, ))
       sys.stderr.write('Capture size: %i\r' % (cap_size, ))
-    self.write(data)
+    try:
+      self.write(data)
+    except IOError, (write_errno, error_text):
+      if write_errno == errno.EPIPE:
+        result = False
+      else:
+        raise
     return result
 
 def transferTimeoutHandler(transfer):
