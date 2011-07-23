@@ -172,6 +172,7 @@ def main(read, write, verbose=False):
                 if packet_len > 2:
                     tic_count |= (packet & 0xff) << 20
                     if packet_type == TYPE_TIME_DELTA:
+                        tic += tic_count
                         continue
                     packet = read16()
                     assert packet & 0xff == 0, hex(packet)
