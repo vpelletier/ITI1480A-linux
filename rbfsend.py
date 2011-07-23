@@ -194,10 +194,11 @@ def main(
   poller = usb1.USBPoller(context, select.poll())
 
   usb_file_data_reader = usb1.USBTransferHelper()
+  transfer_dump_callback = TransferDumpCallback(out_file, verbose=verbose)
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
-    TransferDumpCallback(out_file, verbose=verbose))
+    transfer_dump_callback)
   usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_TIMED_OUT,
-    transferTimeoutHandler)
+    transfer_dump_callback)
 
   reader_list = []
   append = reader_list.append
