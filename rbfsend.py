@@ -99,10 +99,10 @@ class TransferDumpCallback(object):
     self.verbose = verbose
 
   def __call__(self, transfer):
-    data = transfer.getBuffer()
     size = transfer.getActualLength()
-    if len(data) > size:
-      data = data[:size]
+    if not size:
+      return True
+    data = transfer.getBuffer()[:size]
     if data[:2] in ('\xf0\x41', '\xf1\x41') or \
         data[1:3] in ('\xf0\x41', '\xf1\x41'):
       self.transfer_end_count += 1
