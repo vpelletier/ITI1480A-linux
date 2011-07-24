@@ -354,6 +354,8 @@ class Parser(object):
         if packet_type == TYPE_DATA:
             context.append(data)
             return True, False
+        if packet_type == TYPE_EVENT:
+            return True, False
         if packet_type == TYPE_RXCMD and not data & 0x10:
             pid = context[0]
             cannon_pid = pid & 0xf
