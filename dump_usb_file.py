@@ -2,6 +2,35 @@
 import sys
 from struct import unpack, error as struct_error
 
+class IndexedList(object):
+    def __init__(self):
+        self._key_list = []
+        self._dict = {}
+
+    def getFirstKey(self):
+        return self._key_list[0]
+
+    def getFirstValue(self):
+        return self._dict[self._key_list[0]]
+
+    def pop(self, key=None):
+        if key is None:
+            key = self._key_list.pop(0)
+        else:
+            self._key_list.remove(key)
+        return self._dict.pop(key)
+
+    def __setitem__(self, key, value):
+        if key not in self._dict:
+            self._key_list.append(key)
+        self._dict[key] = value
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __nonzero__(self):
+        return bool(self._dict)
+
 # RxCmd: see ISP1505A/ISP1505C datasheet
 RXCMD_LIST = (
     (0x01, 'DATA0'),
@@ -26,7 +55,6 @@ RXCMD_EVENT_DICT = {
 _rxcmd_previous_data = None
 
 def rxcmdDecoder(data, tic, verbose):
-    # TODO: implement quiet (non-verbose) parsing
     global _rxcmd_previous_data
     if data == _rxcmd_previous_data:
         return None
@@ -148,10 +176,250 @@ def tic_to_time(tic):
     minute, sec = divmod(tic, 60)
     return '%03i:%02i.%03i\'%03i"%03in' % (minute, sec, mili, micro, nano)
 
+def short_tic_to_time(tic):
+    tic = int(tic * TIME_INITIAL_MULTIPLIER)
+    tic, nano = divmod(tic, 1000)
+    tic, micro = divmod(tic, 1000)
+    tic, mili = divmod(tic, 1000)
+    minute, sec = divmod(tic, 60)
+    if minute or sec:
+        return '%03i:%02i' % (minute, sec)
+    if mili:
+        return '%i ms, %i us' % (mili, micro)
+    return '%i us, %i ns' % (micro, nano)
+
 write = sys.stdout.write
 _read = sys.stdin.read
 
-def main(read, write, verbose=False):
+def raw(write, tic, packet_type, data, verbose):
+    type_title, type_decoder = TYPE_DICT[packet_type]
+    decoded = type_decoder(data, tic, verbose)
+    if decoded is not None:
+        write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
+
+RXCMD_VBUS_HL_DICT = {
+    0x0: 'OTG VBus off',
+    0x4: 'OTG Session end',
+    0x8: 'OTG Session start',
+    0xc: 'OTG VBus on',
+}
+MIN_RESET_TIC = 2.5 * TIME_INITIAL_MULTIPLIER # 2.5 us
+def _decodeSOF(data):
+    assert len(data) == 3, data
+    crc = data[2]
+    return {
+        'name': 'SOF',
+        'frame': data[1] | ((crc & 0x7) << 8),
+        'crc': crc >> 3,
+    }
+def _decodeSETUP(data):
+    assert len(data) == 3, data
+    crc = data[2]
+    addr = data[1]
+    return {
+        'name': 'SETUP',
+        'address': addr & 0x7f,
+        'endpoint': (addr >> 7) | ((crc & 0x7) << 1),
+        'crc': crc >> 3
+    }
+DATA_NAME = {
+    0xc3: 'DATA0',
+    0x4b: 'DATA1',
+}
+def _decodeDATA(data):
+    return {
+        'name': DATA_NAME[data[0]],
+        'data': ' '.join('0x%02x' % x for x in data[1:-2]),
+        'crc': data[-1] | (data[-2] << 8),
+    }
+PACKET_DECODER = {
+    0x1: lambda _: {'name': 'OUT'},
+    0x2: lambda _: {'name': 'ACK'},
+    0x3: _decodeDATA,
+    0x4: lambda _: {'name': 'PING'},
+    0x5: _decodeSOF,
+    0x6: lambda _: {'name': 'NYET'},
+    0x7: lambda _: {'name': 'DATA2'},
+    0x8: lambda _: {'name': 'SPLIT'},
+    0x9: lambda _: {'name': 'IN'},
+    0xa: lambda _: {'name': 'NAK'},
+    0xb: _decodeDATA,
+    0xc: lambda _: {'name': 'PRE/ERR'},
+    0xd: _decodeSETUP,
+    0xe: lambda _: {'name': 'STALL'},
+    0xf: lambda _: {'name': 'MDATA'},
+}
+class Parser(object):
+    # XXX: no brain was harmed in the writing of this class.
+    # It's just a stupid first try to get a feeling on how to do it properly.
+    def __init__(self, write, verbose):
+        self._message_queue = IndexedList()
+        self._before = []
+        self.__write = write
+        self._verbose = verbose
+        self._type_dict = {
+            TYPE_EVENT: self.event,
+            TYPE_DATA: self.data,
+            TYPE_RXCMD: self.rxcmd,
+        }
+        self._connected = False
+        self._firstSOF = None
+        self._lastSOF = None
+        self._SOFcount = 1
+        self._transaction = None
+        self._transaction_data = None
+        self._last_vbus = False
+
+    def addBefore(self, tic, func, context):
+        self._message_queue[tic] = None
+        self._before.append((tic, func, context))
+
+    def __call__(self, _, tic, packet_type, data, __):
+        new_before = []
+        append = new_before.append
+        skip = False
+        for original_tic, func, context in self._before:
+            if skip:
+                preserve = True
+            else:
+                preserve, skip = func(original_tic, context, tic,
+                    packet_type, data)
+            if preserve:
+                append((original_tic, func, context))
+        self._before = new_before
+        if not skip:
+            self._type_dict[packet_type](tic, data)
+
+    def _write(self, tic, message):
+        queue = self._message_queue
+        pop = queue.pop
+        if message is None:
+            pop(tic)
+        else:
+            if self._firstSOF is not None:
+                sof_tic, first = self._firstSOF
+                last = self._lastSOF
+                self._lastSOF = self._firstSOF = None
+                if last is None:
+                    rendered = 'Start of frame %i' % (first, )
+                else:
+                    rendered = 'Start of frame %i -> %i (%i)' % (first, last,
+                        self._SOFcount)
+                self._SOFcount = 1
+                queue[sof_tic] = tic_to_time(sof_tic) + ' ' + rendered + '\n'
+            queue[tic] = tic_to_time(tic) + ' ' + message + '\n'
+        write = self.__write
+        getFirstValue = queue.getFirstValue
+        while queue and getFirstValue() is not None:
+            write(pop())
+
+    def event(self, tic, data):
+        caption = eventDecoder(data, None, False)
+        if data == 0xf:
+            self._connected = True
+        if caption is not None:
+            self._write(tic, caption)
+
+    def data(self, tic, data):
+        pass
+
+    def rxcmd(self, tic, data):
+        if self._connected and data & 0x20:
+            rendered = 'Device disconnected'
+            self._connected = False
+        elif data & 0x10:
+            # XXX: Packet timestamp is the timestamp of leading RxActive
+            # packet, while ITI's software displays the timestamp of first
+            # data packet.
+            self.addBefore(tic, self._packetAgregator, [])
+            return
+        else:
+            vbus = data & 0xc
+            if data == 0x0c:
+                # Maybe a reset, detect on next packet
+                self.addBefore(tic, self._resetDetector, None)
+            if vbus == self._last_vbus:
+                return
+            self._last_vbus = vbus
+            rendered = RXCMD_VBUS_HL_DICT[vbus]
+        self._write(tic, rendered)
+
+    def _resetDetector(self, original_tic, _, tic, packet_type, data):
+        if packet_type == TYPE_RXCMD and data & 0xc == 0xc:
+            delta = tic - original_tic
+            if delta > MIN_RESET_TIC:
+                self._write(original_tic,
+                    'Device reset (%s)' % (short_tic_to_time(delta), ))
+            return False, not self._connected
+        return True, False
+
+    def _packetAgregator(self, original_tic, context, _, packet_type, data):
+        if packet_type == TYPE_DATA:
+            context.append(data)
+            return True, False
+        if packet_type == TYPE_RXCMD and not data & 0x10:
+            pid = context[0]
+            cannon_pid = pid & 0xf
+            if cannon_pid != pid >> 4 ^ 0xf:
+                self._write(original_tic, '(bad pid) 0x' + ' 0x'.join(
+                    '%02x' % x for x in context))
+                return False, True
+            try:
+                decoder = PACKET_DECODER[cannon_pid]
+            except KeyError:
+                self._write(original_tic, '(unk. data packet) 0x' +
+                    ' 0x'.join('%02x' % x for x in context))
+                return False, True
+            decoded = decoder(context)
+            # TODO: handle CRC5/CRC16 checks
+            if self._verbose:
+                decoded['pid'] = pid
+                decoded = repr(decoded)
+            else:
+                if cannon_pid == 0x5:
+                    if self._firstSOF is None:
+                        self._firstSOF = (original_tic, decoded['frame'])
+                        return False, True
+                    else:
+                        self._lastSOF = decoded['frame']
+                        self._SOFcount += 1
+                        decoded = None
+                elif cannon_pid in (0x1, 0x9, 0xd):
+                    assert self._transaction is None, self._transaction
+                    self._transaction = (original_tic, decoded['name'])
+                    if cannon_pid != 0xd:
+                        return False, True
+                    decoded = 'SETUP dev %i ep %i' % (decoded['address'],
+                        decoded['endpoint'])
+                elif cannon_pid in (0x2, 0xa, 0xe):
+                    assert self._transaction is not None
+                    transaction_tic, transaction_name = self._transaction
+                    rendered = decoded['name'] + 'ed ' + transaction_name + \
+                        ' transaction'
+                    if self._transaction_data is not None:
+                        rendered += ': ' + self._transaction_data
+                    self._write(transaction_tic, rendered)
+                    self._transaction = None
+                    self._transaction_data = None
+                    decoded = None
+                elif cannon_pid in (0x3, 0xb):
+                    # TODO: decode data
+                    assert self._transaction_data is None, \
+                        self._transaction_data
+                    assert self._transaction is not None
+                    self._transaction_data = decoded['data'] or \
+                        '(no data)'
+                    decoded = None
+                else:
+                    decoded = repr(decoded)
+            self._write(original_tic, decoded)
+        return False, True
+
+def main(read, write, verbose=False, emit_raw=True):
+    if emit_raw:
+        emit = raw
+    else:
+        emit = Parser(write, verbose)
     def read16():
         try:
             return unpack('<H', read(2))[0]
@@ -184,16 +452,33 @@ def main(read, write, verbose=False):
         else:
             data = packet & 0xff
         tic += tic_count
-        type_title, type_decoder = TYPE_DICT[packet_type]
-        decoded = type_decoder(data, tic, verbose)
-        if decoded is not None:
-            write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
+        emit(write, tic, packet_type, data, verbose)
         if stop_printing:
             break
 
 if __name__ == '__main__':
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option('-v', '--verbose', action='store_true',
+        help='Increase verbosity')
+    parser.add_option('-r', '--raw', action='store_true',
+        help='Output raw analyser data')
+    parser.add_option('-i', '--infile', default='-',
+        help='Data source (default: stdin)')
+    parser.add_option('-o', '--outfile', default='-',
+        help='Data destination (default: stdout)')
+    (options, args) = parser.parse_args()
+    if options.infile != '-':
+        infile = open(options.infile, 'r')
+    else:
+        infile = sys.stdin
+    if options.outfile != '-':
+        outfile = open(options.outfile, 'w')
+    else:
+        outfile = sys.stdout
     try:
-        main(sys.stdin.read, sys.stdout.write)
+        main(infile.read, outfile.write, verbose=options.verbose,
+            emit_raw=options.raw)
     except EOFError:
         pass
 
