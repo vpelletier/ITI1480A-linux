@@ -188,9 +188,6 @@ def short_tic_to_time(tic):
         return '%i ms, %i us' % (mili, micro)
     return '%i us, %i ns' % (micro, nano)
 
-write = sys.stdout.write
-_read = sys.stdin.read
-
 def raw(write, tic, packet_type, data, verbose):
     type_title, type_decoder = TYPE_DICT[packet_type]
     decoded = type_decoder(data, tic, verbose)
