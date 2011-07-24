@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+import time
 from struct import unpack, error as struct_error
 
 class IndexedList(object):
@@ -414,14 +415,24 @@ class Parser(object):
             self._write(original_tic, decoded)
         return False, True
 
-def main(read, write, verbose=False, emit_raw=True):
+def main(read, write, raw_write, verbose=False, emit_raw=True, follow=False):
     if emit_raw:
         emit = raw
     else:
         emit = Parser(write, verbose)
+    if raw_write is None:
+        raw_write = lambda x: None
     def read16():
+        data = ''
+        while len(data) < 2:
+            data += read(2 - len(data))
+            if not follow:
+                break
+            elif len(data) < 2:
+                time.sleep(0.1)
+        raw_write(data)
         try:
-            return unpack('<H', read(2))[0]
+            return unpack('<H', data)[0]
         except struct_error:
             raise EOFError
     tic = 0
@@ -461,11 +472,16 @@ if __name__ == '__main__':
     parser.add_option('-v', '--verbose', action='store_true',
         help='Increase verbosity')
     parser.add_option('-r', '--raw', action='store_true',
-        help='Output raw analyser data')
+        help='Output low-level usb in human-readable form')
     parser.add_option('-i', '--infile', default='-',
         help='Data source (default: stdin)')
     parser.add_option('-o', '--outfile', default='-',
         help='Data destination (default: stdout)')
+    parser.add_option('-t', '--tee', help='Also write raw input to that '
+        'file. Useful as tee(1) doesn\'t close its stdin when its stdout '
+        'gets closed.')
+    parser.add_option('-f', '--follow', action='store_true',
+        help='Keep waiting for more data when reaching eof.')
     (options, args) = parser.parse_args()
     if options.infile != '-':
         infile = open(options.infile, 'r')
@@ -475,9 +491,13 @@ if __name__ == '__main__':
         outfile = open(options.outfile, 'w')
     else:
         outfile = sys.stdout
+    if options.tee:
+        raw_write = open(options.tee, 'w').write
+    else:
+        raw_write = lambda x: None
     try:
         main(infile.read, outfile.write, verbose=options.verbose,
-            emit_raw=options.raw)
+            emit_raw=options.raw, raw_write=raw_write, follow=options.follow)
     except EOFError:
         pass
 
