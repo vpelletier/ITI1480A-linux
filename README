@@ -17,7 +17,8 @@ Usage:
   procedure:
     ITI1480A.spt
     ulpitest.rbf
-- Install it
+- Install it (wine can install it, though you probably need to install .NET
+  fist)
 - Run
     sptreader.py /path/to/ITI1480A.spt
   This generates 2 files (as of v3.6 of ITI software)
@@ -32,9 +33,14 @@ Usage:
   This loads the FPGA initialisation file and starts dumping data sent by the
   analyzer.
   Kill it (ctrl-c) when you want to stop the capture.
+  Generated file is compatible with ITI's software (if not, it's a bug in
+  rbfsend.py, please report).
+
+There is no GUI at the moment, and there is no plan for one at the moment.
+Though, to get a human-friendly dump, you can use dump_usb_file.py.
 
 Integrating with udev:
-- Copy udev/ITI1480A.rules in /etc/udev/rules.d .
+- Copy udev/ITI1480A.rules in /etc/udev/rules.d
 - Copy udev/ITI1480A.sh in /lib/udev
 - Copy & rename ITI1480A_1.hex as /lib/firmware/ITI1480A.hex
 - Restart udev
