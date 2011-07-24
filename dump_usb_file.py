@@ -54,7 +54,7 @@ RXCMD_EVENT_DICT = {
 
 _rxcmd_previous_data = None
 
-def rxcmdDecoder(data, tic, verbose):
+def rxcmdDecoder(data, _, __):
     global _rxcmd_previous_data
     if data == _rxcmd_previous_data:
         return None
