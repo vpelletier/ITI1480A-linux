@@ -1,5 +1,5 @@
-Disclaimers:
-  I am not afiliated with International Test Instruments at all. They
+Disclaimer:
+  I am not affiliated with International Test Instruments at all. They
   kindly accepted that I start reverse-engineering their windows-only software
   so I could try to use a device I bought from them with Linux only. I had no
   privileged access to any documentation of any kind.
@@ -24,14 +24,14 @@ Usage:
   This generates 2 files (as of v3.6 of ITI software)
 - Run
     lsusb -d 16c0:07a8
-  And use the bus and device adresses in following commands.
+  And use the bus and device addresses in following commands.
 - As root, run
     cycfx2prog -d=<bus>.<device> prg:ITI1480A_1.hex run
   This loads the USB chip firmware into the USB analyser.
 - As root, run
     rbfsend.py -f /path/to/ulpitest.rbf > out.usb
   This loads the FPGA initialisation file and starts dumping data sent by the
-  analyzer.
+  analyser.
   Kill it (ctrl-c) when you want to stop the capture.
   Generated file is compatible with ITI's software (if not, it's a bug in
   rbfsend.py, please report).
