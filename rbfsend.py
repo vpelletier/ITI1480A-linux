@@ -123,7 +123,7 @@ class TransferDumpCallback(object):
           if sdelta:
             tdelta = now - last_time
             sys.stderr.write('\nSpeed: %i B/s\n' % (sdelta/tdelta, ))
-      sys.stderr.write('Capture size: %i\r' % (cap_size, ))
+        sys.stderr.write('Capture size: %i\r' % (cap_size, ))
     try:
       self.write(data)
     except IOError, (write_errno, error_text):
