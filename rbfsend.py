@@ -234,6 +234,7 @@ def main(
         except select.error, (select_errno, error_text):
           if select_errno != errno.EINTR:
             raise
+      sys.stderr.write('\n')
     finally:
       if verbose:
         sys.stderr.write('\nExiting...\n')
