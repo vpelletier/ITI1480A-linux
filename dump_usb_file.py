@@ -190,6 +190,10 @@ def short_tic_to_time(tic):
         return '%i ms, %i us' % (mili, micro)
     return '%i us, %i ns' % (micro, nano)
 
+TIC_TO_MICROSECOND = TIME_INITIAL_MULTIPLIER / 1000
+def tic_to_us(tic):
+    return tic * TIC_TO_MICROSECOND
+
 class RawOutput(object):
     def __init__(self, write, verbose):
         self._write = write
