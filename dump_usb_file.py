@@ -334,7 +334,7 @@ class Parser(object):
             self._write(tic, caption)
 
     def data(self, tic, data):
-        pass
+        self._write(tic, 'Unexpected data: ' + hex(data))
 
     def rxcmd(self, tic, data):
         if self._connected and data & 0x20:
@@ -369,7 +369,7 @@ class Parser(object):
     def _packetAgregator(self, original_tic, context, _, packet_type, data):
         if packet_type == TYPE_DATA:
             context.append(data)
-            return True, False
+            return True, True
         if packet_type == TYPE_EVENT:
             return True, False
         if packet_type == TYPE_RXCMD and not data & 0x10:
