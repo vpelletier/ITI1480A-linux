@@ -225,28 +225,33 @@ def _decodeSOF(data):
         'frame': data[1] | ((crc & 0x7) << 8),
         'crc': crc >> 3,
     }
-def _decodeSETUP(data):
+TOKEN_NAME = {
+    PID_OUT: 'OUT',
+    PID_IN: 'IN',
+    PID_SETUP: 'SETUP',
+}
+def _decodeToken(data):
     assert len(data) == 3, data
     crc = data[2]
     addr = data[1]
     return {
-        'name': 'SETUP',
+        'name': TOKEN_NAME[data[0] & 0xf],
         'address': addr & 0x7f,
         'endpoint': (addr >> 7) | ((crc & 0x7) << 1),
         'crc': crc >> 3
     }
 DATA_NAME = {
-    0xc3: 'DATA0',
-    0x4b: 'DATA1',
+    PID_DATA0: 'DATA0',
+    PID_DATA1: 'DATA1',
 }
 def _decodeDATA(data):
     return {
-        'name': DATA_NAME[data[0]],
+        'name': DATA_NAME[data[0] & 0xf],
         'data': ' '.join('0x%02x' % x for x in data[1:-2]),
         'crc': data[-1] | (data[-2] << 8),
     }
 PACKET_DECODER = {
-    PID_OUT: lambda _: {'name': 'OUT'},
+    PID_OUT: _decodeToken,
     PID_ACK: lambda _: {'name': 'ACK'},
     PID_DATA0: _decodeDATA,
     PID_PING: lambda _: {'name': 'PING'},
@@ -254,11 +259,11 @@ PACKET_DECODER = {
     PID_NYET: lambda _: {'name': 'NYET'},
     PID_DATA2: lambda _: {'name': 'DATA2'},
     PID_SPLIT: lambda _: {'name': 'SPLIT'},
-    PID_IN: lambda _: {'name': 'IN'},
+    PID_IN: _decodeToken,
     PID_NAK: lambda _: {'name': 'NAK'},
     PID_DATA1: _decodeDATA,
     PID_PRE: lambda _: {'name': 'PRE/ERR'},
-    PID_SETUP: _decodeSETUP,
+    PID_SETUP: _decodeToken,
     PID_STALL: lambda _: {'name': 'STALL'},
     PID_MDATA: lambda _: {'name': 'MDATA'},
 }
