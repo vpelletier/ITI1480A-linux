@@ -336,8 +336,8 @@ class Parser(object):
             self.addBefore(tic, self._packetAgregator, [])
             return
         else:
-            vbus = data & 0xc
-            if data == 0xc:
+            vbus = data & RXCMD_VBUS_MASK
+            if data == RXCMD_VBUS_MASK:
                 # Maybe a reset, detect on next packet
                 self.addBefore(tic, self._resetDetector, None)
             if vbus == self._last_vbus:
