@@ -243,6 +243,8 @@ def _decodeToken(data):
 DATA_NAME = {
     PID_DATA0: 'DATA0',
     PID_DATA1: 'DATA1',
+    PID_DATA2: 'DATA2',
+    PID_MDATA: 'MDATA',
 }
 def _decodeDATA(data):
     return {
@@ -257,7 +259,7 @@ PACKET_DECODER = {
     PID_PING: lambda _: {'name': 'PING'},
     PID_SOF: _decodeSOF,
     PID_NYET: lambda _: {'name': 'NYET'},
-    PID_DATA2: lambda _: {'name': 'DATA2'},
+    PID_DATA2: _decodeDATA,
     PID_SPLIT: lambda _: {'name': 'SPLIT'},
     PID_IN: _decodeToken,
     PID_NAK: lambda _: {'name': 'NAK'},
@@ -265,7 +267,7 @@ PACKET_DECODER = {
     PID_PRE: lambda _: {'name': 'PRE/ERR'},
     PID_SETUP: _decodeToken,
     PID_STALL: lambda _: {'name': 'STALL'},
-    PID_MDATA: lambda _: {'name': 'MDATA'},
+    PID_MDATA: _decodeDATA,
 }
 class Parser(object):
     # XXX: no brain was harmed in the writing of this class.
@@ -422,7 +424,7 @@ class Parser(object):
                     self._transaction = None
                     self._transaction_data = None
                     decoded = None
-                elif cannon_pid in (PID_DATA0, PID_DATA1):
+                elif cannon_pid in (PID_DATA0, PID_DATA1, PID_DATA2, PID_MDATA):
                     # TODO: decode data
                     assert self._transaction_data is None, \
                         self._transaction_data
