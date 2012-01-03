@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import sys
-import time
 from struct import unpack, error as struct_error
 from cStringIO import StringIO
 
