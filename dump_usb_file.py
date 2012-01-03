@@ -202,6 +202,21 @@ RXCMD_VBUS_HL_DICT = {
     0xc: 'OTG VBus on',
 }
 MIN_RESET_TIC = 2.5 * TIME_INITIAL_MULTIPLIER # 2.5 us
+PID_OUT = 0x1
+PID_ACK = 0x2
+PID_DATA0 = 0x3
+PID_PING = 0x4
+PID_SOF = 0x5
+PID_NYET = 0x6
+PID_DATA2 = 0x7
+PID_SPLIT = 0x8
+PID_IN = 0x9
+PID_NAK = 0xa
+PID_DATA1 = 0xb
+PID_PRE = PID_ERR = 0xc
+PID_SETUP = 0xd
+PID_STALL = 0xe
+PID_MDATA = 0xf
 def _decodeSOF(data):
     assert len(data) == 3, data
     crc = data[2]
@@ -231,21 +246,21 @@ def _decodeDATA(data):
         'crc': data[-1] | (data[-2] << 8),
     }
 PACKET_DECODER = {
-    0x1: lambda _: {'name': 'OUT'},
-    0x2: lambda _: {'name': 'ACK'},
-    0x3: _decodeDATA,
-    0x4: lambda _: {'name': 'PING'},
-    0x5: _decodeSOF,
-    0x6: lambda _: {'name': 'NYET'},
-    0x7: lambda _: {'name': 'DATA2'},
-    0x8: lambda _: {'name': 'SPLIT'},
-    0x9: lambda _: {'name': 'IN'},
-    0xa: lambda _: {'name': 'NAK'},
-    0xb: _decodeDATA,
-    0xc: lambda _: {'name': 'PRE/ERR'},
-    0xd: _decodeSETUP,
-    0xe: lambda _: {'name': 'STALL'},
-    0xf: lambda _: {'name': 'MDATA'},
+    PID_OUT: lambda _: {'name': 'OUT'},
+    PID_ACK: lambda _: {'name': 'ACK'},
+    PID_DATA0: _decodeDATA,
+    PID_PING: lambda _: {'name': 'PING'},
+    PID_SOF: _decodeSOF,
+    PID_NYET: lambda _: {'name': 'NYET'},
+    PID_DATA2: lambda _: {'name': 'DATA2'},
+    PID_SPLIT: lambda _: {'name': 'SPLIT'},
+    PID_IN: lambda _: {'name': 'IN'},
+    PID_NAK: lambda _: {'name': 'NAK'},
+    PID_DATA1: _decodeDATA,
+    PID_PRE: lambda _: {'name': 'PRE/ERR'},
+    PID_SETUP: _decodeSETUP,
+    PID_STALL: lambda _: {'name': 'STALL'},
+    PID_MDATA: lambda _: {'name': 'MDATA'},
 }
 class Parser(object):
     # XXX: no brain was harmed in the writing of this class.
@@ -376,7 +391,7 @@ class Parser(object):
                 decoded['pid'] = pid
                 decoded = repr(decoded)
             else:
-                if cannon_pid == 0x5:
+                if cannon_pid == PID_SOF:
                     if self._firstSOF is None:
                         self._firstSOF = (original_tic, decoded['frame'])
                         return False, True
@@ -384,14 +399,14 @@ class Parser(object):
                         self._lastSOF = decoded['frame']
                         self._SOFcount += 1
                         decoded = None
-                elif cannon_pid in (0x1, 0x9, 0xd):
+                elif cannon_pid in (PID_OUT, PID_IN, PID_SETUP):
                     assert self._transaction is None, self._transaction
                     self._transaction = (original_tic, decoded['name'])
-                    if cannon_pid != 0xd:
+                    if cannon_pid != PID_SETUP:
                         return False, True
                     decoded = 'SETUP dev %i ep %i' % (decoded['address'],
                         decoded['endpoint'])
-                elif cannon_pid in (0x2, 0xa, 0xe):
+                elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL):
                     assert self._transaction is not None
                     transaction_tic, transaction_name = self._transaction
                     rendered = decoded['name'] + 'ed ' + transaction_name + \
@@ -402,7 +417,7 @@ class Parser(object):
                     self._transaction = None
                     self._transaction_data = None
                     decoded = None
-                elif cannon_pid in (0x3, 0xb):
+                elif cannon_pid in (PID_DATA0, PID_DATA1):
                     # TODO: decode data
                     assert self._transaction_data is None, \
                         self._transaction_data
