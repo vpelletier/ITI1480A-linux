@@ -255,7 +255,7 @@ DATA_NAME = {
 def _decodeDATA(data):
     return {
         'name': DATA_NAME[data[0] & 0xf],
-        'data': ' '.join('0x%02x' % x for x in data[1:-2]),
+        'data': ''.join(chr(x) for x in data[1:-2]),
         'crc': data[-1] | (data[-2] << 8),
     }
 PACKET_DECODER = {
@@ -275,23 +275,25 @@ PACKET_DECODER = {
     PID_STALL: lambda _: {'name': 'STALL'},
     PID_MDATA: _decodeDATA,
 }
+
+MESSAGE_RAW = 0
+MESSAGE_RESET = 1
+MESSAGE_TRANSACTION = 2
+MESSAGE_SOF = 3
+
 class Parser(object):
     # XXX: no brain was harmed in the writing of this class.
     # It's just a stupid first try to get a feeling on how to do it properly.
-    def __init__(self, write, verbose):
+    def __init__(self, push):
         self._message_queue = IndexedList()
         self._before = []
-        self.__write = write
-        self._verbose = verbose
+        self._push = push
         self._type_dict = {
             TYPE_EVENT: self.event,
             TYPE_DATA: self.data,
             TYPE_RXCMD: self.rxcmd,
         }
         self._connected = False
-        self._firstSOF = None
-        self._lastSOF = None
-        self._SOFcount = 1
         self._transaction = None
         self._transaction_data = None
         self._last_vbus = False
@@ -316,38 +318,27 @@ class Parser(object):
         if not skip:
             self._type_dict[packet_type](tic, data)
 
-    def _write(self, tic, message):
+    def _write(self, tic, message_class, message):
         queue = self._message_queue
         pop = queue.pop
         if message is None:
             pop(tic)
         else:
-            if self._firstSOF is not None:
-                sof_tic, first = self._firstSOF
-                last = self._lastSOF
-                self._lastSOF = self._firstSOF = None
-                if last is None:
-                    rendered = 'Start of frame %i' % (first, )
-                else:
-                    rendered = 'Start of frame %i -> %i (%i)' % (first, last,
-                        self._SOFcount)
-                self._SOFcount = 1
-                queue[sof_tic] = tic_to_time(sof_tic) + ' ' + rendered + '\n'
-            queue[tic] = tic_to_time(tic) + ' ' + message + '\n'
-        write = self.__write
+            queue[tic] = (tic, message_class, message)
+        push = self._push
         getFirstValue = queue.getFirstValue
         while queue and getFirstValue() is not None:
-            write(pop())
+            push(*pop())
 
     def event(self, tic, data):
         caption = eventDecoder(data, None, False)
         if data == 0xf:
             self._connected = True
         if caption is not None:
-            self._write(tic, caption)
+            self._write(tic, MESSAGE_RAW, caption)
 
     def data(self, tic, data):
-        self._write(tic, 'Unexpected data: ' + hex(data))
+        self._write(tic, MESSAGE_RAW, 'Unexpected data: ' + hex(data))
 
     def rxcmd(self, tic, data):
         if self._connected and data & 0x20:
@@ -368,80 +359,146 @@ class Parser(object):
                 return
             self._last_vbus = vbus
             rendered = RXCMD_VBUS_HL_DICT[vbus]
-        self._write(tic, rendered)
+        self._write(tic, MESSAGE_RAW, rendered)
 
     def _resetDetector(self, original_tic, _, tic, packet_type, data):
         if packet_type == TYPE_RXCMD and data & 0xc == 0xc:
             delta = tic - original_tic
             if delta > MIN_RESET_TIC:
-                self._write(original_tic,
-                    'Device reset (%s)' % (short_tic_to_time(delta), ))
+                self._write(original_tic, MESSAGE_RESET, delta)
             return False, not self._connected
         return True, False
 
-    def _packetAgregator(self, original_tic, context, _, packet_type, data):
+    def _packetAgregator(self, original_tic, context, tic, packet_type, data):
         if packet_type == TYPE_DATA:
             context.append(data)
             return True, True
         if packet_type == TYPE_EVENT:
             return True, False
         if packet_type == TYPE_RXCMD and not data & 0x10:
+            if not context:
+                return False, True
             pid = context[0]
             cannon_pid = pid & 0xf
             if cannon_pid != pid >> 4 ^ 0xf:
-                self._write(original_tic, '(bad pid) 0x' + ' 0x'.join(
-                    '%02x' % x for x in context))
+                self._write(original_tic, MESSAGE_RAW,
+                    '(bad pid) 0x' + ' 0x'.join('%02x' % x for x in context))
                 return False, True
             try:
                 decoder = PACKET_DECODER[cannon_pid]
             except KeyError:
-                self._write(original_tic, '(unk. data packet) 0x' +
-                    ' 0x'.join('%02x' % x for x in context))
+                self._write(original_tic, MESSAGE_RAW,
+                    '(unk. data packet) 0x' + ' 0x'.join('%02x' % x
+                        for x in context))
                 return False, True
             decoded = decoder(context)
             # TODO: handle CRC5/CRC16 checks
-            if self._verbose:
-                decoded['pid'] = pid
-                decoded = repr(decoded)
+            if cannon_pid == PID_SOF:
+                self._write(original_tic, MESSAGE_SOF, decoded)
+                return False, True
+            elif cannon_pid in (PID_OUT, PID_IN, PID_SETUP):
+                assert self._transaction is None, self._transaction
+                self._transaction = (original_tic, decoded)
+                return False, True
+            elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL):
+                assert self._transaction is not None, tic_to_time(tic)
+                transaction_tic, transaction = self._transaction
+                self._write(transaction_tic, MESSAGE_TRANSACTION, (
+                    transaction, # Start
+                    self._transaction_data, # Data (or None)
+                    decoded, # Conclusion
+                    original_tic, # Conclusion tic
+                ))
+                self._transaction = None
+                self._transaction_data = None
+                decoded = None
+            elif cannon_pid in (PID_DATA0, PID_DATA1, PID_DATA2, PID_MDATA):
+                # TODO: decode data
+                assert self._transaction_data is None, \
+                    self._transaction_data
+                assert self._transaction is not None
+                self._transaction_data = decoded
+                decoded = None
             else:
-                if cannon_pid == PID_SOF:
-                    if self._firstSOF is None:
-                        self._firstSOF = (original_tic, decoded['frame'])
-                        return False, True
-                    else:
-                        self._lastSOF = decoded['frame']
-                        self._SOFcount += 1
-                        decoded = None
-                elif cannon_pid in (PID_OUT, PID_IN, PID_SETUP):
-                    assert self._transaction is None, self._transaction
-                    self._transaction = (original_tic, decoded['name'])
-                    if cannon_pid != PID_SETUP:
-                        return False, True
-                    decoded = 'SETUP dev %i ep %i' % (decoded['address'],
-                        decoded['endpoint'])
-                elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL):
-                    assert self._transaction is not None
-                    transaction_tic, transaction_name = self._transaction
-                    rendered = decoded['name'] + 'ed ' + transaction_name + \
-                        ' transaction'
-                    if self._transaction_data is not None:
-                        rendered += ': ' + self._transaction_data
-                    self._write(transaction_tic, rendered)
-                    self._transaction = None
-                    self._transaction_data = None
-                    decoded = None
-                elif cannon_pid in (PID_DATA0, PID_DATA1, PID_DATA2, PID_MDATA):
-                    # TODO: decode data
-                    assert self._transaction_data is None, \
-                        self._transaction_data
-                    assert self._transaction is not None
-                    self._transaction_data = decoded['data'] or \
-                        '(no data)'
-                    decoded = None
-                else:
-                    decoded = repr(decoded)
-            self._write(original_tic, decoded)
+                # TODO:
+                # - PID_PING
+                # - PID_NYET
+                # - PID_SPLIT
+                # - PID_PRE / PID_ERR
+                # In the meantime, emit them as MESSAGE_RAW
+                decoded = repr(decoded)
+            self._write(original_tic, MESSAGE_RAW, decoded)
         return False, True
+
+class HumanReadable(object):
+    def __init__(self, write, verbose):
+        self._verbose = verbose
+        self._write = write
+        self._dispatch = {
+            MESSAGE_RAW: lambda _, x: x,
+            MESSAGE_RESET: self._reset,
+            MESSAGE_TRANSACTION: self._transaction,
+            MESSAGE_SOF: self._sof,
+        }
+        self._firstSOF = None
+        self._latestSOF = None
+        self._SOFcount = 1
+        self._firstNAK = None
+        self._NAKcount = 1
+
+    def _print(self, tic, printable):
+        self._write(tic_to_time(tic) + ' ' + printable + '\n')
+
+    def __call__(self, tic, message_type, data):
+        if message_type != MESSAGE_SOF and self._firstSOF is not None:
+            self._dumpSOF()
+        if self._firstNAK is not None and (message_type != MESSAGE_TRANSACTION or (data[0], data[2]) != (self._firstNAK[1][0], self._firstNAK[1][2])):
+            self._dumpNAK()
+        printable = self._dispatch[message_type](tic, data)
+        if printable is not None:
+            self._print(tic, printable)
+
+    def _reset(self, _, data):
+        return 'Device reset (%s)' % (short_tic_to_time(data), )
+
+    def _transaction(self, tic, data, force=False):
+        start, payload, stop, end_tic = data
+        if not force and not self._verbose:
+            if stop['name'] == 'NAK':
+                if self._firstNAK is None:
+                    self._firstNAK = (tic, data)
+                else:
+                    self._NAKcount += 1
+                return
+        result = "addr %i ep %i %s %s'ed at %s" % (start['address'], start['endpoint'], start['name'], stop['name'], tic_to_time(end_tic))
+        if payload is not None:
+            payload['data'] = ' '.join('%02x' % (ord(x), ) for x in payload['data'])
+            result += ': %(name)s %(data)s (crc 0x%(crc)04x)' % payload
+        return result
+
+    def _dumpNAK(self):
+        tic, data = self._firstNAK
+        self._print(tic, self._transaction(tic, data, force=1) + ' * %i' % (self._NAKcount, ))
+        self._firstNAK = None
+        self._NAKcount = 1
+
+    def _sof(self, tic, data, force=False):
+        if self._verbose or force:
+            return 'start of frame %(frame)i (crc 0x%(crc)02x)' % data
+        elif self._firstSOF is None:
+            self._firstSOF = (tic, data)
+        else:
+            self._latestSOF = data
+            self._SOFcount += 1
+
+    def _dumpSOF(self):
+        tic, first = self._firstSOF
+        if self._SOFcount == 1:
+            self._print(tic, self._sof(tic, first, force=True))
+        else:
+            self._print(tic, 'start of frame * %i (from %i to %i)' % (self._SOFcount, first['frame'], self._latestSOF['frame']))
+        self._firstSOF = None
+        self._SOFcount = 1
 
 class ReorderedStream(object):
     def __init__(self, out):
@@ -497,7 +554,7 @@ def main(read, write, raw_write, verbose=False, emit_raw=True, follow=False):
     if emit_raw:
         emit = RawOutput(write, verbose)
     else:
-        emit = Parser(write, verbose)
+        emit = Parser(HumanReadable(write, verbose))
     if raw_write is None:
         raw_write = lambda x: None
     push = ReorderedStream(emit).push
