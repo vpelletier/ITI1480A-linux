@@ -2,6 +2,7 @@
 import sys
 import time
 from struct import unpack, error as struct_error
+from cStringIO import StringIO
 
 class IndexedList(object):
     def __init__(self):
@@ -442,6 +443,56 @@ class Parser(object):
             self._write(original_tic, decoded)
         return False, True
 
+class ReorderedStream(object):
+    def __init__(self, out):
+        self._remain = ''
+        self._out = out
+        self._tic = 0
+
+    def push(self, data):
+        out = self._out
+        tic = self._tic
+        read = StringIO(self._remain + data).read
+        def read16():
+            data = read(2)
+            # In case we won't have enough data to decode packet entirely
+            self._remain += data
+            return unpack('<H', data)[0]
+        try:
+            while True:
+                # Clear backlog at packet boundary
+                self._remain = ''
+                packet = read16()
+                head = packet >> 8
+                packet_type = head >> TYPE_SHIFT
+                packet_len = (head >> LENGTH_SHIFT) & LENGTH_MASK
+                tic_count = head & TIC_HEAD_MASK
+                if packet_len:
+                    tic_count |= (packet & 0xff) << 4
+                    if packet_len > 1:
+                        packet = read16()
+                        tic_count |= (packet & 0xff00) << 4
+                        if packet_len > 2:
+                            tic_count |= (packet & 0xff) << 20
+                            if packet_type == TYPE_TIME_DELTA:
+                                tic += tic_count
+                                continue
+                            packet = read16()
+                            assert packet & 0xff == 0, hex(packet)
+                            data = packet >> 8
+                        else:
+                            data = packet & 0xff
+                    else:
+                        data = read16() >> 8
+                else:
+                    data = packet & 0xff
+                tic += tic_count
+                out(tic, packet_type, data)
+        except struct_error:
+            assert read() == ''
+        self._tic = tic
+
+CHUNK_SIZE = 16 * 1024
 def main(read, write, raw_write, verbose=False, emit_raw=True, follow=False):
     if emit_raw:
         emit = RawOutput(write, verbose)
@@ -449,48 +500,11 @@ def main(read, write, raw_write, verbose=False, emit_raw=True, follow=False):
         emit = Parser(write, verbose)
     if raw_write is None:
         raw_write = lambda x: None
-    def read16():
-        data = ''
-        while len(data) < 2:
-            data += read(2 - len(data))
-            if not follow:
-                break
-            elif len(data) < 2:
-                time.sleep(0.1)
-        raw_write(data)
-        try:
-            return unpack('<H', data)[0]
-        except struct_error:
-            raise EOFError
-    tic = 0
+    push = ReorderedStream(emit).push
     while True:
-        packet = read16()
-        head = packet >> 8
-        packet_type = head >> TYPE_SHIFT
-        packet_len = (head >> LENGTH_SHIFT) & LENGTH_MASK
-        tic_count = head & TIC_HEAD_MASK
-        if packet_len:
-            tic_count |= (packet & 0xff) << 4
-            if packet_len > 1:
-                packet = read16()
-                tic_count |= (packet & 0xff00) << 4
-                if packet_len > 2:
-                    tic_count |= (packet & 0xff) << 20
-                    if packet_type == TYPE_TIME_DELTA:
-                        tic += tic_count
-                        continue
-                    packet = read16()
-                    assert packet & 0xff == 0, hex(packet)
-                    data = packet >> 8
-                else:
-                    data = packet & 0xff
-            else:
-                data = read16() >> 8
-        else:
-            data = packet & 0xff
-        tic += tic_count
-        emit(tic, packet_type, data)
-        if stop_printing:
+        data = read(CHUNK_SIZE)
+        push(data)
+        if len(data) < CHUNK_SIZE and not follow:
             break
 
 if __name__ == '__main__':
