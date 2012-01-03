@@ -189,11 +189,16 @@ def short_tic_to_time(tic):
         return '%i ms, %i us' % (mili, micro)
     return '%i us, %i ns' % (micro, nano)
 
-def raw(write, tic, packet_type, data, verbose):
-    type_title, type_decoder = TYPE_DICT[packet_type]
-    decoded = type_decoder(data, tic, verbose)
-    if decoded is not None:
-        write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
+class RawOutput(object):
+    def __init__(self, write, verbose):
+        self._write = write
+        self._verbose = verbose
+
+    def __call__(self, tic, packet_type, data):
+        type_title, type_decoder = TYPE_DICT[packet_type]
+        decoded = type_decoder(data, tic, self._verbose)
+        if decoded is not None:
+            self._write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
 
 RXCMD_VBUS_HL_DICT = {
     0x0: 'OTG VBus off',
@@ -294,7 +299,7 @@ class Parser(object):
         self._message_queue[tic] = None
         self._before.append((tic, func, context))
 
-    def __call__(self, _, tic, packet_type, data, __):
+    def __call__(self, tic, packet_type, data):
         new_before = []
         append = new_before.append
         skip = False
@@ -439,7 +444,7 @@ class Parser(object):
 
 def main(read, write, raw_write, verbose=False, emit_raw=True, follow=False):
     if emit_raw:
-        emit = raw
+        emit = RawOutput(write, verbose)
     else:
         emit = Parser(write, verbose)
     if raw_write is None:
@@ -484,7 +489,7 @@ def main(read, write, raw_write, verbose=False, emit_raw=True, follow=False):
         else:
             data = packet & 0xff
         tic += tic_count
-        emit(write, tic, packet_type, data, verbose)
+        emit(tic, packet_type, data)
         if stop_printing:
             break
 
