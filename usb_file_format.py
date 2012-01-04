@@ -282,6 +282,7 @@ class Parser(object):
         self._transaction = None
         self._transaction_data = None
         self._last_vbus = False
+        self._done = False
 
     def addBefore(self, tic, func, context):
         self._message_queue[tic] = None
@@ -302,6 +303,7 @@ class Parser(object):
         self._before = new_before
         if not skip:
             self._type_dict[packet_type](tic, data)
+        return self._done and not self._message_queue
 
     def _write(self, tic, message_class, message):
         queue = self._message_queue
@@ -316,6 +318,8 @@ class Parser(object):
             push(*pop())
 
     def event(self, tic, data):
+        if data in (0xf0, 0xf1):
+            self._done = True
         caption = eventDecoder(data, None, False)
         if data == 0xf:
             self._connected = True
@@ -529,7 +533,8 @@ class ReorderedStream(object):
                 else:
                     data = packet & 0xff
                 tic += tic_count
-                out(tic, packet_type, data)
+                if out(tic, packet_type, data):
+                    break
         except struct_error:
             assert read() == ''
         self._tic = tic
