@@ -71,18 +71,18 @@ def rxcmdDecoder(data, _, __):
 
 # Event
 EVENT_DICT = {
-  0x0b: 'LS device connection',
-  0x0f: 'FS device connection',
-  0x15: 'Device chirp',
-  0x18: 'Host chirp',
-  0x24: 'HS idle',
-  0x62: 'OTG Session request',
-  0x69: 'OTG HNP (Host-role changed)',
-  0xd0: 'Capture paused',
-  0xd1: 'Capture resumed',
-  0xe0: 'Capture started',
-  0xf0: 'Capture stopped (fifo)',
-  0xf1: 'Capture stopped (user)',
+    0x0b: 'LS device connection',
+    0x0f: 'FS device connection',
+    0x15: 'Device chirp',
+    0x18: 'Host chirp',
+    0x24: 'HS idle',
+    0x62: 'OTG Session request',
+    0x69: 'OTG HNP (Host-role changed)',
+    0xd0: 'Capture paused',
+    0xd1: 'Capture resumed',
+    0xe0: 'Capture started',
+    0xf0: 'Capture stopped (fifo)',
+    0xf1: 'Capture stopped (user)',
 }
 
 stop_printing = False
