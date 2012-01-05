@@ -26,7 +26,7 @@ Install:
   your distro (Debian here).
 - Install udev/ITI1480A.sh to /lib/udev
 - Extract Cypress FX2 firmware:
-    sptreader.py /path/to/ITI1480A.spt
+    spt2hex.py /path/to/ITI1480A.spt
   This can generate several files, use the highest-numbered one
   (ITI1480A_1.hex is assumed here).
 - Install ITI1480A_1.hex to /lib/firmware/ITI1480A.hex
@@ -34,20 +34,20 @@ Install:
 - (Re)plug your protocol analyser
 
 To start a capture, run
-  rbfsend.py -f /path/to/ulpitest.rbf > out.usb
+  capture.py -f /path/to/ulpitest.rbf > out.usb
 SIGINT (^C)/SIGTERM to stop the capture and exit
 SIGTSTP to pause the analyser, SIGCONT to resume
 
 There is at the moment no GUI to inspect dumps and control the analyser. To
-get a human-friendly dump, you can use dump_usb_file.py:
+get a human-friendly dump, you can use display.py:
   Examining a previous capture session:
-    dump_usb_file.py < out.usb
+    display.py < out.usb
 
   Watching current capture session (no save):
-    rbfsend.py -f /path/to/ulpitest.rbf | dump_usb_file.py -f
+    capture.py -f /path/to/ulpitest.rbf | display.py -f
 
   Watching and saving current capture session:
-    rbfsend.py -f /path/to/ulpitest.rbf | dump_usb_file.py -ft > out.usb
+    capture.py -f /path/to/ulpitest.rbf | display.py -ft > out.usb
 
 [1] http://python.org/
 [2] http://www.libusb.org/wiki/libusb-1.0

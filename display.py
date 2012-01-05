@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from usb_file_format import TYPE_EVENT, TYPE_DATA, TYPE_RXCMD, eventDecoder, \
+from parser import TYPE_EVENT, TYPE_DATA, TYPE_RXCMD, eventDecoder, \
     rxcmdDecoder, tic_to_time, HumanReadable, Parser, ReorderedStream
 import sys
 
