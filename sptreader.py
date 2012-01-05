@@ -116,7 +116,7 @@ def toIntelHex(spt_file):
       ihx_list.append(ihx_file.getvalue())
   return ihx_list
 
-if __name__ == '__main__':
+def main():
   import sys
   from os.path import basename, splitext
   argv = sys.argv
@@ -128,4 +128,7 @@ if __name__ == '__main__':
   prefix = splitext(basename(infile_name))[0]
   for index, outfile_data in enumerate(toIntelHex(open(infile_name, 'rb'))):
     open('%s_%i.ihx' % (prefix, index), 'w').write(outfile_data)
+
+if __name__ == '__main__':
+  main()
 
