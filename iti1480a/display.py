@@ -59,8 +59,7 @@ def main():
         while True:
             data = read(CHUNK_SIZE)
             raw_write(data)
-            push(data)
-            if len(data) < CHUNK_SIZE and not options.follow:
+            if push(data) or (len(data) < CHUNK_SIZE and not options.follow):
                 break
     except EOFError:
         pass

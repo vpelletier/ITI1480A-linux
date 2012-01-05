@@ -495,6 +495,7 @@ class ReorderedStream(object):
         self._tic = 0
 
     def push(self, data):
+        result = False
         out = self._out
         tic = self._tic
         read = StringIO(self._remain + data).read
@@ -533,8 +534,10 @@ class ReorderedStream(object):
                     data = packet & 0xff
                 tic += tic_count
                 if out(tic, packet_type, data):
+                    result = True
                     break
         except struct_error:
             assert read() == ''
         self._tic = tic
+        return result
 
