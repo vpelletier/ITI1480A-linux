@@ -21,21 +21,7 @@ class RawOutput(object):
             self._write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
 
 CHUNK_SIZE = 16 * 1024
-def main(read, write, raw_write, verbose=False, emit_raw=True, follow=False):
-    if emit_raw:
-        emit = RawOutput(write, verbose)
-    else:
-        emit = Parser(HumanReadable(write, verbose))
-    if raw_write is None:
-        raw_write = lambda x: None
-    push = ReorderedStream(emit).push
-    while True:
-        data = read(CHUNK_SIZE)
-        push(data)
-        if len(data) < CHUNK_SIZE and not follow:
-            break
-
-if __name__ == '__main__':
+def main():
     from optparse import OptionParser
     parser = OptionParser()
     parser.add_option('-v', '--verbose', action='store_true',
@@ -52,21 +38,33 @@ if __name__ == '__main__':
     parser.add_option('-f', '--follow', action='store_true',
         help='Keep waiting for more data when reaching eof.')
     (options, args) = parser.parse_args()
-    if options.infile != '-':
-        infile = open(options.infile, 'r')
+    if options.infile == '-':
+        read = sys.stdin.read
     else:
-        infile = sys.stdin
-    if options.outfile != '-':
-        outfile = open(options.outfile, 'w')
+        read = open(options.infile, 'r').read
+    if options.outfile == '-':
+        write = sys.stdout.write
     else:
-        outfile = sys.stdout
+        write = open(options.outfile, 'w').write
     if options.tee:
         raw_write = open(options.tee, 'w').write
     else:
         raw_write = lambda x: None
+    if options.raw:
+        emit = RawOutput(write, options.verbose)
+    else:
+        emit = Parser(HumanReadable(write, options.verbose))
+    push = ReorderedStream(emit).push
     try:
-        main(infile.read, outfile.write, verbose=options.verbose,
-            emit_raw=options.raw, raw_write=raw_write, follow=options.follow)
+        while True:
+            data = read(CHUNK_SIZE)
+            raw_write(data)
+            push(data)
+            if len(data) < CHUNK_SIZE and not options.follow:
+                break
     except EOFError:
         pass
+
+if __name__ == '__main__':
+    main()
 
