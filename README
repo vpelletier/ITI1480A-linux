@@ -1,50 +1,59 @@
+User-space driver and tools for ITI1480A USB analyser.
+http://github.com/vpelletier/ITI1480A-linux
+
 Disclaimer:
-  I am not affiliated with International Test Instruments at all. They
+  I am not affiliated with International Test Instruments in any way. They
   kindly accepted that I start reverse-engineering their windows-only software
   so I could try to use a device I bought from them with Linux only. I had no
   privileged access to any documentation of any kind.
 
-  This is a work in progress, so it is not stable yet.
+  This is a work in progress, so it is not very user friendly yet.
 
 Dependencies:
-- python 2.4
-- libusb 1.0 + python-libusb1[1]
+- python 2.4+ [1]
+- libusb 1.0 [2]
+- python-libusb1 [3]
+- cycfx2prog [4]
+- ITI1480A.spt and ulpitest.rbf from "1480A USB Protocol Analyzer Software" [5]
+  (and a way to install it: wine, Windows, ...)
+- udev [6]
 
-Usage:
-- Fetch "1480A USB Protocol Analyzer Software" from
-  http://www.internationaltestinstruments.com/
-  This creates, among other things, 2 files needed for the rest of this
-  procedure:
-    ITI1480A.spt
-    ulpitest.rbf
-- Install it (wine can install it, though you probably need to install .NET
-  fist)
-- Run
+Install:
+- Install udev/ITI1480A.rules to /etc/udev/rules.d
+  NOTE: this udev configuration file will make the analyser available to the
+  plugdev user group, so that you don't need to be root to access it. This
+  might not be what you want, or might even not be an existing user group in
+  your distro (Debian here).
+- Install udev/ITI1480A.sh to /lib/udev
+- Extract Cypress FX2 firmware:
     sptreader.py /path/to/ITI1480A.spt
-  This generates 2 files (as of v3.6 of ITI software)
-- Run
-    lsusb -d 16c0:07a8
-  And use the bus and device addresses in following commands.
-- As root, run
-    cycfx2prog -d=<bus>.<device> prg:ITI1480A_1.hex run
-  This loads the USB chip firmware into the USB analyser.
-- As root, run
-    rbfsend.py -f /path/to/ulpitest.rbf > out.usb
-  This loads the FPGA initialisation file and starts dumping data sent by the
-  analyser.
-  Kill it (ctrl-c) when you want to stop the capture.
-  Generated file is compatible with ITI's software (if not, it's a bug in
-  rbfsend.py, please report).
-
-There is no GUI at the moment, and there is no plan for one at the moment.
-Though, to get a human-friendly dump, you can use dump_usb_file.py.
-
-Integrating with udev:
-- Copy udev/ITI1480A.rules in /etc/udev/rules.d
-- Copy udev/ITI1480A.sh in /lib/udev
-- Copy & rename ITI1480A_1.hex as /lib/firmware/ITI1480A.hex
+  This can generate several files, use the highest-numbered one
+  (ITI1480A_1.hex is assumed here).
+- Install ITI1480A_1.hex to /lib/firmware/ITI1480A.hex
 - Restart udev
 - (Re)plug your protocol analyser
 
-[1] http://github.com/vpelletier/python-libusb1
+To start a capture, run
+  rbfsend.py -f /path/to/ulpitest.rbf > out.usb
+SIGINT (^C)/SIGTERM to stop the capture and exit
+SIGTSTP to pause the analyser, SIGCONT to resume
+
+There is at the moment no GUI to inspect dumps and control the analyser. To
+get a human-friendly dump, you can use dump_usb_file.py:
+  Examining a previous capture session:
+    dump_usb_file.py < out.usb
+
+  Watching current capture session (no save):
+    rbfsend.py -f /path/to/ulpitest.rbf | dump_usb_file.py -f
+
+  Watching and saving current capture session:
+    rbfsend.py -f /path/to/ulpitest.rbf | dump_usb_file.py -ft > out.usb
+
+[1] http://python.org/
+[2] http://www.libusb.org/wiki/libusb-1.0
+[3] http://pypi.python.org/pypi/libusb1
+[4] http://www.triplespark.net/elec/periph/USB-FX2/software/
+[5] http://www.internationaltestinstruments.com/ , can be installed with wine
+[6] Should come with your distro... Intergation with other similar mechanisms
+    are welcome.
 
