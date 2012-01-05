@@ -175,19 +175,39 @@ def pending(transfer_list):
             return True
     return False
 
-def main(
-      firmware_path,
-      usb_device=None,
-      out_file=None,
-      verbose=False,
-    ):
+def main():
+  from optparse import OptionParser
+  parser = OptionParser()
+  parser.add_option('-f', '--firmware',
+    help='Path to firmware file to upload. (required)')
+  parser.add_option('-d', '--device',
+    help='USB device to use, in "bus.dev" format')
+  parser.add_option('-o', '--out',
+    help='File to write dump data to. Default: stdout')
+  parser.add_option('-v', '--verbose', action='store_true',
+    help='Print informative messages to stderr')
+  (options, args) = parser.parse_args()
+  if options.firmware is None:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
+  if options.device is None:
+    usb_device = None
+  else:
+    usb_device = options.device.split('.')
+    assert len(usb_device) == 2
+    usb_device = (int(usb_device[0]), int(usb_device[1]))
+  if options.out is None:
+    out_file = sys.stdout
+  else:
+    out_file = open(options.out, 'wb')
+  verbose = options.verbose
   context = usb1.LibUSBContext()
   handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
   if handle is None:
     raise ValueError, 'Unable to find usb analyzer.'
   handle.claimInterface(0)
   analyzer = USBAnalyzer(handle)
-  analyzer.sendFirmware(open(firmware_path, 'rb'))
+  analyzer.sendFirmware(open(options.firmware, 'rb'))
 
   # Install signal handlers
   for sig in (signal.SIGINT, signal.SIGTERM):
@@ -245,35 +265,5 @@ def main(
     pass
 
 if __name__ == '__main__':
-  from optparse import OptionParser
-
-  parser = OptionParser()
-  parser.add_option('-f', '--firmware',
-    help='Path to firmware file to upload. (required)')
-  parser.add_option('-d', '--device',
-    help='USB device to use, in "bus.dev" format')
-  parser.add_option('-o', '--out',
-    help='File to write dump data to. Default: stdout')
-  parser.add_option('-v', '--verbose', action='store_true',
-    help='Print informative messages to stderr')
-  (options, args) = parser.parse_args()
-  if options.firmware is None:
-    parser.print_help(sys.stderr)
-    sys.exit(1)
-  if options.device is None:
-    usb_device = None
-  else:
-    usb_device = options.device.split('.')
-    assert len(usb_device) == 2
-    usb_device = (int(usb_device[0]), int(usb_device[1]))
-  if options.out is None:
-    out_file = sys.stdout
-  else:
-    out_file = open(options.out, 'wb')
-  main(
-    firmware_path=options.firmware,
-    usb_device=usb_device,
-    out_file=out_file,
-    verbose=options.verbose,
-  )
+  main()
 
