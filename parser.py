@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from struct import unpack, error as struct_error
 from cStringIO import StringIO
 
