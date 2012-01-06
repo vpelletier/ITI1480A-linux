@@ -393,7 +393,7 @@ class Parser(object):
                 assert self._transaction is None, self._transaction
                 self._transaction = (original_tic, decoded)
                 return False, True
-            elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL):
+            elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL, PID_NYET):
                 assert self._transaction is not None, tic_to_time(tic)
                 transaction_tic, transaction = self._transaction
                 if transaction['name'] == 'PING':
@@ -417,7 +417,6 @@ class Parser(object):
                 decoded = None
             else:
                 # TODO:
-                # - PID_NYET
                 # - PID_SPLIT
                 # - PID_PRE / PID_ERR
                 # In the meantime, emit them as MESSAGE_RAW
