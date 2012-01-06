@@ -185,6 +185,10 @@ TIC_TO_MICROSECOND = TIME_INITIAL_MULTIPLIER / 1000
 def tic_to_us(tic):
     return tic * TIC_TO_MICROSECOND
 
+TIC_TO_SECOND = TIME_INITIAL_MULTIPLIER / 1000000000
+def tic_to_s(tic):
+    return tic * TIC_TO_SECOND
+
 RXCMD_VBUS_HL_DICT = {
     0x0: 'OTG VBus off',
     0x4: 'OTG Session end',
