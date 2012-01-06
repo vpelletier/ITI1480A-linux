@@ -405,7 +405,6 @@ class Parser(object):
                 self._transaction_data = None
                 decoded = None
             elif cannon_pid in (PID_DATA0, PID_DATA1, PID_DATA2, PID_MDATA):
-                # TODO: decode data
                 assert self._transaction_data is None, \
                     self._transaction_data
                 assert self._transaction is not None
