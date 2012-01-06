@@ -268,6 +268,7 @@ MESSAGE_RAW = 0
 MESSAGE_RESET = 1
 MESSAGE_TRANSACTION = 2
 MESSAGE_SOF = 3
+MESSAGE_PING = 4
 
 class Parser(object):
     # XXX: no brain was harmed in the writing of this class.
@@ -388,14 +389,18 @@ class Parser(object):
             if cannon_pid == PID_SOF:
                 self._write(original_tic, MESSAGE_SOF, decoded)
                 return False, True
-            elif cannon_pid in (PID_OUT, PID_IN, PID_SETUP):
+            elif cannon_pid in (PID_OUT, PID_IN, PID_SETUP, PID_PING):
                 assert self._transaction is None, self._transaction
                 self._transaction = (original_tic, decoded)
                 return False, True
             elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL):
                 assert self._transaction is not None, tic_to_time(tic)
                 transaction_tic, transaction = self._transaction
-                self._write(transaction_tic, MESSAGE_TRANSACTION, (
+                if transaction['name'] == 'PING':
+                    message_class = MESSAGE_PING
+                else:
+                    message_class = MESSAGE_TRANSACTION
+                self._write(transaction_tic, message_class, (
                     transaction, # Start
                     self._transaction_data, # Data (or None)
                     decoded, # Conclusion
@@ -412,7 +417,6 @@ class Parser(object):
                 decoded = None
             else:
                 # TODO:
-                # - PID_PING
                 # - PID_NYET
                 # - PID_SPLIT
                 # - PID_PRE / PID_ERR
@@ -430,6 +434,7 @@ class HumanReadable(object):
             MESSAGE_RESET: self._reset,
             MESSAGE_TRANSACTION: self._transaction,
             MESSAGE_SOF: self._sof,
+            MESSAGE_PING: lambda _, x: x,
         }
         self._firstSOF = None
         self._latestSOF = None
