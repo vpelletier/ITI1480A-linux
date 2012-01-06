@@ -246,6 +246,42 @@ def _decodeDATA(data):
         'data': ''.join(chr(x) for x in data[1:-2]),
         'crc': data[-1] | (data[-2] << 8),
     }
+SPLIT_NAME = {
+    0: 'SSPLIT',
+    1: 'CSPLIT',
+}
+SPLIT_HUB_MASK = 0x7
+SPLIT_ENDPOINT_TYPE_ISOCHRONOUS = 0x01 << 1
+SPLIT_ENDPOINT_TYPE_NAME = {
+    0x00: 'Control',
+    SPLIT_ENDPOINT_TYPE_ISOCHRONOUS: 'Isochronous',
+    0x02 << 1: 'Bulk',
+    0x03 << 1: 'Interrupt',
+}
+SPLIT_ENDPOINT_CONTINUATION = {
+    (0, 0): 'middle',
+    (0, 1): 'end',
+    (1, 0): 'beginning',
+    (1, 1): 'whole',
+}
+def _decodeSPLIT(data):
+    assert len(data) == 4, data
+    endpoint_type = data[3] & 0x6
+    result = {
+        'name': SPLIT_NAME[data[1] >> 7],
+        'hub': data[1] & 0x7,
+        'port': data[2] & 0x7,
+        'endpoint_type': SPLIT_ENDPOINT_TYPE_NAME[endpoint_type],
+        'crc': data[3] >> 3,
+    }
+    speed = data[2] >> 3
+    end = data[3] & 0x1
+    if endpoint_type == SPLIT_ENDPOINT_TYPE_ISOCHRONOUS:
+        result['continuation'] = SPLIT_ENDPOINT_CONTINUATION[(speed, end)]
+    else:
+        result['speed'] = speed
+        result['end'] = end
+    return result
 PACKET_DECODER = {
     PID_OUT: _decodeToken,
     PID_ACK: lambda _: {'name': 'ACK'},
@@ -254,7 +290,7 @@ PACKET_DECODER = {
     PID_SOF: _decodeSOF,
     PID_NYET: lambda _: {'name': 'NYET'},
     PID_DATA2: _decodeDATA,
-    PID_SPLIT: lambda _: {'name': 'SPLIT'},
+    PID_SPLIT: _decodeSPLIT,
     PID_IN: _decodeToken,
     PID_NAK: lambda _: {'name': 'NAK'},
     PID_DATA1: _decodeDATA,
@@ -269,6 +305,7 @@ MESSAGE_RESET = 1
 MESSAGE_TRANSACTION = 2
 MESSAGE_SOF = 3
 MESSAGE_PING = 4
+MESSAGE_SPLIT = 5
 
 class Parser(object):
     # XXX: no brain was harmed in the writing of this class.
@@ -287,6 +324,7 @@ class Parser(object):
         self._transaction_data = None
         self._last_vbus = False
         self._done = False
+        self._split_transaction = None
 
     def addBefore(self, tic, func, context):
         self._message_queue[tic] = None
@@ -362,6 +400,17 @@ class Parser(object):
             return False, not self._connected
         return True, False
 
+    def _endSplit(self, original_tic, decoded):
+        transaction_tic, decoded_split, transaction = self._split_transaction
+        self._write(transaction_tic, MESSAGE_SPLIT, (
+            decoded_split,
+            transaction,
+            self._transaction_data,
+            decoded,
+            original_tic,
+        ))
+        self._split_transaction = None
+
     def _packetAgregator(self, original_tic, context, tic, packet_type, data):
         if packet_type == TYPE_DATA:
             context.append(data)
@@ -390,34 +439,54 @@ class Parser(object):
                 self._write(original_tic, MESSAGE_SOF, decoded)
                 return False, True
             elif cannon_pid in (PID_OUT, PID_IN, PID_SETUP, PID_PING):
-                assert self._transaction is None, self._transaction
-                self._transaction = (original_tic, decoded)
-                return False, True
-            elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL, PID_NYET):
-                assert self._transaction is not None, tic_to_time(tic)
-                transaction_tic, transaction = self._transaction
-                if transaction['name'] == 'PING':
-                    message_class = MESSAGE_PING
+                if self._split_transaction is not None:
+                    assert self._split_transaction[2] is None, \
+                        self._split_transaction
+                    self._split_transaction[2] = (original_tic, decoded)
+                    decoded = None
                 else:
-                    message_class = MESSAGE_TRANSACTION
-                self._write(transaction_tic, message_class, (
-                    transaction, # Start
-                    self._transaction_data, # Data (or None)
-                    decoded, # Conclusion
-                    original_tic, # Conclusion tic
-                ))
-                self._transaction = None
+                    assert self._transaction is None, (self._transaction,
+                        decoded)
+                    self._transaction = (original_tic, decoded)
+                    return False, True
+            elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL, PID_NYET):
+                if self._split_transaction is not None:
+                    self._endSplit(original_tic, decoded)
+                else:
+                    assert self._transaction is not None, tic_to_time(tic)
+                    transaction_tic, transaction = self._transaction
+                    if transaction['name'] == 'PING':
+                        message_class = MESSAGE_PING
+                    else:
+                        message_class = MESSAGE_TRANSACTION
+                    self._write(transaction_tic, message_class, (
+                        transaction, # Start
+                        self._transaction_data, # Data (or None)
+                        decoded, # Conclusion
+                        original_tic, # Conclusion tic
+                    ))
+                    self._transaction = None
                 self._transaction_data = None
                 decoded = None
             elif cannon_pid in (PID_DATA0, PID_DATA1, PID_DATA2, PID_MDATA):
                 assert self._transaction_data is None, \
                     self._transaction_data
-                assert self._transaction is not None
+                assert self._transaction is not None or \
+                    self._split_transaction is not None
                 self._transaction_data = decoded
+                if self._split_transaction is not None and \
+                        self._split_transaction[2][1]['name'] == 'IN':
+                    self._endSplit(original_tic, None)
+                    self._transaction_data = None
                 decoded = None
+            elif cannon_pid == PID_SPLIT:
+                assert self._split_transaction is None, (
+                    tic_to_time(self._split_transaction[0]),
+                    self._split_transaction[1:])
+                self._split_transaction = [original_tic, decoded, None]
+                return False, True
             else:
                 # TODO:
-                # - PID_SPLIT
                 # - PID_PRE / PID_ERR
                 # In the meantime, emit them as MESSAGE_RAW
                 decoded = repr(decoded)
@@ -434,6 +503,7 @@ class HumanReadable(object):
             MESSAGE_TRANSACTION: self._transaction,
             MESSAGE_SOF: self._sof,
             MESSAGE_PING: lambda _, x: x,
+            MESSAGE_SPLIT: lambda _, x: x,
         }
         self._firstSOF = None
         self._latestSOF = None
