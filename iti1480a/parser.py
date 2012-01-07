@@ -363,7 +363,7 @@ class Parser(object):
         if data in (0xf0, 0xf1):
             self._done = True
         caption = eventDecoder(data, None, False)
-        if data == 0xf:
+        if data in (0xf, 0xb):
             self._connected = True
         if caption is not None:
             self._write(tic, MESSAGE_RAW, caption)
