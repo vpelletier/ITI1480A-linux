@@ -22,6 +22,9 @@ class RawOutput(object):
         if decoded is not None:
             self._write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
 
+    def stop(self):
+        pass
+
 class HumanReadable(object):
     def __init__(self, write, verbose):
         self._verbose = verbose
@@ -94,6 +97,9 @@ class HumanReadable(object):
         self._firstSOF = None
         self._SOFcount = 1
 
+    def stop(self):
+        pass
+
 CHUNK_SIZE = 16 * 1024
 def main():
     from optparse import OptionParser
@@ -128,15 +134,16 @@ def main():
         emit = RawOutput(write, options.verbose)
     else:
         emit = Parser(HumanReadable(write, options.verbose))
-    push = ReorderedStream(emit).push
-    try:
-        while True:
-            data = read(CHUNK_SIZE)
-            raw_write(data)
-            if push(data) or (len(data) < CHUNK_SIZE and not options.follow):
-                break
-    except EOFError:
-        pass
+    stream = ReorderedStream(emit)
+    push = stream.push
+    while True:
+        data = read(CHUNK_SIZE)
+        raw_write(data)
+        if push(data):
+            break
+        if len(data) < CHUNK_SIZE and not options.follow:
+            stream.stop()
+            break
 
 if __name__ == '__main__':
     main()

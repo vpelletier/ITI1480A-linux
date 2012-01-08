@@ -25,6 +25,7 @@ setup(
     ],
     requires=[
         'libusb1',
+        'ply',
     ],
 )
 

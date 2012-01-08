@@ -1,34 +1,39 @@
 from struct import unpack, error as struct_error
 from cStringIO import StringIO
+from ply.yacc import yacc
+from ply.lex import LexToken
+from collections import deque
+from threading import Thread, Lock
 
-class IndexedList(object):
+# I would like to use a Queue.Queue, but profiling shows they cause bad lock
+# contention: out of 1:30s total run, 40s of lock wait are spend on
+# producer side and 30s on consumer side.
+# Moving to threading.Semaphore doesn't improve the state, as they rely on
+# threading.Lock object internally in the same pattern as Queue.Queue.
+# So I end up abusing threading.Lock.release, with great success: total run
+# time when profiled went under 40s for same data set.
+class SimpleQueue(object):
     def __init__(self):
-        self._key_list = []
-        self._dict = {}
+        self._lock = Lock()
+        self._queue = deque()
 
-    def getFirstKey(self):
-        return self._key_list[0]
+    def get(self):
+        try:
+            return self._queue.popleft()
+        except IndexError:
+            self._lock.acquire(False)
+            self._lock.acquire()
+            return self._queue.popleft()
 
-    def getFirstValue(self):
-        return self._dict[self._key_list[0]]
+    def put(self, item):
+        self._queue.append(item)
+        try:
+            self._lock.release()
+        except:
+            pass
 
-    def pop(self, key=None):
-        if key is None:
-            key = self._key_list.pop(0)
-        else:
-            self._key_list.remove(key)
-        return self._dict.pop(key)
-
-    def __setitem__(self, key, value):
-        if key not in self._dict:
-            self._key_list.append(key)
-        self._dict[key] = value
-
-    def __getitem__(self, key):
-        return self._dict[key]
-
-    def __nonzero__(self):
-        return bool(self._dict)
+class ParsingDone(Exception):
+    pass
 
 # RxCmd: see ISP1505A/ISP1505C datasheet
 RXCMD_LIST = (
@@ -51,24 +56,6 @@ RXCMD_EVENT_DICT = {
     0x30: 'RxError RxActive',
 }
 
-_rxcmd_previous_data = None
-
-def rxcmdDecoder(data, _, __):
-    global _rxcmd_previous_data
-    if data == _rxcmd_previous_data:
-        return None
-    _rxcmd_previous_data = data
-    result = []
-    append = result.append
-    for mask, caption in RXCMD_LIST:
-        if data & mask:
-            append(caption)
-    append(RXCMD_VBUS_DICT[data & RXCMD_VBUS_MASK])
-    event = data & RXCMD_EVENT_MASK
-    if event:
-        append(RXCMD_EVENT_DICT[event])
-    return ' '.join(result)
-
 # Event
 EVENT_DICT = {
     0x0b: 'LS device connection',
@@ -84,19 +71,6 @@ EVENT_DICT = {
     0xf0: 'Capture stopped (fifo)',
     0xf1: 'Capture stopped (user)',
 }
-
-stop_printing = False
-def eventDecoder(data, _, verbose):
-    global stop_printing
-    stop_printing = data & 0xf0 == 0xf0
-    try:
-        result = EVENT_DICT[data]
-    except KeyError:
-        if verbose:
-            result = '0x%02x' % (data, )
-        else:
-            result = None
-    return result
 
 # File structure:
 #   A serie of "packets" of variable length (1 to 5 bytes).
@@ -211,14 +185,6 @@ PID_PRE = PID_ERR = 0xc
 PID_SETUP = 0xd
 PID_STALL = 0xe
 PID_MDATA = 0xf
-def _decodeSOF(data):
-    assert len(data) == 3, data
-    crc = data[2]
-    return {
-        'name': 'SOF',
-        'frame': data[1] | ((crc & 0x7) << 8),
-        'crc': crc >> 3,
-    }
 TOKEN_NAME = {
     PID_OUT: 'OUT',
     PID_IN: 'IN',
@@ -282,23 +248,6 @@ def _decodeSPLIT(data):
         result['speed'] = speed
         result['end'] = end
     return result
-PACKET_DECODER = {
-    PID_OUT: _decodeToken,
-    PID_ACK: lambda _: {'name': 'ACK'},
-    PID_DATA0: _decodeDATA,
-    PID_PING: lambda _: {'name': 'PING'},
-    PID_SOF: _decodeSOF,
-    PID_NYET: lambda _: {'name': 'NYET'},
-    PID_DATA2: _decodeDATA,
-    PID_SPLIT: _decodeSPLIT,
-    PID_IN: _decodeToken,
-    PID_NAK: lambda _: {'name': 'NAK'},
-    PID_DATA1: _decodeDATA,
-    PID_PRE: lambda _: {'name': 'PRE/ERR'},
-    PID_SETUP: _decodeToken,
-    PID_STALL: lambda _: {'name': 'STALL'},
-    PID_MDATA: _decodeDATA,
-}
 
 MESSAGE_RAW = 0
 MESSAGE_RESET = 1
@@ -307,191 +256,355 @@ MESSAGE_SOF = 3
 MESSAGE_PING = 4
 MESSAGE_SPLIT = 5
 
-class Parser(object):
-    # XXX: no brain was harmed in the writing of this class.
-    # It's just a stupid first try to get a feeling on how to do it properly.
-    def __init__(self, push):
-        self._message_queue = IndexedList()
-        self._before = []
-        self._push = push
+TRANSACTION_TYPE_DICT = {
+    PID_OUT: 'OUT',
+    PID_ACK: 'ACK',
+    PID_DATA0: 'DATA0',
+    PID_PING: 'PING',
+    PID_SOF: 'SOF',
+    PID_NYET: 'NYET',
+    PID_DATA2: 'DATA2',
+    PID_IN: 'IN',
+    PID_NAK: 'NAK',
+    PID_DATA1: 'DATA1',
+    PID_PRE: 'PRE_ERR',
+    PID_SETUP: 'SETUP',
+    PID_STALL: 'STALL',
+    PID_MDATA: 'MDATA',
+}
+
+class _TransactionAggregator(Thread):
+    """
+    Threaded, so ply.yacc can produce output as input is received.
+    If only it had a "push" API...
+    """
+    tokens = TRANSACTION_TYPE_DICT.values() + ['SSPLIT', 'CSPLIT']
+
+    def __init__(self, token, to_next, to_top):
+        super(_TransactionAggregator, self).__init__()
+        self.token = token
+        self._to_next = to_next
+        self._to_top = to_top
+        # Se need to fool ply.yacc into thinking there is no "start" property
+        # on its "module", otherwise it will try to use it as a sting in its
+        # grammar signature, failing.
+        self.start = None
+        try:
+            self._parser = parser = yacc(module=self, start='transactions')
+        finally:
+            # Restore access to class's "start" method
+            del self.start
+        self._parse = parser.parse
+
+    def run(self):
+        self._parse(lexer=self)
+
+    def _error(self, p):
+        self._to_top(p[0][0], MESSAGE_RAW, 'Short transaction')
+
+    def p_error(self, p):
+        # XXX: relies on undocumented yacc internals.
+        parser = self._parser
+        statestack = parser.statestack
+        print 'yacc error on', p, 'time=', tic_to_time(p.value[0]), \
+            'statestack=', statestack, 'expected:', \
+            parser.action[statestack[-1]]
+
+    def p_transactions(self, p):
+        """transactions : transaction
+                        | transactions transaction"""
+
+    def p_transaction(self, p):
+        """transaction : start_split
+                       | complete_split
+                       | control
+                       | in
+                       | out
+                       | ping
+                       | sof"""
+
+    def p_start_split(self, p):
+        """start_split : SSPLIT token data handshake
+                       | SSPLIT token data
+                       | SSPLIT token handshake
+                       | SSPLIT token"""
+        # TODO
+
+    def p_complete_split(self, p):
+        """complete_split : CSPLIT token data
+                          | CSPLIT token handshake
+                          | CSPLIT token
+                          | CSPLIT PRE_ERR"""
+        # TODO
+
+    def p_control(self, p):
+        """control : SETUP DATA0 ACK
+                   | SETUP DATA0
+                   | SETUP"""
+        if len(p) == 4:
+            # TODO: new API
+            tic, start = p[1]
+            _, data = p[2]
+            tic_stop, stop = p[3]
+            self._to_next(tic, MESSAGE_TRANSACTION, (
+                _decodeToken(start),
+                _decodeDATA(data),
+                {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
+                tic_stop,
+            ))
+        else:
+            self._error(p)
+
+    def p_in(self, p):
+        """in : base_in
+              | handshake_in"""
+        tic, data = p[1]
+        self._to_next(tic, MESSAGE_TRANSACTION, data)
+
+    def p_base_in(self, p):
+        """base_in : IN data ACK
+                   | IN data
+                   | IN"""
+        plen = len(p)
+        if len(p) == 2:
+            self._error(p)
+        else:
+            # TODO: new API
+            tic, start = p[1]
+            _, data = p[2]
+            if plen == 4:
+                tic_stop, stop = p[3]
+                stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
+            else:
+                tic_stop = stop = None
+            p[0] = (tic, (
+                _decodeToken(start),
+                _decodeDATA(data),
+                stop,
+                tic_stop,
+            ))
+
+    def p_handshake_in(self, p):
+        # Needed just because ply.yacc doesn't give us the token type.
+        """handshake_in : IN NAK
+                        | IN STALL"""
+        # TODO: new API
+        tic, start = p[1]
+        tic_stop, stop = p[2]
+        p[0] = (tic, (
+            _decodeToken(start),
+            None,
+            {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
+            tic_stop,
+        ))
+
+    def p_out(self, p):
+        """out : OUT data handshake
+               | OUT data
+               | OUT"""
+        plen = len(p)
+        if plen == 2:
+            self._error(p)
+        else:
+            # TODO: new API
+            tic, start = p[1]
+            _, data = p[2]
+            if plen == 4:
+                tic_stop, stop = p[3]
+                stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
+            else:
+                tic_stop = stop = None
+            self._to_next(tic, MESSAGE_TRANSACTION, (
+                _decodeToken(start),
+                _decodeDATA(data),
+                stop,
+                tic_stop,
+            ))
+
+    def p_bulk_ping(self, p):
+        """ping : PING ACK
+                | PING NAK
+                | PING STALL
+                | PING"""
+        if len(p) == 2:
+            self._error(p)
+        else:
+            # TODO: new API
+            tic, start = p[1]
+            tic_stop, stop = p[2]
+            self._to_next(tic, MESSAGE_PING, (
+                {'name': 'PING'},
+                None,
+                {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
+                tic_stop,
+            ))
+
+    def p_token(self, p):
+        """token : IN
+                 | OUT
+                 | SETUP"""
+        p[0] = p[1]
+
+    def p_data(self, p):
+        """data : DATA0
+                | DATA1
+                | DATA2
+                | MDATA"""
+        p[0] = p[1]
+
+    def p_handshake(self, p):
+        """handshake : ACK
+                     | NAK
+                     | STALL
+                     | NYET"""
+        p[0] = p[1]
+
+    def p_sof(self, p):
+        """sof : SOF"""
+        tic, data = p[1]
+        if len(data) != 3:
+            self._error(p)
+            return
+        crc = data[2]
+        self._to_next(tic, MESSAGE_SOF, {
+            'name': 'SOF',
+            'frame': data[1] | ((crc & 0x7) << 8),
+            'crc': crc >> 3,
+        })
+
+class TransactionAggregator(object):
+    def __init__(self, to_next, to_top):
+        self._to_next = to_next
+        self._to_top = to_top
+        self._to_yacc = to_yacc = SimpleQueue()
+        self._thread = thread = _TransactionAggregator(to_yacc.get, to_next, to_top)
+        thread.daemon = True
+        thread.start()
+
+    def __call__(self, tic, packet):
+        assert packet
+        pid = packet[0]
+        cannon_pid = pid & 0xf
+        if cannon_pid != pid >> 4 ^ 0xf:
+            self._to_top(tic, MESSAGE_RAW, '(bad pid) 0x' + ' 0x'.join('%02x' % x for x in packet))
+            return
+        # TODO: CRC check
+        if cannon_pid == PID_SPLIT:
+            trans_type = (packet[1] & 0x8) and 'CSPLIT' or 'SSPLIT'
+        else:
+            trans_type = TRANSACTION_TYPE_DICT[cannon_pid]
+        token = LexToken()
+        token.type = trans_type
+        token.value = (tic, packet)
+        token.lineno = 0 # TODO: file offset
+        token.lexpos = 0
+        self._to_yacc.put(token)
+
+    def stop(self):
+        self._to_yacc.put(None)
+        self._thread.join()
+
+class Packetiser(object):
+    _rxactive = False
+    _reset_start_tic = None
+    _vbus = None
+    _data_tic = None
+    _connected = False
+
+    def __init__(self, to_next, to_top):
         self._type_dict = {
             TYPE_EVENT: self.event,
             TYPE_DATA: self.data,
             TYPE_RXCMD: self.rxcmd,
         }
-        self._connected = False
-        self._transaction = None
-        self._transaction_data = None
-        self._last_vbus = False
-        self._done = False
-        self._split_transaction = None
-
-    def addBefore(self, tic, func, context):
-        self._message_queue[tic] = None
-        self._before.append((tic, func, context))
+        self._to_next = to_next
+        self._to_top = to_top
+        self._data = []
 
     def __call__(self, tic, packet_type, data):
-        new_before = []
-        append = new_before.append
-        skip = False
-        for original_tic, func, context in self._before:
-            if skip:
-                preserve = True
-            else:
-                preserve, skip = func(original_tic, context, tic,
-                    packet_type, data)
-            if preserve:
-                append((original_tic, func, context))
-        self._before = new_before
-        if not skip:
-            self._type_dict[packet_type](tic, data)
-        return self._done and not self._message_queue
-
-    def _write(self, tic, message_class, message):
-        queue = self._message_queue
-        pop = queue.pop
-        if message is None:
-            pop(tic)
-        else:
-            queue[tic] = (tic, message_class, message)
-        push = self._push
-        getFirstValue = queue.getFirstValue
-        while queue and getFirstValue() is not None:
-            push(*pop())
+        # TODO: recognise low-speed keep-alive.
+        if self._reset_start_tic is not None and \
+                packet_type != TYPE_EVENT and (packet_type != TYPE_RXCMD or
+                data & RXCMD_VBUS_MASK != RXCMD_VBUS_MASK):
+            if tic >= self._reset_start_tic + MIN_RESET_TIC:
+                self._to_top(tic, MESSAGE_RESET, tic - self._reset_start_tic)
+            self._reset_start_tic = None
+        self._type_dict[packet_type](tic, data)
 
     def event(self, tic, data):
-        if data in (0xf0, 0xf1):
-            self._done = True
-        caption = eventDecoder(data, None, False)
+        try:
+            caption = EVENT_DICT[data]
+        except KeyError:
+            caption = '(unknown event 0x%02x)' % (data, )
+        self._to_top(tic, MESSAGE_RAW, caption)
         if data in (0xf, 0xb):
             self._connected = True
-        if caption is not None:
-            self._write(tic, MESSAGE_RAW, caption)
+        elif data in (0xf0, 0xf1):
+            self.stop()
+            raise ParsingDone
 
-    def data(self, tic, data):
-        self._write(tic, MESSAGE_RAW, 'Unexpected data: ' + hex(data))
+    def stop(self):
+        # TODO: flush any pending reset ? requires knowing last tic before
+        # stop was called
+        self._to_next.stop()
+
+    def data(self, _, data):
+        assert self._rxactive
+        assert self._data_tic is not None
+        self._data.append(data)
 
     def rxcmd(self, tic, data):
-        if self._connected and data & 0x20:
+        # TODO:
+        # - RxError
+        # - Data0 & Data1
+        rxactive = data & 0x10
+        if self._rxactive ^ rxactive:
+            if rxactive:
+                assert self._data_tic is None
+                self._data_tic = tic
+            else:
+                self._to_next(self._data_tic, self._data)
+                self._data = []
+                self._data_tic = None
+        self._rxactive = rxactive
+        if data & 0x20 and self._connected:
             rendered = 'Device disconnected'
             self._connected = False
-        elif data & 0x10:
-            # XXX: Packet timestamp is the timestamp of leading RxActive
-            # packet, while ITI's software displays the timestamp of first
-            # data packet.
-            self.addBefore(tic, self._packetAgregator, [])
-            return
         else:
             vbus = data & RXCMD_VBUS_MASK
             if data == RXCMD_VBUS_MASK:
-                # Maybe a reset, detect on next packet
-                self.addBefore(tic, self._resetDetector, None)
-            if vbus == self._last_vbus:
+                # Maybe a reset, detect on next data
+                self._reset_start_tic = tic
+            if vbus == self._vbus:
                 return
-            self._last_vbus = vbus
+            self._vbus = vbus
             rendered = RXCMD_VBUS_HL_DICT[vbus]
-        self._write(tic, MESSAGE_RAW, rendered)
+        self._to_top(tic, MESSAGE_RAW, rendered)
 
-    def _resetDetector(self, original_tic, _, tic, packet_type, data):
-        if packet_type == TYPE_RXCMD and data & 0xc == 0xc:
-            delta = tic - original_tic
-            if delta > MIN_RESET_TIC:
-                self._write(original_tic, MESSAGE_RESET, delta)
-            return False, not self._connected
-        return True, False
+class Parser(object):
+    def __init__(self, push):
+        self._packetiser = Packetiser(
+            TransactionAggregator(
+                push,
+                self.log
+            ),
+            self.log
+        )
 
-    def _endSplit(self, original_tic, decoded):
-        transaction_tic, decoded_split, transaction = self._split_transaction
-        self._write(transaction_tic, MESSAGE_SPLIT, (
-            decoded_split,
-            transaction,
-            self._transaction_data,
-            decoded,
-            original_tic,
-        ))
-        self._split_transaction = None
+    def __call__(self, *args, **kw):
+        try:
+            self._packetiser(*args, **kw)
+        except ParsingDone, exc:
+            return True
+        return False
 
-    def _packetAgregator(self, original_tic, context, tic, packet_type, data):
-        if packet_type == TYPE_DATA:
-            context.append(data)
-            return True, True
-        if packet_type == TYPE_EVENT:
-            return True, False
-        if packet_type == TYPE_RXCMD and not data & 0x10:
-            if not context:
-                return False, True
-            pid = context[0]
-            cannon_pid = pid & 0xf
-            if cannon_pid != pid >> 4 ^ 0xf:
-                self._write(original_tic, MESSAGE_RAW,
-                    '(bad pid) 0x' + ' 0x'.join('%02x' % x for x in context))
-                return False, True
-            try:
-                decoder = PACKET_DECODER[cannon_pid]
-            except KeyError:
-                self._write(original_tic, MESSAGE_RAW,
-                    '(unk. data packet) 0x' + ' 0x'.join('%02x' % x
-                        for x in context))
-                return False, True
-            decoded = decoder(context)
-            # TODO: handle CRC5/CRC16 checks
-            if cannon_pid == PID_SOF:
-                self._write(original_tic, MESSAGE_SOF, decoded)
-                return False, True
-            elif cannon_pid in (PID_OUT, PID_IN, PID_SETUP, PID_PING):
-                if self._split_transaction is not None:
-                    assert self._split_transaction[2] is None, \
-                        self._split_transaction
-                    self._split_transaction[2] = (original_tic, decoded)
-                    decoded = None
-                else:
-                    assert self._transaction is None, (self._transaction,
-                        decoded)
-                    self._transaction = (original_tic, decoded)
-                    return False, True
-            elif cannon_pid in (PID_ACK, PID_NAK, PID_STALL, PID_NYET):
-                if self._split_transaction is not None:
-                    self._endSplit(original_tic, decoded)
-                else:
-                    assert self._transaction is not None, tic_to_time(tic)
-                    transaction_tic, transaction = self._transaction
-                    if transaction['name'] == 'PING':
-                        message_class = MESSAGE_PING
-                    else:
-                        message_class = MESSAGE_TRANSACTION
-                    self._write(transaction_tic, message_class, (
-                        transaction, # Start
-                        self._transaction_data, # Data (or None)
-                        decoded, # Conclusion
-                        original_tic, # Conclusion tic
-                    ))
-                    self._transaction = None
-                self._transaction_data = None
-                decoded = None
-            elif cannon_pid in (PID_DATA0, PID_DATA1, PID_DATA2, PID_MDATA):
-                assert self._transaction_data is None, \
-                    self._transaction_data
-                assert self._transaction is not None or \
-                    self._split_transaction is not None
-                self._transaction_data = decoded
-                if self._split_transaction is not None and \
-                        self._split_transaction[2][1]['name'] == 'IN':
-                    self._endSplit(original_tic, None)
-                    self._transaction_data = None
-                decoded = None
-            elif cannon_pid == PID_SPLIT:
-                assert self._split_transaction is None, (
-                    tic_to_time(self._split_transaction[0]),
-                    self._split_transaction[1:])
-                self._split_transaction = [original_tic, decoded, None]
-                return False, True
-            else:
-                # TODO:
-                # - PID_PRE / PID_ERR
-                # In the meantime, emit them as MESSAGE_RAW
-                decoded = repr(decoded)
-            self._write(original_tic, MESSAGE_RAW, decoded)
-        return False, True
+    def stop(self):
+        self._packetiser.stop()
+
+    def log(self, tic, _, message):
+        # TODO: replace by a push and note that caller might receive event
+        # out-of-order (because of yacc thread).
+        print 'NewParser.log', tic_to_time(tic), _, message
 
 class ReorderedStream(object):
     def __init__(self, out):
@@ -500,7 +613,6 @@ class ReorderedStream(object):
         self._tic = 0
 
     def push(self, data):
-        result = False
         out = self._out
         tic = self._tic
         read = StringIO(self._remain + data).read
@@ -539,10 +651,12 @@ class ReorderedStream(object):
                     data = packet & 0xff
                 tic += tic_count
                 if out(tic, packet_type, data):
-                    result = True
-                    break
+                    return True
         except struct_error:
             assert read() == ''
         self._tic = tic
-        return result
+        return False
+
+    def stop(self):
+        self._out.stop()
 
