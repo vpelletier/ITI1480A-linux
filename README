@@ -17,6 +17,7 @@ Dependencies:
 - ITI1480A.spt and ulpitest.rbf from "1480A USB Protocol Analyzer Software" [5]
   (and a way to install it: wine, Windows, ...)
 - udev [6]
+- ply (python lex yacc) [7]
 
 Install:
 - Install udev/ITI1480A.rules to /etc/udev/rules.d
@@ -56,4 +57,4 @@ get a human-friendly dump, you can use display.py:
 [5] http://www.internationaltestinstruments.com/ , can be installed with wine
 [6] Should come with your distro... Intergation with other similar mechanisms
     are welcome.
-
+[7] http://www.dabeaz.com/ply/
