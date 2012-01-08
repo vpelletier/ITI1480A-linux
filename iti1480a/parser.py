@@ -187,6 +187,7 @@ PID_STALL = 0xe
 PID_MDATA = 0xf
 TOKEN_NAME = {
     PID_OUT: 'OUT',
+    PID_PING: 'PING',
     PID_IN: 'IN',
     PID_SETUP: 'SETUP',
 }
@@ -463,7 +464,7 @@ class _TransactionAggregator(Thread):
         tic, start = p[1]
         tic_stop, stop = p[2]
         self._to_next(tic, MESSAGE_PING, (
-            {'name': 'PING'},
+            _decodeToken(start),
             None,
             {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
             tic_stop,
