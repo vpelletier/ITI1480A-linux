@@ -413,7 +413,8 @@ class _TransactionAggregator(Thread):
             data = None
             tic_stop, stop = p[3]
         else:
-            data = _decodeDATA(p[3])
+            _, data = p[3]
+            data = _decodeDATA(data)
             tic_stop, stop = p[5]
         p[0] = (True, tic, (
             _decodeToken(start),
