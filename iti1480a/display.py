@@ -14,7 +14,7 @@ class HumanReadable(object):
             MESSAGE_RESET: self._reset,
             MESSAGE_TRANSACTION: self._transaction,
             MESSAGE_SOF: self._sof,
-            MESSAGE_PING: lambda _, x: x,
+            MESSAGE_PING: self._ping,
             MESSAGE_SPLIT: lambda _, x: x,
         }
         self._firstSOF = None
@@ -34,6 +34,10 @@ class HumanReadable(object):
         printable = self._dispatch[message_type](tic, data)
         if printable is not None:
             self._print(tic, printable)
+
+    def _ping(self, tic, data):
+        start, _, stop, tic_stop = data
+        return 'Ping -> %s' % (stop['name'], )
 
     def _reset(self, _, data):
         return 'Device reset (%s)' % (short_tic_to_time(data), )
