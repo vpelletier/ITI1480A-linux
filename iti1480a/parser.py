@@ -453,9 +453,9 @@ class _TransactionAggregator(Thread):
     def p_low_speed_out(self, p):
         # Note: no "OUT data" equivalent rule, as it's only valid for
         # isochronous transaction, which aren't available in low-speed.
-        """low_speed_out : PRE_ERR OUT low_speed_data PRE_ERR low_speed_handshake
+        """low_speed_out : PRE_ERR OUT PRE_ERR low_speed_data low_speed_handshake
         """
-        p[0] = (True, (p[2], p[3], p[5]))
+        p[0] = (True, (p[2], p[4], p[5]))
 
     def p_bulk_ping(self, p):
         """ping : PING ACK
