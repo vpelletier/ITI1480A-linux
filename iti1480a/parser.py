@@ -543,6 +543,7 @@ class TransactionAggregator(object):
         self._to_yacc.put(token)
 
     def stop(self):
+        assert self._thread.is_alive()
         self._to_yacc.put(None)
         self._thread.join()
 
