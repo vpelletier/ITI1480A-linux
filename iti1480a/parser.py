@@ -18,12 +18,12 @@ class SimpleQueue(object):
         self._queue = deque()
 
     def get(self):
-        try:
-            return self._queue.popleft()
-        except IndexError:
-            self._lock.acquire(False)
-            self._lock.acquire()
-            return self._queue.popleft()
+        while True:
+            try:
+                return self._queue.popleft()
+            except IndexError:
+                self._lock.acquire(False)
+                self._lock.acquire()
 
     def put(self, item):
         self._queue.append(item)
