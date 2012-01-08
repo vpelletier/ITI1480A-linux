@@ -300,6 +300,7 @@ class _TransactionAggregator(Thread):
         self._parse(lexer=self)
 
     def _error(self, p):
+        p = p[1:]
         self._to_top(p[0][0], MESSAGE_RAW, 'Short transaction')
 
     def p_error(self, p):
