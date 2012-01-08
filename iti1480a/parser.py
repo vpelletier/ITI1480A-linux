@@ -339,12 +339,11 @@ class _TransactionAggregator(Thread):
         # TODO
 
     def p_control(self, p):
-        """control : SETUP DATA0 ACK
+        """control : normal_control
+                   | low_speed_control
         """
-        # TODO: new API
-        tic, start = p[1]
-        _, data = p[2]
-        tic_stop, stop = p[3]
+        # TODO: new API with low_speed support
+        low_speed, ((tic, start), (_, data), (tic_stop, stop)) = p[1]
         self._to_next(tic, MESSAGE_TRANSACTION, (
             _decodeToken(start),
             _decodeDATA(data),
@@ -352,17 +351,28 @@ class _TransactionAggregator(Thread):
             tic_stop,
         ))
 
+    def p_normal_control(self, p):
+        """normal_control : SETUP DATA0 ACK
+        """
+        p[0] = (False, p[1:])
+
+    def p_low_speed_control(self, p):
+        """low_speed_control : PRE_ERR SETUP PRE_ERR DATA0 ACK
+        """
+        p[0] = (True, (p[2], p[4], p[5]))
+
     def p_in(self, p):
-        """in : base_in
-              | handshake_in"""
-        tic, data = p[1]
+        """in : normal_in
+              | handshake_in
+              | low_speed_in"""
+        # TODO: new API with low_speed support
+        low_speed, tic, data = p[1]
         self._to_next(tic, MESSAGE_TRANSACTION, data)
 
-    def p_base_in(self, p):
-        """base_in : IN data ACK
-                   | IN data
+    def p_normal_in(self, p):
+        """normal_in : IN data ACK
+                     | IN data
         """
-        # TODO: new API
         tic, start = p[1]
         _, data = p[2]
         if len(p) == 4:
@@ -370,7 +380,7 @@ class _TransactionAggregator(Thread):
             stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
         else:
             tic_stop = stop = None
-        p[0] = (tic, (
+        p[0] = (False, tic, (
             _decodeToken(start),
             _decodeDATA(data),
             stop,
@@ -381,25 +391,46 @@ class _TransactionAggregator(Thread):
         # Needed just because ply.yacc doesn't give us the token type.
         """handshake_in : IN NAK
                         | IN STALL"""
-        # TODO: new API
         tic, start = p[1]
         tic_stop, stop = p[2]
-        p[0] = (tic, (
+        p[0] = (False, tic, (
             _decodeToken(start),
             None,
             {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
             tic_stop,
         ))
 
+    def p_low_speed_in(self, p):
+        # Note: no "IN data" equivalent rule, as it's only valid for
+        # isochronous transaction, which aren't available in low-speed.
+        """low_speed_in : PRE_ERR IN low_speed_data PRE_ERR ACK
+                        | PRE_ERR IN NAK
+                        | PRE_ERR IN STALL
+        """
+        tic, start = p[2]
+        if len(p) == 4:
+            data = None
+            tic_stop, stop = p[3]
+        else:
+            data = _decodeDATA(p[3])
+            tic_stop, stop = p[5]
+        p[0] = (True, tic, (
+            _decodeToken(start),
+            data,
+            {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
+            tic_stop,
+        ))
+
     def p_out(self, p):
-        """out : OUT data handshake
-               | OUT data
+        """out : base_out
+               | low_speed_out
         """
         # TODO: new API
-        tic, start = p[1]
-        _, data = p[2]
-        if len(p) == 4:
-            tic_stop, stop = p[3]
+        low_speed, transaction = p[1]
+        tic, start = transaction[0]
+        _, data = transaction[1]
+        if len(transaction) == 3:
+            tic_stop, stop = transaction[2]
             stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
         else:
             tic_stop = stop = None
@@ -409,6 +440,19 @@ class _TransactionAggregator(Thread):
             stop,
             tic_stop,
         ))
+
+    def p_base_out(self, p):
+        """base_out : OUT data handshake
+                    | OUT data
+        """
+        p[0] = (False, p[1:])
+
+    def p_low_speed_out(self, p):
+        # Note: no "OUT data" equivalent rule, as it's only valid for
+        # isochronous transaction, which aren't available in low-speed.
+        """low_speed_out : PRE_ERR OUT low_speed_data PRE_ERR low_speed_handshake
+        """
+        p[0] = (True, (p[2], p[3], p[5]))
 
     def p_bulk_ping(self, p):
         """ping : PING ACK
@@ -432,17 +476,27 @@ class _TransactionAggregator(Thread):
         p[0] = p[1]
 
     def p_data(self, p):
-        """data : DATA0
-                | DATA1
+        """data : low_speed_data
                 | DATA2
                 | MDATA"""
         p[0] = p[1]
 
+    def p_low_speed_data(self, p):
+        """low_speed_data : DATA0
+                          | DATA1
+        """
+        p[0] = p[1]
+
     def p_handshake(self, p):
-        """handshake : ACK
-                     | NAK
-                     | STALL
+        """handshake : low_speed_handshake
                      | NYET"""
+        p[0] = p[1]
+
+    def p_low_speed_handshake(self, p):
+        """low_speed_handshake : ACK
+                               | NAK
+                               | STALL
+        """
         p[0] = p[1]
 
     def p_sof(self, p):
