@@ -305,12 +305,13 @@ class _TransactionAggregator(Thread):
         self._to_top(p[0][0], MESSAGE_RAW, 'Short transaction')
 
     def p_error(self, p):
-        # XXX: relies on undocumented yacc internals.
-        parser = self._parser
-        statestack = parser.statestack
-        print 'yacc error on', p, 'time=', tic_to_time(p.value[0]), \
-            'statestack=', statestack, 'expected:', \
-            parser.action[statestack[-1]]
+        if p is not None:
+            # XXX: relies on undocumented yacc internals.
+            parser = self._parser
+            statestack = parser.statestack
+            print 'yacc error on', p, 'time=', tic_to_time(p.value[0]), \
+                'statestack=', statestack, 'expected:', \
+                parser.action[statestack[-1]]
 
     def p_transactions(self, p):
         """transactions : transaction
@@ -589,6 +590,8 @@ class Packetiser(object):
     def stop(self):
         # TODO: flush any pending reset ? requires knowing last tic before
         # stop was called
+        if self._data:
+            self._to_next(self._data_tic, self._data)
         self._to_next.stop()
 
     def data(self, _, data):
