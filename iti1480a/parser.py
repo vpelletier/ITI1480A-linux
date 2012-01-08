@@ -340,21 +340,17 @@ class _TransactionAggregator(Thread):
 
     def p_control(self, p):
         """control : SETUP DATA0 ACK
-                   | SETUP DATA0
-                   | SETUP"""
-        if len(p) == 4:
-            # TODO: new API
-            tic, start = p[1]
-            _, data = p[2]
-            tic_stop, stop = p[3]
-            self._to_next(tic, MESSAGE_TRANSACTION, (
-                _decodeToken(start),
-                _decodeDATA(data),
-                {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
-                tic_stop,
-            ))
-        else:
-            self._error(p)
+        """
+        # TODO: new API
+        tic, start = p[1]
+        _, data = p[2]
+        tic_stop, stop = p[3]
+        self._to_next(tic, MESSAGE_TRANSACTION, (
+            _decodeToken(start),
+            _decodeDATA(data),
+            {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
+            tic_stop,
+        ))
 
     def p_in(self, p):
         """in : base_in
@@ -365,25 +361,21 @@ class _TransactionAggregator(Thread):
     def p_base_in(self, p):
         """base_in : IN data ACK
                    | IN data
-                   | IN"""
-        plen = len(p)
-        if len(p) == 2:
-            self._error(p)
+        """
+        # TODO: new API
+        tic, start = p[1]
+        _, data = p[2]
+        if len(p) == 4:
+            tic_stop, stop = p[3]
+            stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
         else:
-            # TODO: new API
-            tic, start = p[1]
-            _, data = p[2]
-            if plen == 4:
-                tic_stop, stop = p[3]
-                stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
-            else:
-                tic_stop = stop = None
-            p[0] = (tic, (
-                _decodeToken(start),
-                _decodeDATA(data),
-                stop,
-                tic_stop,
-            ))
+            tic_stop = stop = None
+        p[0] = (tic, (
+            _decodeToken(start),
+            _decodeDATA(data),
+            stop,
+            tic_stop,
+        ))
 
     def p_handshake_in(self, p):
         # Needed just because ply.yacc doesn't give us the token type.
@@ -402,43 +394,36 @@ class _TransactionAggregator(Thread):
     def p_out(self, p):
         """out : OUT data handshake
                | OUT data
-               | OUT"""
-        plen = len(p)
-        if plen == 2:
-            self._error(p)
+        """
+        # TODO: new API
+        tic, start = p[1]
+        _, data = p[2]
+        if len(p) == 4:
+            tic_stop, stop = p[3]
+            stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
         else:
-            # TODO: new API
-            tic, start = p[1]
-            _, data = p[2]
-            if plen == 4:
-                tic_stop, stop = p[3]
-                stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
-            else:
-                tic_stop = stop = None
-            self._to_next(tic, MESSAGE_TRANSACTION, (
-                _decodeToken(start),
-                _decodeDATA(data),
-                stop,
-                tic_stop,
-            ))
+            tic_stop = stop = None
+        self._to_next(tic, MESSAGE_TRANSACTION, (
+            _decodeToken(start),
+            _decodeDATA(data),
+            stop,
+            tic_stop,
+        ))
 
     def p_bulk_ping(self, p):
         """ping : PING ACK
                 | PING NAK
                 | PING STALL
-                | PING"""
-        if len(p) == 2:
-            self._error(p)
-        else:
-            # TODO: new API
-            tic, start = p[1]
-            tic_stop, stop = p[2]
-            self._to_next(tic, MESSAGE_PING, (
-                {'name': 'PING'},
-                None,
-                {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
-                tic_stop,
-            ))
+        """
+        # TODO: new API
+        tic, start = p[1]
+        tic_stop, stop = p[2]
+        self._to_next(tic, MESSAGE_PING, (
+            {'name': 'PING'},
+            None,
+            {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
+            tic_stop,
+        ))
 
     def p_token(self, p):
         """token : IN
