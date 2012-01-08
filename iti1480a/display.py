@@ -44,14 +44,20 @@ class HumanReadable(object):
 
     def _transaction(self, tic, data, force=False):
         start, payload, stop, end_tic = data
-        if not force and not self._verbose:
-            if stop['name'] == 'NAK':
-                if self._firstNAK is None:
-                    self._firstNAK = (tic, data)
-                else:
-                    self._NAKcount += 1
-                return
-        result = "addr %i ep %i %s %s'ed at %s" % (start['address'], start['endpoint'], start['name'], stop['name'], tic_to_time(end_tic))
+        if stop is None:
+            # Can be cause by:
+            # - isochronous IN/OUT
+            # - end of trace in the middle of a transaction
+            result = "addr %i ep %i %s (no handshake)" % (start['address'], start['endpoint'], start['name'])
+        else:
+            if not force and not self._verbose:
+                if stop['name'] == 'NAK':
+                    if self._firstNAK is None:
+                        self._firstNAK = (tic, data)
+                    else:
+                        self._NAKcount += 1
+                    return
+            result = "addr %i ep %i %s %s'ed at %s" % (start['address'], start['endpoint'], start['name'], stop['name'], tic_to_time(end_tic))
         if payload is not None:
             payload['data'] = ' '.join('%02x' % (ord(x), ) for x in payload['data'])
             result += ': %(name)s %(data)s (crc 0x%(crc)04x)' % payload
