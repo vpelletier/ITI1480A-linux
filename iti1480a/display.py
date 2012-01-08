@@ -2,28 +2,8 @@
 from parser import TYPE_EVENT, TYPE_DATA, TYPE_RXCMD, MESSAGE_RAW, \
     MESSAGE_RESET, MESSAGE_TRANSACTION, MESSAGE_SOF, MESSAGE_PING, \
     MESSAGE_SPLIT, \
-    eventDecoder, rxcmdDecoder, tic_to_time, Parser, ReorderedStream
+    tic_to_time, Parser, ReorderedStream
 import sys
-
-TYPE_DICT = {
-    TYPE_EVENT: ('Event', eventDecoder),
-    TYPE_DATA: ('Data ', lambda x, y, z: hex(x)),
-    TYPE_RXCMD: ('RxCmd', rxcmdDecoder),
-}
-
-class RawOutput(object):
-    def __init__(self, write, verbose):
-        self._write = write
-        self._verbose = verbose
-
-    def __call__(self, tic, packet_type, data):
-        type_title, type_decoder = TYPE_DICT[packet_type]
-        decoded = type_decoder(data, tic, self._verbose)
-        if decoded is not None:
-            self._write('%s %s %s\n' % (tic_to_time(tic), type_title, decoded))
-
-    def stop(self):
-        pass
 
 class HumanReadable(object):
     def __init__(self, write, verbose):
@@ -106,8 +86,6 @@ def main():
     parser = OptionParser()
     parser.add_option('-v', '--verbose', action='store_true',
         help='Increase verbosity')
-    parser.add_option('-r', '--raw', action='store_true',
-        help='Output low-level usb in human-readable form')
     parser.add_option('-i', '--infile', default='-',
         help='Data source (default: stdin)')
     parser.add_option('-o', '--outfile', default='-',
@@ -130,11 +108,7 @@ def main():
         raw_write = open(options.tee, 'w').write
     else:
         raw_write = lambda x: None
-    if options.raw:
-        emit = RawOutput(write, options.verbose)
-    else:
-        emit = Parser(HumanReadable(write, options.verbose))
-    stream = ReorderedStream(emit)
+    stream = ReorderedStream(Parser(HumanReadable(write, options.verbose)))
     push = stream.push
     while True:
         data = read(CHUNK_SIZE)
