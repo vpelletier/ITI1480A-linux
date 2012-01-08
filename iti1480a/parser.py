@@ -532,10 +532,13 @@ class TransactionAggregator(object):
             self._to_top(tic, MESSAGE_RAW, '(bad pid) 0x' + ' 0x'.join('%02x' % x for x in packet))
             return
         # TODO: CRC check
-        if cannon_pid == PID_SPLIT:
-            trans_type = (packet[1] & 0x8) and 'CSPLIT' or 'SSPLIT'
-        else:
+        try:
             trans_type = TRANSACTION_TYPE_DICT[cannon_pid]
+        except KeyError:
+            if cannon_pid == PID_SPLIT:
+                trans_type = (packet[1] & 0x8) and 'CSPLIT' or 'SSPLIT'
+            else:
+                raise
         token = LexToken()
         token.type = trans_type
         token.value = (tic, packet)
