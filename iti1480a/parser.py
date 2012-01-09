@@ -327,16 +327,81 @@ class _TransactionAggregator(Thread):
     def p_start_split(self, p):
         """start_split : SSPLIT token data handshake
                        | SSPLIT token data
-                       | SSPLIT token handshake
-                       | SSPLIT token"""
-        # TODO
+                       | SSPLIT token
+                       | handshake_start_split
+        """
+        plen = len(p)
+        if plen == 2:
+            (tic, split), (tic_start, start), (tic_stop, stop) = p[1]
+            data = None
+        else:
+            tic, split = p[1]
+            tic_start, start = p[2]
+            if plen == 3:
+                data = tic_stop = stop = None
+            else:
+                data = _decodeDATA(p[3][1])
+                if plen == 4:
+                    tic_stop = stop = None
+                else:
+                    tic_stop, stop = p[4]
+        self._to_next(tic, MESSAGE_SPLIT, (
+            _decodeSPLIT(split),
+            _decodeToken(start),
+            tic_start,
+            data,
+            stop,
+            tic_stop,
+        ))
+
+    def p_handshake_start_split(self, p):
+        """handshake_start_split : SSPLIT token handshake"""
+        p[0] = p[1:]
 
     def p_complete_split(self, p):
         """complete_split : CSPLIT token data
-                          | CSPLIT token handshake
                           | CSPLIT token
-                          | CSPLIT PRE_ERR"""
-        # TODO
+                          | status_csplit
+        """
+        plen = len(p)
+        if plen != 2:
+            tic, split = p[1]
+            tic_start, start = p[2]
+            if plen == 3:
+                data = _decodeDATA(p[3][1])
+            else:
+                data = None
+            self._to_next(tic, MESSAGE_SPLIT, (
+                _decodeSPLIT(split),
+                start,
+                tic_start,
+                data,
+                None,
+                None,
+            ))
+
+    def p_status_csplit(self, p):
+        """status_csplit : CSPLIT PRE_ERR
+                         | CSPLIT token handshake
+        """
+        tic, split = p[1]
+        if len(p) == 3:
+            start = tic_start = None
+            stop = {'name': 'ERR'}
+            tic_stop = p[2][0]
+        else:
+            tic_start, start = p[2]
+            start = _decodeToken(start)
+            tic_stop, stop = p[3]
+            stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
+        self._to_next(tic, MESSAGE_SPLIT, (
+            _decodeSPLIT(split),
+            start,
+            tic_start,
+            None,
+            stop,
+            tic_stop,
+        ))
 
     def p_control(self, p):
         """control : normal_control
