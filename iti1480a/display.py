@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from parser import TYPE_EVENT, TYPE_DATA, TYPE_RXCMD, MESSAGE_RAW, \
+from iti1480a.parser import TYPE_EVENT, TYPE_DATA, TYPE_RXCMD, MESSAGE_RAW, \
     MESSAGE_RESET, MESSAGE_TRANSACTION, MESSAGE_SOF, MESSAGE_PING, \
     MESSAGE_SPLIT, \
     tic_to_time, Parser, ReorderedStream
