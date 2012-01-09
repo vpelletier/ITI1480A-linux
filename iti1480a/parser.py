@@ -10,8 +10,8 @@ from threading import Thread, Lock
 # producer side and 30s on consumer side.
 # Moving to threading.Semaphore doesn't improve the state, as they rely on
 # threading.Lock object internally in the same pattern as Queue.Queue.
-# So I end up abusing threading.Lock.release, with great success: total run
-# time when profiled went under 40s for same data set.
+# Chosen scheme shows great success: total run time when profiled went under
+# 40s for same data set.
 class SimpleQueue(object):
     def __init__(self):
         self._lock = Lock()
@@ -27,10 +27,8 @@ class SimpleQueue(object):
 
     def put(self, item):
         self._queue.append(item)
-        try:
-            self._lock.release()
-        except:
-            pass
+        self._lock.acquire(False)
+        self._lock.release()
 
 class ParsingDone(Exception):
     pass
