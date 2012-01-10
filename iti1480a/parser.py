@@ -298,10 +298,6 @@ class _TransactionAggregator(Thread):
     def run(self):
         self._parse(lexer=self)
 
-    def _error(self, p):
-        p = p[1:]
-        self._to_top(p[0][0], MESSAGE_RAW, 'Short transaction')
-
     def p_error(self, p):
         if p is not None:
             # XXX: relies on undocumented yacc internals.
@@ -568,9 +564,6 @@ class _TransactionAggregator(Thread):
     def p_sof(self, p):
         """sof : SOF"""
         tic, data = p[1]
-        if len(data) != 3:
-            self._error(p)
-            return
         crc = data[2]
         self._to_next(tic, MESSAGE_SOF, {
             'name': 'SOF',
