@@ -284,7 +284,7 @@ class _TransactionAggregator(Thread):
         self.token = token
         self._to_next = to_next
         self._to_top = to_top
-        # Se need to fool ply.yacc into thinking there is no "start" property
+        # We need to fool ply.yacc into thinking there is no "start" property
         # on its "module", otherwise it will try to use it as a sting in its
         # grammar signature, failing.
         self.start = None
