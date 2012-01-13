@@ -49,7 +49,10 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
     _statusbar_size_changed = False
 
     def __init__(self, *args, **kw):
+        cwd = os.getcwd()
+        os.chdir(os.path.dirname(__file__))
         super(ITI1480AMainFrame, self).__init__(*args, **kw)
+        os.chdir(cwd)
         self._openDialog = wx.FileDialog(self, 'Choose a file', '', '', '*.usb', wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         tree = self.tree_list
         for column_id, (column_name, width) in enumerate([
