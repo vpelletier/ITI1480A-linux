@@ -24,8 +24,12 @@ class Capture(object):
         self._callback = callback
 
     def start(self):
+        # TODO: unhardcode paths and make them portable.
+        # Maybe import capture and run its entry point directly...
+        # Anyway, the whole way this class works needs a (re)think.
+        # ...When GUI works fine, that is.
         self._subprocess = capture = subprocess.Popen([
-            '../capture.py', '-f', '/lib/firmware/ITI1480A.rbf', '-v'],
+            '../iti1480a/capture.py', '-f', '/lib/firmware/ITI1480A.rbf', '-v'],
             stdout=subprocess.PIPE,
         )
         self._open_thread = read_thread = threading.Thread(
