@@ -133,6 +133,7 @@ LENGTH_MASK = 0x3
 TIC_HEAD_MASK = 0xf
 
 TIME_INITIAL_MULTIPLIER = 100.0 / 6 # 16.666...
+
 def tic_to_time(tic):
     tic = int(tic * TIME_INITIAL_MULTIPLIER)
     tic, nano = divmod(tic, 1000)
@@ -154,10 +155,12 @@ def short_tic_to_time(tic):
     return '%i us, %i ns' % (micro, nano)
 
 TIC_TO_MICROSECOND = TIME_INITIAL_MULTIPLIER / 1000
+
 def tic_to_us(tic):
     return tic * TIC_TO_MICROSECOND
 
 TIC_TO_SECOND = TIME_INITIAL_MULTIPLIER / 1000000000
+
 def tic_to_s(tic):
     return tic * TIC_TO_SECOND
 
@@ -167,7 +170,9 @@ RXCMD_VBUS_HL_DICT = {
     0x8: 'OTG Session start',
     0xc: 'OTG VBus on',
 }
+
 MIN_RESET_TIC = 2.5 * TIME_INITIAL_MULTIPLIER # 2.5 us
+
 PID_OUT = 0x1
 PID_ACK = 0x2
 PID_DATA0 = 0x3
@@ -183,39 +188,40 @@ PID_PRE = PID_ERR = 0xc
 PID_SETUP = 0xd
 PID_STALL = 0xe
 PID_MDATA = 0xf
+
 TOKEN_NAME = {
     PID_OUT: 'OUT',
     PID_PING: 'PING',
     PID_IN: 'IN',
     PID_SETUP: 'SETUP',
 }
+
 def _decodeToken(data):
     assert len(data) == 3, data
-    crc = data[2]
-    addr = data[1]
+    crc = data[2][1]
+    addr = data[1][1]
     return {
-        'name': TOKEN_NAME[data[0] & 0xf],
+        'name': TOKEN_NAME[data[0][1] & 0xf],
         'address': addr & 0x7f,
         'endpoint': (addr >> 7) | ((crc & 0x7) << 1),
         'crc': crc >> 3
     }
+
 DATA_NAME = {
     PID_DATA0: 'DATA0',
     PID_DATA1: 'DATA1',
     PID_DATA2: 'DATA2',
     PID_MDATA: 'MDATA',
 }
+
 def _decodeDATA(data):
+    assert len(data) > 2, data
     return {
-        'name': DATA_NAME[data[0] & 0xf],
-        'data': ''.join(chr(x) for x in data[1:-2]),
-        'crc': data[-1] | (data[-2] << 8),
+        'name': DATA_NAME[data[0][1] & 0xf],
+        'data': ''.join(chr(x[1]) for x in data[1:-2]),
+        'crc': data[-1][1] | (data[-2][1] << 8),
     }
-SPLIT_NAME = {
-    0: 'SSPLIT',
-    1: 'CSPLIT',
-}
-SPLIT_HUB_MASK = 0x7
+
 SPLIT_ENDPOINT_TYPE_ISOCHRONOUS = 0x01 << 1
 SPLIT_ENDPOINT_TYPE_NAME = {
     0x00: 'Control',
@@ -223,24 +229,25 @@ SPLIT_ENDPOINT_TYPE_NAME = {
     0x02 << 1: 'Bulk',
     0x03 << 1: 'Interrupt',
 }
+
 SPLIT_ENDPOINT_CONTINUATION = {
     (0, 0): 'middle',
     (0, 1): 'end',
     (1, 0): 'beginning',
     (1, 1): 'whole',
 }
+
 def _decodeSPLIT(data):
     assert len(data) == 4, data
-    endpoint_type = data[3] & 0x6
+    endpoint_type = data[3][1] & 0x6
     result = {
-        'name': SPLIT_NAME[data[1] >> 7],
-        'hub': data[1] & 0x7,
-        'port': data[2] & 0x7,
+        'address': data[1][1] & 0x7,
+        'port': data[2][1] & 0x7,
         'endpoint_type': SPLIT_ENDPOINT_TYPE_NAME[endpoint_type],
-        'crc': data[3] >> 3,
+        'crc': data[3][1] >> 3,
     }
-    speed = data[2] >> 3
-    end = data[3] & 0x1
+    speed = data[2][1] >> 3
+    end = data[3][1] & 0x1
     if endpoint_type == SPLIT_ENDPOINT_TYPE_ISOCHRONOUS:
         result['continuation'] = SPLIT_ENDPOINT_CONTINUATION[(speed, end)]
     else:
@@ -248,48 +255,131 @@ def _decodeSPLIT(data):
         result['end'] = end
     return result
 
+def _decodeSSPLIT(data):
+    result = _decodeSPLIT(data)
+    result['name'] = 'SSPLIT'
+    return result
+
+def _decodeCSPLIT(data):
+    result = _decodeSPLIT(data)
+    result['name'] = 'CSPLIT'
+    return result
+
+def _decodeSOF(data):
+    assert len(data) == 3, data
+    crc = data[2][1]
+    return {
+        'name': 'SOF',
+        'frame': data[1][1] | ((crc & 0x7) << 8),
+        'crc': crc >> 3,
+    }
+
 MESSAGE_RAW = 0
 MESSAGE_RESET = 1
 MESSAGE_TRANSACTION = 2
-MESSAGE_SOF = 3
-MESSAGE_PING = 4
-MESSAGE_SPLIT = 5
+MESSAGE_TRANSFER = 3
 
-TRANSACTION_TYPE_DICT = {
-    PID_OUT: 'OUT',
-    PID_ACK: 'ACK',
-    PID_DATA0: 'DATA0',
-    PID_PING: 'PING',
-    PID_SOF: 'SOF',
-    PID_NYET: 'NYET',
-    PID_DATA2: 'DATA2',
-    PID_IN: 'IN',
-    PID_NAK: 'NAK',
-    PID_DATA1: 'DATA1',
-    PID_PRE: 'PRE_ERR',
-    PID_SETUP: 'SETUP',
-    PID_STALL: 'STALL',
-    PID_MDATA: 'MDATA',
+TOKEN_TYPE_OUT = 'OUT'
+TOKEN_TYPE_ACK = 'ACK'
+TOKEN_TYPE_DATA0 = 'DATA0'
+TOKEN_TYPE_PING = 'PING'
+TOKEN_TYPE_SOF = 'SOF'
+TOKEN_TYPE_NYET = 'NYET'
+TOKEN_TYPE_DATA2 = 'DATA2'
+TOKEN_TYPE_IN = 'IN'
+TOKEN_TYPE_NAK = 'NAK'
+TOKEN_TYPE_DATA1 = 'DATA1'
+TOKEN_TYPE_PRE_ERR = 'PRE_ERR'
+TOKEN_TYPE_SETUP = 'SETUP'
+TOKEN_TYPE_STALL = 'STALL'
+TOKEN_TYPE_MDATA = 'MDATA'
+TOKEN_TYPE_SSPLIT = 'SSPLIT'
+TOKEN_TYPE_CSPLIT = 'CSPLIT'
+
+TRANSACTION_DECODER_DICT = {
+    TOKEN_TYPE_OUT: _decodeToken,
+    TOKEN_TYPE_ACK: lambda _: {'name': 'ACK'},
+    TOKEN_TYPE_DATA0: _decodeDATA,
+    TOKEN_TYPE_PING: _decodeToken,
+    TOKEN_TYPE_SOF: _decodeSOF,
+    TOKEN_TYPE_NYET: lambda _: {'name': 'NYET'},
+    TOKEN_TYPE_DATA2: _decodeDATA,
+    TOKEN_TYPE_SSPLIT: _decodeSSPLIT,
+    TOKEN_TYPE_CSPLIT: _decodeCSPLIT,
+    TOKEN_TYPE_IN: _decodeToken,
+    TOKEN_TYPE_NAK: lambda _: {'name': 'NAK'},
+    TOKEN_TYPE_DATA1: _decodeDATA,
+    TOKEN_TYPE_PRE_ERR: lambda _: {'name': 'PRE/ERR'},
+    TOKEN_TYPE_SETUP: _decodeToken,
+    TOKEN_TYPE_STALL: lambda _: {'name': 'STALL'},
+    TOKEN_TYPE_MDATA: _decodeDATA,
 }
 
-class _TransactionAggregator(Thread):
+def decode(data):
+    decoded = TRANSACTION_DECODER_DICT[data[0]](data[1])
+    decoded['tic'] = data[1][0][0]
+    return decoded
+
+class _DummyLogger(object):
+    """
+    Quick hack to make ply.yacc more quiet, without hiding errors.
+    """
+    def warning(self, *args, **kw):
+        pass
+
+    debug = warning
+    info = warning
+
+    def error(self, message, *args, **kw):
+        # Actually, raising right away is more aggressive than what ply does...
+        # But much simpler too.
+        assert bool(args) ^ bool(kw), (args, kw)
+        if args or kw:
+            message %= args or kw
+        raise Exception(message)
+
+    critical = error
+
+# TODO: merge BaseYaccAggregator and _BaseYaccAggregator ? (watch out for more
+# API collision...)
+class _BaseYaccAggregator(Thread):
     """
     Threaded, so ply.yacc can produce output as input is received.
     If only it had a "push" API...
     """
-    tokens = TRANSACTION_TYPE_DICT.values() + ['SSPLIT', 'CSPLIT']
+    __start = None
+
+    def p_error(self, p):
+        # XXX: relies on undocumented yacc internals.
+        parser = self._parser
+        statestack = parser.statestack
+        print 'yacc error on', p, 'statestack=', statestack, 'expected:', \
+            parser.action[statestack[-1]]
 
     def __init__(self, token, to_next, to_top):
-        super(_TransactionAggregator, self).__init__()
+        super(_BaseYaccAggregator, self).__init__()
         self.token = token
         self._to_next = to_next
         self._to_top = to_top
+        yacc_basename = self.__class__.__name__
         # We need to fool ply.yacc into thinking there is no "start" property
         # on its "module", otherwise it will try to use it as a sting in its
         # grammar signature, failing.
         self.start = None
         try:
-            self._parser = parser = yacc(module=self, start='transactions')
+            # I wish ply to generate parser.out file (with a name depending on
+            # instance's class, for subclassing's sake), because it's just too
+            # handy for debugging - and this module is just not stable yet.
+            # But I don't want ply to blather on stderr, nor create its
+            # parsetab files (our grammars are simple enough to be instantly
+            # generated).
+            self._parser = parser = yacc(
+                module=self,
+                start=self.__start,
+                debugfile=yacc_basename + '_parser.out',
+                errorlog=_DummyLogger(),
+                write_tables=False,
+            )
         finally:
             # Restore access to class's "start" method
             del self.start
@@ -298,249 +388,265 @@ class _TransactionAggregator(Thread):
     def run(self):
         self._parse(lexer=self)
 
-    def p_error(self, p):
-        if p is not None:
-            # XXX: relies on undocumented yacc internals.
-            parser = self._parser
-            statestack = parser.statestack
-            print 'yacc error on', p, 'time=', tic_to_time(p.value[0]), \
-                'statestack=', statestack, 'expected:', \
-                parser.action[statestack[-1]]
+class BaseYaccAggregator(object):
+    _yacc_class = None
+
+    def __init__(self, to_next, to_top):
+        self._to_next = to_next
+        self._to_top = to_top
+        self.__to_yacc = to_yacc = SimpleQueue()
+        self._thread = thread = self._yacc_class(to_yacc.get, to_next, to_top)
+        thread.daemon = True
+        thread.start()
+
+    def __call__(self, *args, **kw):
+        raise NotImplementedError
+
+    def _to_yacc(self, token_type, token_data):
+        token = LexToken()
+        token.type = token_type
+        token.value = (token_type, token_data)
+        token.lineno = 0 # TODO: file offset
+        token.lexpos = 0
+        self.__to_yacc.put(token)
+
+    def stop(self):
+        assert self._thread.is_alive()
+        self.__to_yacc.put(None)
+        self._thread.join()
+        self._to_next.stop()
+
+ENDPOINT0_TRANSFER_TYPE_DICT = {
+    (TOKEN_TYPE_SETUP, 0): 'SETUP_OUT',
+    (TOKEN_TYPE_SETUP, 0x80): 'SETUP_IN',
+    (TOKEN_TYPE_IN, TOKEN_TYPE_ACK): 'IN_ACK',
+    (TOKEN_TYPE_IN, TOKEN_TYPE_NAK): 'IN_NAK',
+    (TOKEN_TYPE_IN, TOKEN_TYPE_STALL): 'IN_STALL',
+    (TOKEN_TYPE_OUT, TOKEN_TYPE_ACK): 'OUT_ACK',
+    (TOKEN_TYPE_OUT, TOKEN_TYPE_NAK): 'OUT_NAK',
+    (TOKEN_TYPE_OUT, TOKEN_TYPE_NYET): 'OUT_NYET',
+    (TOKEN_TYPE_OUT, TOKEN_TYPE_STALL): 'OUT_STALL',
+    (TOKEN_TYPE_PING, TOKEN_TYPE_ACK): 'PING_ACK',
+    (TOKEN_TYPE_PING, TOKEN_TYPE_NAK): 'PING_NAK',
+}
+
+class _Endpoint0TransferAggregator(_BaseYaccAggregator):
+    tokens = ENDPOINT0_TRANSFER_TYPE_DICT.values()
+    __start = 'transfers'
+
+    def p_transfers(self, p):
+        """transfers : transfer
+                     | transfers transfer
+        """
+
+    def p_transfer(self, p):
+        """transfer : SETUP_OUT out_data in_data
+                    | SETUP_OUT in_data
+                    | SETUP_IN in_data out_handshake
+        """
+        data = [p[1]]
+        data.extend(p[2])
+        if len(p) == 4:
+            data.extend(p[3])
+        self._to_next(None, MESSAGE_TRANSFER, data)
+
+    def p_out_handshake(self, p):
+        """out_handshake : OUT_ACK
+                         | OUT_NAK out_handshake"""
+        if len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            data = p[2]
+            data.insert(0, p[1])
+            p[0] = data
+
+    def p_in_data(self, p):
+        """in_data : IN_ACK
+                   | IN_STALL
+                   | IN_ACK in_data
+                   | IN_NAK in_data
+        """
+        if len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            data = p[2]
+            data.insert(0, p[1])
+            p[0] = data
+
+    def p_out_data(self, p):
+        """out_data : OUT_ACK
+                    | OUT_ACK out_data
+                    | OUT_STALL
+                    | OUT_NAK out_data
+                    | PING_ACK OUT_ACK
+                    | PING_ACK OUT_NYET
+                    | PING_NAK out_data
+        """
+        if len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            data = p[2]
+            data.insert(0, p[1])
+            p[0] = data
+
+class Endpoint0TransferAggregator(BaseYaccAggregator):
+    _yacc_class = _Endpoint0TransferAggregator
+    def __init__(self, *args, **kw):
+        super(Endpoint0TransferAggregator, self).__init__(*args, **kw)
+        self._token_dispatcher = {
+            TOKEN_TYPE_SETUP: self._setup,
+            TOKEN_TYPE_IN: self._data,
+            TOKEN_TYPE_OUT: self._data,
+            TOKEN_TYPE_PING: self._ping,
+        }
+
+    def __call__(self, tic, transaction_type, data):
+        """
+        data (list of 2-tuples)
+        - one of _TransactionAggregator.tokens
+        - 2-tuple:
+            - tic
+            - token (in yacc terms) value
+        """
+        assert transaction_type == MESSAGE_TRANSACTION, transaction_type
+        self._token_dispatcher[data[0][0]](data)
+
+    def _setup(self, data):
+        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(TOKEN_TYPE_SETUP, data[1][1][1][1] & 0x80)], data)
+
+    def _ping(self, data):
+        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(TOKEN_TYPE_PING, data[-1][0])], data)
+
+    def _data(self, data):
+        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(data[0][0], data[-1][0])], data)
+
+class PipeAggregator(object):
+    def __init__(self, to_next, to_top, newHub, newPipe):
+        self._to_top = to_top
+        self._pipe_dict = {}
+        self._hub_dict = {}
+        self._to_next = to_next
+        self._newPipe = newPipe
+        self._newHub = newHub
+
+    def getPipeAddresses(self):
+        return self._pipe_dict.keys()
+
+    def getHubAddresses(self):
+        return self._hub_dict.keys()
+
+    def getEndpoints(self, address):
+        return self._pipe_dict[address].keys()
+
+    def _getHub(self, address):
+        try:
+            result = self._hub_dict[address]
+        except KeyError:
+            self._hub_dict[address] = result = self._newHub(address)
+        return result
+
+    def _getPipe(self, address, endpoint):
+        try:
+            device = self._pipe_dict[address]
+        except KeyError:
+            aggregator = self._newPipe(address, endpoint)
+            self._pipe_dict[address] = {
+                endpoint: aggregator,
+            }
+        else:
+            try:
+                aggregator = device[endpoint]
+            except KeyError:
+                device[endpoint] = aggregator = self._newPipe(address, endpoint)
+        return aggregator
+
+    def __call__(self, tic, transaction_type, data):
+        decoded = decode(data[0])
+        address = decoded.get('address')
+        if address is None:
+            aggregator = self._to_next
+            # XXX: should it be broadcast to all device & endpoint
+            # aggregators ?
+        else:
+            endpoint = decoded.get('endpoint')
+            if endpoint is None:
+                aggregator = self._getHub(address)
+            else:
+                aggregator = self._getPipe(address, endpoint)
+        aggregator(tic, transaction_type, data)
+
+    def stop(self):
+        for device in self._pipe_dict.itervalues():
+            for aggregator in device.itervalues():
+                aggregator.stop()
+        self._to_next.stop()
+
+TRANSACTION_TYPE_DICT = {
+    PID_OUT: TOKEN_TYPE_OUT,
+    PID_ACK: TOKEN_TYPE_ACK,
+    PID_DATA0: TOKEN_TYPE_DATA0,
+    PID_PING: TOKEN_TYPE_PING,
+    PID_SOF: TOKEN_TYPE_SOF,
+    PID_NYET: TOKEN_TYPE_NYET,
+    PID_DATA2: TOKEN_TYPE_DATA2,
+    PID_IN: TOKEN_TYPE_IN,
+    PID_NAK: TOKEN_TYPE_NAK,
+    PID_DATA1: TOKEN_TYPE_DATA1,
+    PID_PRE: TOKEN_TYPE_PRE_ERR,
+    PID_SETUP: TOKEN_TYPE_SETUP,
+    PID_STALL: TOKEN_TYPE_STALL,
+    PID_MDATA: TOKEN_TYPE_MDATA,
+}
+
+class _TransactionAggregator(_BaseYaccAggregator):
+    tokens = TRANSACTION_TYPE_DICT.values() + [TOKEN_TYPE_SSPLIT, TOKEN_TYPE_CSPLIT]
+    __start = 'transactions'
 
     def p_transactions(self, p):
         """transactions : transaction
-                        | transactions transaction"""
+                        | transactions transaction
+        """
 
     def p_transaction(self, p):
-        """transaction : start_split
-                       | complete_split
-                       | control
-                       | in
-                       | out
-                       | ping
-                       | sof"""
-
-    def p_start_split(self, p):
-        """start_split : SSPLIT token data handshake
+        """transaction : SETUP DATA0 ACK
+                       | SSPLIT token data handshake
                        | SSPLIT token data
                        | SSPLIT token
-                       | handshake_start_split
+                       | SSPLIT token handshake
+                       | CSPLIT token data
+                       | CSPLIT token
+                       | CSPLIT PRE_ERR
+                       | CSPLIT token handshake
+                       | PRE_ERR SETUP PRE_ERR DATA0 ACK
+                       | IN data ACK
+                       | IN data
+                       | IN NAK
+                       | IN STALL
+                       | PRE_ERR IN low_speed_data PRE_ERR ACK
+                       | PRE_ERR IN NAK
+                       | PRE_ERR IN STALL
+                       | OUT data handshake
+                       | OUT data
+                       | PRE_ERR OUT PRE_ERR low_speed_data low_speed_handshake
+                       | PING ACK
+                       | PING NAK
+                       | PING STALL
+                       | SOF
         """
-        plen = len(p)
-        if plen == 2:
-            (tic, split), (tic_start, start), (tic_stop, stop) = p[1]
-            data = None
-        else:
-            tic, split = p[1]
-            tic_start, start = p[2]
-            if plen == 3:
-                data = tic_stop = stop = None
-            else:
-                data = _decodeDATA(p[3][1])
-                if plen == 4:
-                    tic_stop = stop = None
-                else:
-                    tic_stop, stop = p[4]
-        self._to_next(tic, MESSAGE_SPLIT, (
-            _decodeSPLIT(split),
-            _decodeToken(start),
-            tic_start,
-            data,
-            stop,
-            tic_stop,
-        ))
-
-    def p_handshake_start_split(self, p):
-        """handshake_start_split : SSPLIT token handshake"""
-        p[0] = p[1:]
-
-    def p_complete_split(self, p):
-        """complete_split : CSPLIT token data
-                          | CSPLIT token
-                          | status_csplit
-        """
-        plen = len(p)
-        if plen != 2:
-            tic, split = p[1]
-            tic_start, start = p[2]
-            if plen == 3:
-                data = _decodeDATA(p[3][1])
-            else:
-                data = None
-            self._to_next(tic, MESSAGE_SPLIT, (
-                _decodeSPLIT(split),
-                start,
-                tic_start,
-                data,
-                None,
-                None,
-            ))
-
-    def p_status_csplit(self, p):
-        """status_csplit : CSPLIT PRE_ERR
-                         | CSPLIT token handshake
-        """
-        tic, split = p[1]
-        if len(p) == 3:
-            start = tic_start = None
-            stop = {'name': 'ERR'}
-            tic_stop = p[2][0]
-        else:
-            tic_start, start = p[2]
-            start = _decodeToken(start)
-            tic_stop, stop = p[3]
-            stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
-        self._to_next(tic, MESSAGE_SPLIT, (
-            _decodeSPLIT(split),
-            start,
-            tic_start,
-            None,
-            stop,
-            tic_stop,
-        ))
-
-    def p_control(self, p):
-        """control : normal_control
-                   | low_speed_control
-        """
-        # TODO: new API with low_speed support
-        low_speed, ((tic, start), (_, data), (tic_stop, stop)) = p[1]
-        self._to_next(tic, MESSAGE_TRANSACTION, (
-            _decodeToken(start),
-            _decodeDATA(data),
-            {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
-            tic_stop,
-        ))
-
-    def p_normal_control(self, p):
-        """normal_control : SETUP DATA0 ACK
-        """
-        p[0] = (False, p[1:])
-
-    def p_low_speed_control(self, p):
-        """low_speed_control : PRE_ERR SETUP PRE_ERR DATA0 ACK
-        """
-        p[0] = (True, (p[2], p[4], p[5]))
-
-    def p_in(self, p):
-        """in : normal_in
-              | handshake_in
-              | low_speed_in"""
-        # TODO: new API with low_speed support
-        low_speed, tic, data = p[1]
-        self._to_next(tic, MESSAGE_TRANSACTION, data)
-
-    def p_normal_in(self, p):
-        """normal_in : IN data ACK
-                     | IN data
-        """
-        tic, start = p[1]
-        _, data = p[2]
-        if len(p) == 4:
-            tic_stop, stop = p[3]
-            stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
-        else:
-            tic_stop = stop = None
-        p[0] = (False, tic, (
-            _decodeToken(start),
-            _decodeDATA(data),
-            stop,
-            tic_stop,
-        ))
-
-    def p_handshake_in(self, p):
-        # Needed just because ply.yacc doesn't give us the token type.
-        """handshake_in : IN NAK
-                        | IN STALL"""
-        tic, start = p[1]
-        tic_stop, stop = p[2]
-        p[0] = (False, tic, (
-            _decodeToken(start),
-            None,
-            {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
-            tic_stop,
-        ))
-
-    def p_low_speed_in(self, p):
-        # Note: no "IN data" equivalent rule, as it's only valid for
-        # isochronous transaction, which aren't available in low-speed.
-        """low_speed_in : PRE_ERR IN low_speed_data PRE_ERR ACK
-                        | PRE_ERR IN NAK
-                        | PRE_ERR IN STALL
-        """
-        tic, start = p[2]
-        if len(p) == 4:
-            data = None
-            tic_stop, stop = p[3]
-        else:
-            _, data = p[3]
-            data = _decodeDATA(data)
-            tic_stop, stop = p[5]
-        p[0] = (True, tic, (
-            _decodeToken(start),
-            data,
-            {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
-            tic_stop,
-        ))
-
-    def p_out(self, p):
-        """out : base_out
-               | low_speed_out
-        """
-        # TODO: new API
-        low_speed, transaction = p[1]
-        tic, start = transaction[0]
-        _, data = transaction[1]
-        if len(transaction) == 3:
-            tic_stop, stop = transaction[2]
-            stop = {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]}
-        else:
-            tic_stop = stop = None
-        self._to_next(tic, MESSAGE_TRANSACTION, (
-            _decodeToken(start),
-            _decodeDATA(data),
-            stop,
-            tic_stop,
-        ))
-
-    def p_base_out(self, p):
-        """base_out : OUT data handshake
-                    | OUT data
-        """
-        p[0] = (False, p[1:])
-
-    def p_low_speed_out(self, p):
-        # Note: no "OUT data" equivalent rule, as it's only valid for
-        # isochronous transaction, which aren't available in low-speed.
-        """low_speed_out : PRE_ERR OUT PRE_ERR low_speed_data low_speed_handshake
-        """
-        p[0] = (True, (p[2], p[4], p[5]))
-
-    def p_bulk_ping(self, p):
-        """ping : PING ACK
-                | PING NAK
-                | PING STALL
-        """
-        # TODO: new API
-        tic, start = p[1]
-        tic_stop, stop = p[2]
-        self._to_next(tic, MESSAGE_PING, (
-            _decodeToken(start),
-            None,
-            {'name': TRANSACTION_TYPE_DICT[stop[0] & 0xf]},
-            tic_stop,
-        ))
+        self._to_next(p[1][1][0][0], MESSAGE_TRANSACTION, p[1:])
 
     def p_token(self, p):
         """token : IN
                  | OUT
-                 | SETUP"""
+                 | SETUP
+        """
         p[0] = p[1]
 
     def p_data(self, p):
         """data : low_speed_data
                 | DATA2
-                | MDATA"""
+                | MDATA
+        """
         p[0] = p[1]
 
     def p_low_speed_data(self, p):
@@ -551,7 +657,8 @@ class _TransactionAggregator(Thread):
 
     def p_handshake(self, p):
         """handshake : low_speed_handshake
-                     | NYET"""
+                     | NYET
+        """
         p[0] = p[1]
 
     def p_low_speed_handshake(self, p):
@@ -561,57 +668,33 @@ class _TransactionAggregator(Thread):
         """
         p[0] = p[1]
 
-    def p_sof(self, p):
-        """sof : SOF"""
-        tic, data = p[1]
-        crc = data[2]
-        self._to_next(tic, MESSAGE_SOF, {
-            'name': 'SOF',
-            'frame': data[1] | ((crc & 0x7) << 8),
-            'crc': crc >> 3,
-        })
+class TransactionAggregator(BaseYaccAggregator):
+    _yacc_class = _TransactionAggregator
 
-class TransactionAggregator(object):
-    def __init__(self, to_next, to_top):
-        self._to_next = to_next
-        self._to_top = to_top
-        self._to_yacc = to_yacc = SimpleQueue()
-        self._thread = thread = _TransactionAggregator(to_yacc.get, to_next, to_top)
-        thread.daemon = True
-        thread.start()
-
-    def __call__(self, tic, packet):
+    def __call__(self, packet):
+        """
+        packet
+            List of 2-tuples: tic and data (both int)
+        """
         assert packet
-        pid = packet[0]
+        tic, pid = packet[0]
         cannon_pid = pid & 0xf
         if cannon_pid != pid >> 4 ^ 0xf:
-            self._to_top(tic, MESSAGE_RAW, '(bad pid) 0x' + ' 0x'.join('%02x' % x for x in packet))
+            self._to_top(tic, MESSAGE_RAW, '(bad pid) 0x' + ' 0x'.join('%02x' % (x[1], ) for x in packet))
             return
-        # TODO: CRC check
         try:
             trans_type = TRANSACTION_TYPE_DICT[cannon_pid]
         except KeyError:
             if cannon_pid == PID_SPLIT:
-                trans_type = (packet[1] & 0x8) and 'CSPLIT' or 'SSPLIT'
+                trans_type = (packet[1][1] & 0x8) and TOKEN_TYPE_CSPLIT or TOKEN_TYPE_SSPLIT
             else:
                 raise
-        token = LexToken()
-        token.type = trans_type
-        token.value = (tic, packet)
-        token.lineno = 0 # TODO: file offset
-        token.lexpos = 0
-        self._to_yacc.put(token)
-
-    def stop(self):
-        assert self._thread.is_alive()
-        self._to_yacc.put(None)
-        self._thread.join()
+        self._to_yacc(trans_type, packet)
 
 class Packetiser(object):
     _rxactive = False
     _reset_start_tic = None
     _vbus = None
-    _data_tic = None
     _connected = False
 
     def __init__(self, to_next, to_top):
@@ -643,20 +726,18 @@ class Packetiser(object):
         if data in (0xf, 0xb):
             self._connected = True
         elif data in (0xf0, 0xf1):
-            self.stop()
             raise ParsingDone
 
     def stop(self):
         # TODO: flush any pending reset ? requires knowing last tic before
         # stop was called
         if self._data:
-            self._to_next(self._data_tic, self._data)
+            self._to_next(self._data)
         self._to_next.stop()
 
-    def data(self, _, data):
+    def data(self, tic, data):
         assert self._rxactive
-        assert self._data_tic is not None
-        self._data.append(data)
+        self._data.append((tic, data))
 
     def rxcmd(self, tic, data):
         # TODO:
@@ -664,13 +745,9 @@ class Packetiser(object):
         # - Data0 & Data1
         rxactive = data & 0x10
         if self._rxactive ^ rxactive:
-            if rxactive:
-                assert self._data_tic is None
-                self._data_tic = tic
-            else:
-                self._to_next(self._data_tic, self._data)
+            if not rxactive:
+                self._to_next(self._data)
                 self._data = []
-                self._data_tic = None
         self._rxactive = rxactive
         if data & 0x20 and self._connected:
             rendered = 'Device disconnected'
@@ -700,6 +777,7 @@ class Parser(object):
         try:
             self._packetiser(*args, **kw)
         except ParsingDone, exc:
+            self.stop()
             return True
         return False
 
