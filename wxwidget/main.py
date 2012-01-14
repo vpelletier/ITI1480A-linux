@@ -120,6 +120,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
     _statusbar_size_changed = False
 
     def __init__(self, *args, **kw):
+        loadfile = kw.pop('loadfile', None)
         cwd = os.getcwd()
         os.chdir(os.path.dirname(__file__))
         super(ITI1480AMainFrame, self).__init__(*args, **kw)
@@ -144,6 +145,8 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         self._device_dict = {}
         self._initEventList(self.capture_list)
         self._initEventList(self.bus_list)
+        if loadfile is not None:
+            self.openFile(loadfile)
 
     def _getHubEventList(self, device):
         try:
@@ -231,17 +234,20 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
     def onOpen(self, event):
         dialog = self._openDialog
         if dialog.ShowModal() == wx.ID_OK:
-            stream = open(dialog.GetPath())
-            gauge = self.load_gauge
-            gauge.SetValue(0)
-            stream.seek(0, 2)
-            gauge.SetRange(stream.tell())
-            stream.seek(0)
-            gauge.Show(True)
-            open_thread = threading.Thread(target=self._openFile,
-                args=(stream.read, ), kwargs={'use_gauge': True})
-            open_thread.daemon = True
-            open_thread.start()
+            self.openFile(dialog.GetPath())
+
+    def openFile(self, path):
+        stream = open(path)
+        gauge = self.load_gauge
+        gauge.SetValue(0)
+        stream.seek(0, 2)
+        gauge.SetRange(stream.tell())
+        stream.seek(0)
+        gauge.Show(True)
+        open_thread = threading.Thread(target=self._openFile,
+            args=(stream.read, ), kwargs={'use_gauge': True})
+        open_thread.daemon = True
+        open_thread.start()
 
     def _openFile(self, read, use_gauge=False, read_buf=CHUNK_SIZE):
         def addTreeItem(event_list, parent, caption, data, absolute_tic,
@@ -361,9 +367,14 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 wx.MutexGuiLeave()
 
 def main():
+    import sys
+    if len(sys.argv) == 2:
+        loadfile = sys.argv[1]
+    else:
+        loadfile = None
     app = wx.PySimpleApp(0)
     wx.InitAllImageHandlers()
-    main_frame = ITI1480AMainFrame(None, -1, "")
+    main_frame = ITI1480AMainFrame(None, -1, "", loadfile=loadfile)
     app.SetTopWindow(main_frame)
     main_frame.Show()
     app.MainLoop()
