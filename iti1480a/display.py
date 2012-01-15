@@ -16,7 +16,7 @@ class HumanReadable(object):
     def _print(self, tic, printable):
         self._write(tic_to_time(tic) + ' ' + printable + '\n')
 
-    def __call__(self, tic, message_type, data):
+    def push(self, tic, message_type, data):
         printable = self._dispatch[message_type](tic, data)
         if printable is not None:
             self._print(tic, printable)

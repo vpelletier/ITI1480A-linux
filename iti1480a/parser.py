@@ -395,11 +395,12 @@ class BaseYaccAggregator(object):
         self._to_next = to_next
         self._to_top = to_top
         self.__to_yacc = to_yacc = SimpleQueue()
-        self._thread = thread = self._yacc_class(to_yacc.get, to_next, to_top)
+        self._thread = thread = self._yacc_class(to_yacc.get, to_next.push,
+            to_top)
         thread.daemon = True
         thread.start()
 
-    def __call__(self, *args, **kw):
+    def push(self, *args, **kw):
         raise NotImplementedError
 
     def _to_yacc(self, token_type, token_data):
@@ -500,7 +501,7 @@ class Endpoint0TransferAggregator(BaseYaccAggregator):
             TOKEN_TYPE_PING: self._ping,
         }
 
-    def __call__(self, tic, transaction_type, data):
+    def push(self, tic, transaction_type, data):
         """
         data (list of 2-tuples)
         - one of _TransactionAggregator.tokens
@@ -560,7 +561,7 @@ class PipeAggregator(object):
                 device[endpoint] = aggregator = self._newPipe(address, endpoint)
         return aggregator
 
-    def __call__(self, tic, transaction_type, data):
+    def push(self, tic, transaction_type, data):
         decoded = decode(data[0])
         address = decoded.get('address')
         if address is None:
@@ -573,7 +574,7 @@ class PipeAggregator(object):
                 aggregator = self._getHub(address)
             else:
                 aggregator = self._getPipe(address, endpoint)
-        aggregator(tic, transaction_type, data)
+        aggregator.push(tic, transaction_type, data)
 
     def stop(self):
         for device in self._pipe_dict.itervalues():
@@ -671,7 +672,7 @@ class _TransactionAggregator(_BaseYaccAggregator):
 class TransactionAggregator(BaseYaccAggregator):
     _yacc_class = _TransactionAggregator
 
-    def __call__(self, packet):
+    def push(self, packet):
         """
         packet
             List of 2-tuples: tic and data (both int)
@@ -707,7 +708,7 @@ class Packetiser(object):
         self._to_top = to_top
         self._data = []
 
-    def __call__(self, tic, packet_type, data):
+    def push(self, tic, packet_type, data):
         # TODO: recognise low-speed keep-alive.
         if self._reset_start_tic is not None and \
                 packet_type != TYPE_EVENT and (packet_type != TYPE_RXCMD or
@@ -732,7 +733,7 @@ class Packetiser(object):
         # TODO: flush any pending reset ? requires knowing last tic before
         # stop was called
         if self._data:
-            self._to_next(self._data)
+            self._to_next.push(self._data)
         self._to_next.stop()
 
     def data(self, tic, data):
@@ -746,7 +747,7 @@ class Packetiser(object):
         rxactive = data & 0x10
         if self._rxactive ^ rxactive:
             if not rxactive:
-                self._to_next(self._data)
+                self._to_next.push(self._data)
                 self._data = []
         self._rxactive = rxactive
         if data & 0x20 and self._connected:
@@ -764,18 +765,18 @@ class Packetiser(object):
         self._to_top(tic, MESSAGE_RAW, rendered)
 
 class Parser(object):
-    def __init__(self, push):
+    def __init__(self, out):
         self._packetiser = Packetiser(
             TransactionAggregator(
-                push,
+                out,
                 self.log
             ),
             self.log
         )
 
-    def __call__(self, *args, **kw):
+    def push(self, *args, **kw):
         try:
-            self._packetiser(*args, **kw)
+            self._packetiser.push(*args, **kw)
         except ParsingDone, exc:
             self.stop()
             return True
@@ -796,7 +797,7 @@ class ReorderedStream(object):
         self._tic = 0
 
     def push(self, data):
-        out = self._out
+        out = self._out.push
         tic = self._tic
         read = StringIO(self._remain + data).read
         def read16():

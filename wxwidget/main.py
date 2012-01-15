@@ -70,7 +70,7 @@ class EventListManagerBase(object):
         #self.__addBaseTreeItemList(self._event_list, self._tree_buf)
         #self._tree_buf = []
 
-    def __call__(self, tic, transaction_type, data):
+    def push(self, tic, transaction_type, data):
         raise NotImplementedError
 
     def stop(self):
@@ -78,11 +78,11 @@ class EventListManagerBase(object):
         #self._flush()
 
 class HubEventListManager(EventListManagerBase):
-    def __call__(self, tic, transaction_type, data):
+    def push(self, tic, transaction_type, data):
         pass
 
 class EndpointEventListManager(EventListManagerBase):
-    def __call__(self, tic, transaction_type, data):
+    def push(self, tic, transaction_type, data):
         if transaction_type == MESSAGE_TRANSFER:
             _decode = self._decode
             child_list = []
@@ -300,12 +300,14 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
             else:
                 raise NotImplementedError(event_type)
         captureEvent.stop = lambda: None
+        captureEvent.push = captureEvent
 
         def busEvent(tic, event_type, data):
             assert event_type == MESSAGE_TRANSACTION, event_type
             assert len(data) == 1, data
             addBaseTreeItem(self.bus_list, 'SOF %i' % (decode(data[0])['frame'], ), (), tic, ())
         busEvent.stop = lambda: None
+        busEvent.push = busEvent
 
         def newHub(address):
             wx.MutexGuiEnter()
