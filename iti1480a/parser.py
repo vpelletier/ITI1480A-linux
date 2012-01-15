@@ -33,6 +33,23 @@ class SimpleQueue(object):
 class ParsingDone(Exception):
     pass
 
+class BaseAggregator(object):
+    """
+    Various aggregators/parsers in this file must implement this following API.
+    """
+    def push(self, *args, **kw):
+        """
+        Regular production. Invocation details are subclass-dependant.
+        """
+        raise NotImplementedError
+
+    def stop(self):
+        """
+        Parsing is over, called to give a final opportunity to push pending
+        data to next level.
+        """
+        pass
+
 # RxCmd: see ISP1505A/ISP1505C datasheet
 RXCMD_LIST = (
     (0x01, 'DATA0'),
@@ -387,7 +404,7 @@ class _BaseYaccAggregator(Thread):
     def run(self):
         self._parse(lexer=self)
 
-class BaseYaccAggregator(object):
+class BaseYaccAggregator(BaseAggregator):
     _yacc_class = None
 
     def __init__(self, to_next, to_top):
@@ -398,9 +415,6 @@ class BaseYaccAggregator(object):
             to_top)
         thread.daemon = True
         thread.start()
-
-    def push(self, *args, **kw):
-        raise NotImplementedError
 
     def _to_yacc(self, token_type, token_data):
         token = LexToken()
@@ -520,7 +534,7 @@ class Endpoint0TransferAggregator(BaseYaccAggregator):
     def _data(self, data):
         self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(data[0][0], data[-1][0])], data)
 
-class PipeAggregator(object):
+class PipeAggregator(BaseAggregator):
     def __init__(self, to_next, to_top, newHub, newPipe):
         self._to_top = to_top
         self._pipe_dict = {}
@@ -691,7 +705,7 @@ class TransactionAggregator(BaseYaccAggregator):
                 raise
         self._to_yacc(trans_type, packet)
 
-class Packetiser(object):
+class Packetiser(BaseAggregator):
     _rxactive = False
     _reset_start_tic = None
     _vbus = None
@@ -763,8 +777,7 @@ class Packetiser(object):
             rendered = RXCMD_VBUS_HL_DICT[vbus]
         self._to_top(tic, MESSAGE_RAW, rendered)
 
-
-class ReorderedStream(object):
+class ReorderedStream(BaseAggregator):
     def __init__(self, out):
         self._remain = ''
         self._out = out
