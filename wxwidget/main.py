@@ -14,7 +14,7 @@ from iti1480a.parser import tic_to_time, short_tic_to_time, \
     decode, TOKEN_TYPE_ACK, TOKEN_TYPE_NAK, TOKEN_TYPE_STALL, \
     TOKEN_TYPE_NYET, Packetiser, TransactionAggregator, PipeAggregator, \
     Endpoint0TransferAggregator, MESSAGE_TRANSFER, ParsingDone, \
-    TOKEN_TYPE_PRE_ERR
+    TOKEN_TYPE_PRE_ERR, BaseAggregator
 
 class Capture(object):
     _subprocess = None
@@ -52,31 +52,17 @@ class Capture(object):
         self._subprocess.wait()
         self._open_thread = self._subprocess = None
 
-class EventListManagerBase(object):
+class EventListManagerBase(BaseAggregator):
     # XXX: horrible API
-    def __init__(self, event_list, addBaseTreeItemList):
+    def __init__(self, event_list, addBaseTreeItem):
         self._event_list = event_list
-        self.__addBaseTreeItemList = addBaseTreeItemList
-        #self._tree_buf = []
+        self.__addBaseTreeItem = addBaseTreeItem
 
     def _addBaseTreeItem(self, *args, **kw):
-        self.__addBaseTreeItemList(self._event_list, ((args, kw), ))
-        #tree_buf = self._tree_buf
-        #tree_buf.append((args, kw))
-        # XXX: bad for live capture
-        #if len(tree_buf) > 50:
-        #    self._flush()
-
-    #def _flush(self):
-        #self.__addBaseTreeItemList(self._event_list, self._tree_buf)
-        #self._tree_buf = []
+        self.__addBaseTreeItem(self._event_list, *args, **kw)
 
     def push(self, tic, transaction_type, data):
         raise NotImplementedError
-
-    def stop(self):
-        pass
-        #self._flush()
 
 class HubEventListManager(EventListManagerBase):
     def push(self, tic, transaction_type, data):
@@ -287,15 +273,6 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
             finally:
                 wx.MutexGuiLeave()
 
-        def addBaseTreeItemList(event_list, arg_list):
-            wx.MutexGuiEnter()
-            try:
-                root = event_list.GetRootItem()
-                for args, kw in arg_list:
-                    addTreeItem(event_list, root, *args, **kw)
-            finally:
-                wx.MutexGuiLeave()
-
         def captureEvent(tic, event_type, data):
             if event_type == MESSAGE_RAW:
                 addBaseTreeItem(self.capture_list, data, (), tic, ())
@@ -327,7 +304,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 event_list = self._getEndpointEventList(address, endpoint)
             finally:
                 wx.MutexGuiLeave()
-            result = EndpointEventListManager(event_list, addBaseTreeItemList)
+            result = EndpointEventListManager(event_list, addBaseTreeItem)
             if endpoint == 0:
                 result = Endpoint0TransferAggregator(result, captureEvent)
             return result
