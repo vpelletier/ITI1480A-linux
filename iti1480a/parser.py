@@ -758,10 +758,9 @@ class Packetiser(BaseAggregator):
         # - RxError
         # - Data0 & Data1
         rxactive = data & 0x10
-        if self._rxactive ^ rxactive:
-            if not rxactive:
-                self._to_next.push(self._data)
-                self._data = []
+        if self._rxactive and not rxactive:
+            self._to_next.push(self._data)
+            self._data = []
         self._rxactive = rxactive
         if data & 0x20 and self._connected:
             rendered = 'Device disconnected'
