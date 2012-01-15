@@ -136,6 +136,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         self._saveDialog = wx.FileDialog(self, 'File to save as', '', '',
             '*.usb', wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         self._enableSave(False)
+        self._enableCapture(True)
         image_size = (16, 16)
         self.image_list = image_list = wx.ImageList(*image_size)
         self._folderClosed = image_list.Add(wx.ArtProvider_GetBitmap(
@@ -156,6 +157,11 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         self._initEventList(self.bus_list)
         if loadfile is not None:
             self.openFile(loadfile)
+
+    def _enableCapture(self, enable):
+        self._enableId(4, enable) # Start
+        self._enableId(5, not enable) # Pause/continue
+        self._enableId(wx.ID_STOP, not enable)
 
     def _enableSave(self, enable):
         self._enableId(wx.ID_SAVE, enable)
@@ -237,10 +243,12 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
 
     def onStart(self, event):
         self._capture.start()
+        self._enableCapture(False)
 
     def onStop(self, event):
         self._capture.stop()
         self._enableSave(True)
+        self._enableCapture(True)
 
     def onPause(self, event):
         if self._capture.paused:
