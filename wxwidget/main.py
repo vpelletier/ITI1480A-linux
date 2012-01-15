@@ -47,6 +47,8 @@ class Capture(object):
 
     def stop(self):
         self._subprocess.kill()
+        # Safe from deadlocks, because subprocess stdout read is done in
+        # another thread.
         self._subprocess.wait()
         self._open_thread = self._subprocess = None
 
