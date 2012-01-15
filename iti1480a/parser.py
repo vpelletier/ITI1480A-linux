@@ -399,18 +399,6 @@ class _BaseYaccAggregator(Thread):
     """
     __start = None
 
-    def p_error(self, p):
-        """
-        Default parser error handler. Displays the token causing the error,
-        and internal parser state (relying on undocumented yacc internals, so
-        might go away/break some day).
-        """
-        # XXX: relies on undocumented yacc internals.
-        parser = self._parser
-        statestack = parser.statestack
-        print 'yacc error on', p, 'statestack=', statestack, 'expected:', \
-            parser.action[statestack[-1]]
-
     def __init__(self, token, to_next, to_top):
         """
         token (callable)
@@ -452,6 +440,18 @@ class _BaseYaccAggregator(Thread):
 
     def run(self):
         self._parse(lexer=self)
+
+    def p_error(self, p):
+        """
+        Default parser error handler. Displays the token causing the error,
+        and internal parser state (relying on undocumented yacc internals, so
+        might go away/break some day).
+        """
+        # XXX: relies on undocumented yacc internals.
+        parser = self._parser
+        statestack = parser.statestack
+        print 'yacc error on', p, 'statestack=', statestack, 'expected:', \
+            parser.action[statestack[-1]]
 
 class BaseYaccAggregator(BaseAggregator):
     """
@@ -848,6 +848,14 @@ class Packetiser(BaseAggregator):
             self._reset_start_tic = None
         self._type_dict[packet_type](tic, data)
 
+    def stop(self):
+        # TODO: flush any pending reset ? requires knowing last tic before
+        # stop was called
+        if self._data:
+            self._to_next.push(self._data)
+            self._data = []
+        self._to_next.stop()
+
     def _event(self, tic, data):
         try:
             caption = EVENT_DICT[data]
@@ -858,13 +866,6 @@ class Packetiser(BaseAggregator):
             self._connected = True
         elif data in (0xf0, 0xf1):
             raise ParsingDone
-
-    def stop(self):
-        # TODO: flush any pending reset ? requires knowing last tic before
-        # stop was called
-        if self._data:
-            self._to_next.push(self._data)
-        self._to_next.stop()
 
     def _data(self, tic, data):
         assert self._rxactive
