@@ -532,7 +532,10 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
 
     def p_out_handshake(self, p):
         """out_handshake : OUT_ACK
-                         | OUT_NAK out_handshake"""
+                         | OUT_NAK out_handshake
+                         | PING_ACK out_handshake
+                         | PING_NAK out_handshake
+        """
         if len(p) == 2:
             p[0] = [p[1]]
         else:
