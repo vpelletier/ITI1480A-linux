@@ -147,9 +147,8 @@ def short_tic_to_time(tic):
     tic, nano = divmod(tic, 1000)
     tic, micro = divmod(tic, 1000)
     tic, mili = divmod(tic, 1000)
-    minute, sec = divmod(tic, 60)
-    if minute or sec:
-        return '%03i:%02i' % (minute, sec)
+    if tic:
+        return '%03i:%02i' % divmod(tic, 60)
     if mili:
         return '%i ms, %i us' % (mili, micro)
     return '%i us, %i ns' % (micro, nano)
