@@ -5,6 +5,7 @@ import threading
 import signal
 import subprocess
 import sys
+from cStringIO import StringIO
 
 # TODO: use wxWidget 2.9 wxTreeCtrl
 from wx.gizmos import TreeListCtrl
@@ -21,6 +22,7 @@ class Capture(object):
     _subprocess = None
     _open_thread = None
     paused = False
+    data = None
 
     def __init__(self, callback):
         self._callback = callback
@@ -33,9 +35,19 @@ class Capture(object):
         )
         self._open_thread = read_thread = threading.Thread(
             target=self._callback,
-            args=(capture.stdout.read, ), kwargs={'read_buf': 16})
+            args=(self._read, ), kwargs={'read_buf': 16})
         read_thread.daemon = True
+        # XXX: should probably rather use an on-disk temp file...
+        self.data = StringIO()
         read_thread.start()
+
+    def _read(self, size):
+        subprocess = self._subprocess
+        if subprocess is None:
+            return ''
+        data = subprocess.stdout.read(size)
+        self.data.write(data)
+        return data
 
     def pause(self):
         self.paused = True
@@ -121,6 +133,9 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         os.chdir(cwd)
         self._openDialog = wx.FileDialog(self, 'Choose a file', '', '',
             '*.usb', wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        self._saveDialog = wx.FileDialog(self, 'File to save as', '', '',
+            '*.usb', wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        self._enableSave(False)
         image_size = (16, 16)
         self.image_list = image_list = wx.ImageList(*image_size)
         self._folderClosed = image_list.Add(wx.ArtProvider_GetBitmap(
@@ -141,6 +156,13 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         self._initEventList(self.bus_list)
         if loadfile is not None:
             self.openFile(loadfile)
+
+    def _enableSave(self, enable):
+        self._enableId(wx.ID_SAVE, enable)
+
+    def _enableId(self, ident, enable):
+        self.menubar.Enable(ident, enable)
+        self.toolbar.EnableTool(ident, enable)
 
     def _getHubEventList(self, device):
         try:
@@ -218,6 +240,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
 
     def onStop(self, event):
         self._capture.stop()
+        self._enableSave(True)
 
     def onPause(self, event):
         if self._capture.paused:
@@ -225,9 +248,17 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         else:
             self._capture.pause()
 
+    def onSave(self, event):
+        dialog = self._saveDialog
+        if dialog.ShowModal() == wx.ID_OK:
+            # XXX: very naive implementation.
+            with open(dialog.GetPath(), 'w') as out:
+                out.write(self._capture.data.getvalue())
+
     def onOpen(self, event):
         dialog = self._openDialog
         if dialog.ShowModal() == wx.ID_OK:
+            self._enableSave(False)
             self.openFile(dialog.GetPath())
 
     def openFile(self, path):
