@@ -13,7 +13,8 @@ from iti1480a.parser import tic_to_time, short_tic_to_time, \
     ReorderedStream, MESSAGE_RAW, MESSAGE_RESET, MESSAGE_TRANSACTION, \
     decode, TOKEN_TYPE_ACK, TOKEN_TYPE_NAK, TOKEN_TYPE_STALL, \
     TOKEN_TYPE_NYET, Packetiser, TransactionAggregator, PipeAggregator, \
-    Endpoint0TransferAggregator, MESSAGE_TRANSFER, ParsingDone
+    Endpoint0TransferAggregator, MESSAGE_TRANSFER, ParsingDone, \
+    TOKEN_TYPE_PRE_ERR
 
 class Capture(object):
     _subprocess = None
@@ -98,7 +99,10 @@ class EndpointEventListManager(EventListManagerBase):
 
     def _decode(self, packets):
         decoded = [decode(x) for x in packets]
-        start = decoded[0]
+        if packets[0][0] == TOKEN_TYPE_PRE_ERR:
+            start = decoded[1]
+        else:
+            start = decoded[0]
         interface = '' # TODO
         handshake = decoded[-1]
         if handshake['name'] in (TOKEN_TYPE_ACK, TOKEN_TYPE_NAK,

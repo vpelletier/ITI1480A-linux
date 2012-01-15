@@ -577,10 +577,10 @@ class Endpoint0TransferAggregator(BaseYaccAggregator):
     def __init__(self, *args, **kw):
         super(Endpoint0TransferAggregator, self).__init__(*args, **kw)
         self._token_dispatcher = {
-            TOKEN_TYPE_SETUP: self._setup,
-            TOKEN_TYPE_IN: self._data,
-            TOKEN_TYPE_OUT: self._data,
-            TOKEN_TYPE_PING: self._ping,
+            TOKEN_TYPE_SETUP: (self._setup, self._slowSetup),
+            TOKEN_TYPE_IN: (self._data, self._slowData),
+            TOKEN_TYPE_OUT: (self._data, self._slowData),
+            TOKEN_TYPE_PING: (self._ping, ), # No slow ping
         }
 
     def push(self, tic, transaction_type, data):
@@ -592,16 +592,33 @@ class Endpoint0TransferAggregator(BaseYaccAggregator):
             - token (in yacc terms) value
         """
         assert transaction_type == MESSAGE_TRANSACTION, transaction_type
-        self._token_dispatcher[data[0][0]](data)
+        token_type = data[0][0]
+        slow = data[0][0] == TOKEN_TYPE_PRE_ERR
+        if slow:
+            token_type = data[1][0]
+        self._token_dispatcher[token_type][slow](data)
+
+    def __setup(self, offset, data):
+        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(TOKEN_TYPE_SETUP, data[offset][1][1][1] & 0x80)], data)
 
     def _setup(self, data):
-        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(TOKEN_TYPE_SETUP, data[1][1][1][1] & 0x80)], data)
+        self.__setup(1, data)
+
+    def _slowSetup(self, data):
+        self.__setup(3, data)
 
     def _ping(self, data):
         self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(TOKEN_TYPE_PING, data[-1][0])], data)
 
+    def __data(self, offset, data):
+        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(data[offset][0], data[-1][0])], data)
+
     def _data(self, data):
-        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(data[0][0], data[-1][0])], data)
+        self.__data(0, data)
+
+    def _slowData(self, data):
+        self.__data(1, data)
+
 
 class PipeAggregator(BaseAggregator):
     """
@@ -658,11 +675,14 @@ class PipeAggregator(BaseAggregator):
         """
         tic & transaction_type: passed through
         data: list of USB transactions
-        Parses the first transaction to know destination address and endpoint,
-        and passes all parameters to appropriate BaseAggregator instance's
-        "push".
+        Parses the first transaction (and possibly second, if first is a
+        low-speed marker) to know destination address and endpoint, and passes
+        all parameters to appropriate BaseAggregator instance's "push".
         """
-        decoded = decode(data[0])
+        if data[0][0] == TOKEN_TYPE_PRE_ERR:
+            decoded = decode(data[1])
+        else:
+            decoded = decode(data[0])
         address = decoded.get('address')
         if address is None:
             aggregator = self._to_next
