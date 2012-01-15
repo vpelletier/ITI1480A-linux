@@ -4,6 +4,7 @@ import wx
 import threading
 import signal
 import subprocess
+import sys
 
 # TODO: use wxWidget 2.9 wxTreeCtrl
 from wx.gizmos import TreeListCtrl
@@ -26,11 +27,8 @@ class Capture(object):
 
     def start(self):
         # TODO: unhardcode paths and make them portable.
-        # Maybe import capture and run its entry point directly...
-        # Anyway, the whole way this class works needs a (re)think.
-        # ...When GUI works fine, that is.
         self._subprocess = capture = subprocess.Popen([
-            '../iti1480a/capture.py', '-f', '/lib/firmware/ITI1480A.rbf', '-v'],
+            sys.executable, '-m', 'iti1480a.capture', '-f', '/lib/firmware/ITI1480A.rbf', '-v'],
             stdout=subprocess.PIPE,
         )
         self._open_thread = read_thread = threading.Thread(
