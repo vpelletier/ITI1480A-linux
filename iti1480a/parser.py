@@ -62,6 +62,13 @@ class BaseAggregator(object):
         """
         pass
 
+class NoopAggregator(BaseAggregator):
+    """
+    Simple wrapper for a callable aggregator.
+    """
+    def __init__(self, push):
+        self.push = push
+
 # RxCmd: see ISP1505A/ISP1505C datasheet
 RXCMD_LIST = (
     (0x01, 'DATA0'),
