@@ -354,7 +354,6 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 wx.MutexGuiEnter()
                 try:
                     SetGaugeValue(read_length)
-                    pass
                 finally:
                     wx.MutexGuiLeave()
             try:
