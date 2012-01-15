@@ -713,9 +713,9 @@ class Packetiser(BaseAggregator):
 
     def __init__(self, to_next, to_top):
         self._type_dict = {
-            TYPE_EVENT: self.event,
-            TYPE_DATA: self.data,
-            TYPE_RXCMD: self.rxcmd,
+            TYPE_EVENT: self._event,
+            TYPE_DATA: self._data,
+            TYPE_RXCMD: self._rxcmd,
         }
         self._to_next = to_next
         self._to_top = to_top
@@ -731,7 +731,7 @@ class Packetiser(BaseAggregator):
             self._reset_start_tic = None
         self._type_dict[packet_type](tic, data)
 
-    def event(self, tic, data):
+    def _event(self, tic, data):
         try:
             caption = EVENT_DICT[data]
         except KeyError:
@@ -749,11 +749,11 @@ class Packetiser(BaseAggregator):
             self._to_next.push(self._data)
         self._to_next.stop()
 
-    def data(self, tic, data):
+    def _data(self, tic, data):
         assert self._rxactive
         self._data.append((tic, data))
 
-    def rxcmd(self, tic, data):
+    def _rxcmd(self, tic, data):
         # TODO:
         # - RxError
         # - Data0 & Data1
