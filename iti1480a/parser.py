@@ -13,6 +13,12 @@ from threading import Thread, Lock
 # Chosen scheme shows great success: total run time when profiled went under
 # 40s for same data set.
 class SimpleQueue(object):
+    """
+    Similar to Queue.Queue but with simpler locking scheme, reducing lock
+    contention. Also means it becomes just a queue: no reliable way to tell if
+    it's empty nor how many objects are in it. As a result, there is no limit
+    to queue size.
+    """
     def __init__(self):
         self._lock = Lock()
         self._queue = deque()
@@ -31,6 +37,12 @@ class SimpleQueue(object):
         self._lock.release()
 
 class ParsingDone(Exception):
+    """
+    Raised when capture end is found.
+
+    More efficient than testing on each iteration, as there is one end per
+    parsing session.
+    """
     pass
 
 class BaseAggregator(object):
@@ -152,6 +164,10 @@ TIC_HEAD_MASK = 0xf
 TIME_INITIAL_MULTIPLIER = 100.0 / 6 # 16.666...
 
 def tic_to_time(tic):
+    """
+    Represent a tic count as a human-readable time with full precision, from
+    minute to nanoseconds.
+    """
     tic = int(tic * TIME_INITIAL_MULTIPLIER)
     tic, nano = divmod(tic, 1000)
     tic, micro = divmod(tic, 1000)
@@ -160,6 +176,15 @@ def tic_to_time(tic):
     return '%03i:%02i.%03i\'%03i"%03in' % (minute, sec, mili, micro, nano)
 
 def short_tic_to_time(tic):
+    """
+    Represent tic count as a human-readable time with limited precision to the
+    most significant value pair:
+    - minutes & seconds
+    - milli- & microseconds
+    - micro- & nanoseconds.
+    """
+    # XXX: is the seconds & milliseconds needed ? Actually, minutes & seconds
+    # should not be of much use here...
     tic = int(tic * TIME_INITIAL_MULTIPLIER)
     tic, nano = divmod(tic, 1000)
     tic, micro = divmod(tic, 1000)
@@ -173,11 +198,17 @@ def short_tic_to_time(tic):
 TIC_TO_MICROSECOND = TIME_INITIAL_MULTIPLIER / 1000
 
 def tic_to_us(tic):
+    """
+    Convert a tic count in a floating-point microsecond value.
+    """
     return tic * TIC_TO_MICROSECOND
 
 TIC_TO_SECOND = TIME_INITIAL_MULTIPLIER / 1000000000
 
 def tic_to_s(tic):
+    """
+    Convert a tic count in a floating-point second value.
+    """
     return tic * TIC_TO_SECOND
 
 RXCMD_VBUS_HL_DICT = {
@@ -187,8 +218,11 @@ RXCMD_VBUS_HL_DICT = {
     0xc: 'OTG VBus on',
 }
 
+# Duration of a reset after which a device is supposed to have noticed it (as
+# per USB specs).
 MIN_RESET_TIC = 2.5 * TIME_INITIAL_MULTIPLIER # 2.5 us
 
+# Standard USB PIDs.
 PID_OUT = 0x1
 PID_ACK = 0x2
 PID_DATA0 = 0x3
@@ -366,6 +400,11 @@ class _BaseYaccAggregator(Thread):
     __start = None
 
     def p_error(self, p):
+        """
+        Default parser error handler. Displays the token causing the error,
+        and internal parser state (relying on undocumented yacc internals, so
+        might go away/break some day).
+        """
         # XXX: relies on undocumented yacc internals.
         parser = self._parser
         statestack = parser.statestack
@@ -373,6 +412,15 @@ class _BaseYaccAggregator(Thread):
             parser.action[statestack[-1]]
 
     def __init__(self, token, to_next, to_top):
+        """
+        token (callable)
+            Returns a single token, to be fed to ply.yacc.
+            No parameters.
+        to_next (BaseAggregator.push)
+        to_top (callable)
+            Irregular parser production (ie, errors or warnings). Invocation
+            details are subclass-dependant.
+        """
         super(_BaseYaccAggregator, self).__init__()
         self.token = token
         self._to_next = to_next
@@ -380,7 +428,8 @@ class _BaseYaccAggregator(Thread):
         yacc_basename = self.__class__.__name__
         # We need to fool ply.yacc into thinking there is no "start" property
         # on its "module", otherwise it will try to use it as a sting in its
-        # grammar signature, failing.
+        # grammar signature, failing (it's actually a method from Thread
+        # class).
         self.start = None
         try:
             # I wish ply to generate parser.out file (with a name depending on
@@ -405,9 +454,19 @@ class _BaseYaccAggregator(Thread):
         self._parse(lexer=self)
 
 class BaseYaccAggregator(BaseAggregator):
+    """
+    Base class for ply.yacc-based aggregators.
+    Handles generic threading details.
+    """
     _yacc_class = None
 
     def __init__(self, to_next, to_top):
+        """
+        to_next (BaseAggregator)
+        to_top (callable)
+            Irregular parser production (ie, errors or warnings). Invocation
+            details are subclass-dependant.
+        """
         self._to_next = to_next
         self._to_top = to_top
         self.__to_yacc = to_yacc = SimpleQueue()
@@ -504,6 +563,9 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
             p[0] = data
 
 class Endpoint0TransferAggregator(BaseYaccAggregator):
+    """
+    Aggregates SETUP transactions.
+    """
     _yacc_class = _Endpoint0TransferAggregator
     def __init__(self, *args, **kw):
         super(Endpoint0TransferAggregator, self).__init__(*args, **kw)
@@ -535,7 +597,21 @@ class Endpoint0TransferAggregator(BaseYaccAggregator):
         self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(data[0][0], data[-1][0])], data)
 
 class PipeAggregator(BaseAggregator):
+    """
+    Separates USB transactions per address and endpoint.
+    """
     def __init__(self, to_next, to_top, newHub, newPipe):
+        """
+        to_next (BaseAggregator)
+            Used for address-less transactions (SOF).
+        to_top
+            (unused)
+        newHub (callable)
+            Receives device address as parameter.
+        newPipe (callable)
+            Receives device address and endoint as parameters.
+        newHub and newPipe must return a BaseAggregator subclass instance.
+        """
         self._to_top = to_top
         self._pipe_dict = {}
         self._hub_dict = {}
@@ -553,6 +629,9 @@ class PipeAggregator(BaseAggregator):
         return self._pipe_dict[address].keys()
 
     def _getHub(self, address):
+        """
+        Return hub at given address. Create one if none is known.
+        """
         try:
             result = self._hub_dict[address]
         except KeyError:
@@ -560,6 +639,9 @@ class PipeAggregator(BaseAggregator):
         return result
 
     def _getPipe(self, address, endpoint):
+        """
+        Return pipe at given address and endpoint. Create one if none is known.
+        """
         try:
             device = self._pipe_dict[address]
         except KeyError:
@@ -575,6 +657,13 @@ class PipeAggregator(BaseAggregator):
         return aggregator
 
     def push(self, tic, transaction_type, data):
+        """
+        tic & transaction_type: passed through
+        data: list of USB transactions
+        Parses the first transaction to know destination address and endpoint,
+        and passes all parameters to appropriate BaseAggregator instance's
+        "push".
+        """
         decoded = decode(data[0])
         address = decoded.get('address')
         if address is None:
@@ -683,12 +772,26 @@ class _TransactionAggregator(_BaseYaccAggregator):
         p[0] = p[1]
 
 class TransactionAggregator(BaseYaccAggregator):
+    """
+    Aggregates consecutive USB packets into USB transactions.
+    Validates PID value of each packet.
+
+    to_next.push receives 3 parameters:
+    - first tic in transaction
+    - MESSAGE_TRANSACTION
+    - list of USB packets
+    to_top receives 3 parameters:
+    - packet tic
+    - MESSAGE_RAW
+    - string
+    """
     _yacc_class = _TransactionAggregator
 
     def push(self, packet):
         """
-        packet
-            List of 2-tuples: tic and data (both int)
+        packet (list of 2-tuples)
+            - tic (int)
+            - data (int, one byte)
         """
         assert packet
         tic, pid = packet[0]
@@ -706,12 +809,28 @@ class TransactionAggregator(BaseYaccAggregator):
         self._to_yacc(trans_type, packet)
 
 class Packetiser(BaseAggregator):
+    """
+    Aggregates consecutive data bytes with rxActive enabled into USB packets.
+    Also, handles data-less bus events (reset, device [dis]connection, bus
+    voltage changes...).
+    """
     _rxactive = False
     _reset_start_tic = None
     _vbus = None
     _connected = False
 
     def __init__(self, to_next, to_top):
+        """
+        to_next (BaseAggregator)
+            "push" is called with a list of 2-tuples:
+            - tic
+            - data byte
+        to_top (callable)
+            Called with 3 parameters:
+            - tic
+            - event type (MESSAGE_RAW, MESSAGE_RESET)
+            - event
+        """
         self._type_dict = {
             TYPE_EVENT: self._event,
             TYPE_DATA: self._data,
@@ -722,6 +841,13 @@ class Packetiser(BaseAggregator):
         self._data = []
 
     def push(self, tic, packet_type, data):
+        """
+        tic (int)
+        packet_type
+            One of TYPE_EVENT, TYPE_RXCMD, TYPE_DATA
+        data (int)
+            Byte.
+        """
         # TODO: recognise low-speed keep-alive.
         if self._reset_start_tic is not None and \
                 packet_type != TYPE_EVENT and (packet_type != TYPE_RXCMD or
@@ -777,12 +903,28 @@ class Packetiser(BaseAggregator):
         self._to_top(tic, MESSAGE_RAW, rendered)
 
 class ReorderedStream(BaseAggregator):
+    """
+    Transfor a serie of data chunks in .usb file order into tic count, type
+    and data values.
+    Incomplete chunk tail is preserved to be decoded with next data block.
+    """
     def __init__(self, out):
+        """
+        out (BaseAggregator)
+            "push" receives 3 parameters:
+            - tic count (arbitrarily long integer)
+            - type (TYPE_EVENT, TYPE_DATA or TYPE_RXCMD)
+            - data (1-byte integer)
+        """
         self._remain = ''
         self._out = out
         self._tic = 0
 
     def push(self, data):
+        """
+        data (string)
+            File chunk to process.
+        """
         out = self._out.push
         tic = self._tic
         read = StringIO(self._remain + data).read
