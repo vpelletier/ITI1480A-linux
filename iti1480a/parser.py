@@ -619,15 +619,6 @@ class PipeAggregator(BaseAggregator):
         self._newPipe = newPipe
         self._newHub = newHub
 
-    def getPipeAddresses(self):
-        return self._pipe_dict.keys()
-
-    def getHubAddresses(self):
-        return self._hub_dict.keys()
-
-    def getEndpoints(self, address):
-        return self._pipe_dict[address].keys()
-
     def _getHub(self, address):
         """
         Return hub at given address. Create one if none is known.
