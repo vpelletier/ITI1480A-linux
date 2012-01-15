@@ -330,6 +330,8 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
             SetGaugeValue = gauge.SetValue
         while True:
             data = read(read_buf)
+            if not data:
+                break
             if use_gauge:
                 read_length += len(data)
                 wx.MutexGuiEnter()
@@ -341,9 +343,6 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 parse(data)
             except ParsingDone:
                 stream.stop()
-                break
-            # XXX: shoud use a separate parameter
-            if use_gauge and len(data) < CHUNK_SIZE:
                 break
         if use_gauge:
             wx.MutexGuiEnter()
