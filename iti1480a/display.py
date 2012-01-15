@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from iti1480a.parser import MESSAGE_RAW, MESSAGE_RESET, MESSAGE_TRANSACTION, \
-    tic_to_time, Parser, ReorderedStream, decode
+    tic_to_time, ReorderedStream, decode, ParsingDone, Packetiser, \
+    TransactionAggregator
 import sys
 
 class HumanReadable(object):
@@ -67,16 +68,29 @@ def main():
         raw_write = open(options.tee, 'w').write
     else:
         raw_write = lambda x: None
-    stream = ReorderedStream(Parser(HumanReadable(write, options.verbose)))
+    def log(tic, packet_type, data):
+        # Note: printed out-of-order compared to HumanReadable output.
+        print tic_to_time(tic), packet_type, data
+    stream = ReorderedStream(
+        Packetiser(
+            TransactionAggregator(
+                HumanReadable(write, options.verbose),
+                log,
+            ),
+            log
+        )
+    )
     push = stream.push
     while True:
         data = read(CHUNK_SIZE)
         raw_write(data)
-        if push(data):
+        try:
+            push(data)
+        except ParsingDone:
             break
         if len(data) < CHUNK_SIZE and not options.follow:
-            stream.stop()
             break
+    stream.stop()
 
 if __name__ == '__main__':
     main()

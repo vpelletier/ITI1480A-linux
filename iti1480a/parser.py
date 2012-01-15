@@ -763,31 +763,6 @@ class Packetiser(object):
             rendered = RXCMD_VBUS_HL_DICT[vbus]
         self._to_top(tic, MESSAGE_RAW, rendered)
 
-class Parser(object):
-    def __init__(self, out):
-        self._packetiser = Packetiser(
-            TransactionAggregator(
-                out,
-                self.log
-            ),
-            self.log
-        )
-
-    def push(self, *args, **kw):
-        try:
-            self._packetiser.push(*args, **kw)
-        except ParsingDone, exc:
-            self.stop()
-            return True
-        return False
-
-    def stop(self):
-        self._packetiser.stop()
-
-    def log(self, tic, _, message):
-        # TODO: replace by a push and note that caller might receive event
-        # out-of-order (because of yacc thread).
-        print 'NewParser.log', tic_to_time(tic), _, message
 
 class ReorderedStream(object):
     def __init__(self, out):
@@ -833,12 +808,11 @@ class ReorderedStream(object):
                 else:
                     data = packet & 0xff
                 tic += tic_count
-                if out(tic, packet_type, data):
-                    return True
+                out(tic, packet_type, data)
         except struct_error:
             assert read() == ''
+        # XXX: self._tic is not updated if any unhandled exception is raised.
         self._tic = tic
-        return False
 
     def stop(self):
         self._out.stop()
