@@ -43,7 +43,7 @@ class Capture(object):
 
     def cont(self):
         self._subprocess.send_signal(signal.SIGCONT)
-        self._paused = False
+        self.paused = False
 
     def stop(self):
         self._subprocess.kill()
