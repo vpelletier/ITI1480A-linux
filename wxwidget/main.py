@@ -316,7 +316,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
             if event_type == MESSAGE_RAW:
                 addBaseTreeItem(self.capture_list, data, (), tic, ())
             elif event_type == MESSAGE_RESET:
-                addBaseTreeItem(self.capture_list, 'Reset (%s)' % (short_tic_to_time(data)), (), tic, ())
+                addBaseTreeItem(self.bus_list, 'Reset (%s)' % (short_tic_to_time(data)), (), tic, ())
             else:
                 raise NotImplementedError(event_type)
         captureEvent.stop = lambda: None
