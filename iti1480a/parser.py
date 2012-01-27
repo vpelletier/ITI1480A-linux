@@ -227,7 +227,7 @@ RXCMD_VBUS_HL_DICT = {
 
 # Duration of a reset after which a device is supposed to have noticed it (as
 # per USB specs).
-MIN_RESET_TIC = 2.5 * TIME_INITIAL_MULTIPLIER # 2.5 us
+MIN_RESET_TIC = 2500 / TIME_INITIAL_MULTIPLIER # 2.5 us
 
 # Standard USB PIDs.
 PID_OUT = 0x1
