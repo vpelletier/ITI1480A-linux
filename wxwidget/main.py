@@ -104,7 +104,8 @@ class EndpointEventListManager(EventListManagerBase):
             status = child_list[-1][1][3]
         self._addBaseTreeItem(caption, (device, endpoint, interface, status, speed, payload), first_child[2], child_list)
 
-    def _decode(self, packets):
+    @staticmethod
+    def _decode(packets):
         decoded = [decode(x) for x in packets]
         if packets[0][0] == TOKEN_TYPE_PRE_ERR:
             start = decoded[1]
@@ -326,7 +327,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
             if event_type == MESSAGE_RAW:
                 addBaseTreeItem(self.capture_list, data, (), tic, ())
             elif event_type == MESSAGE_RESET:
-                addBaseTreeItem(self.bus_list, 'Reset (%s)' % (short_tic_to_time(data)), (), tic, ())
+                addBaseTreeItem(self.bus_list, 'Reset (%s)' % (short_tic_to_time(data), ), (), tic, ())
             else:
                 raise NotImplementedError(event_type)
         captureEvent.stop = lambda: None

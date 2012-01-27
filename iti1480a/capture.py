@@ -236,8 +236,8 @@ def main():
             0x82,
             0x8000,
             timeout=500,
+            callback=usb_file_data_reader,
         )
-        data_reader.setCallback(usb_file_data_reader)
         data_reader.submit()
         append(data_reader)
 
