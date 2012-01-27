@@ -874,7 +874,8 @@ class Packetiser(BaseAggregator):
                 packet_type != TYPE_EVENT and (packet_type != TYPE_RXCMD or
                 data & RXCMD_VBUS_MASK != RXCMD_VBUS_MASK):
             if tic >= self._reset_start_tic + MIN_RESET_TIC:
-                self._to_top(tic, MESSAGE_RESET, tic - self._reset_start_tic)
+                self._to_top(self._reset_start_tic, MESSAGE_RESET,
+                    tic - self._reset_start_tic)
             self._reset_start_tic = None
         self._type_dict[packet_type](tic, data)
 
