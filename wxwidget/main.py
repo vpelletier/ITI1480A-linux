@@ -16,7 +16,8 @@ from iti1480a.parser import tic_to_time, short_tic_to_time, \
     decode, TOKEN_TYPE_ACK, TOKEN_TYPE_NAK, TOKEN_TYPE_STALL, \
     TOKEN_TYPE_NYET, Packetiser, TransactionAggregator, PipeAggregator, \
     Endpoint0TransferAggregator, MESSAGE_TRANSFER, ParsingDone, \
-    TOKEN_TYPE_PRE_ERR, BaseAggregator
+    TOKEN_TYPE_PRE_ERR, BaseAggregator, MESSAGE_TRANSACTION_ERROR, \
+    MESSAGE_TRANSFER_ERROR
 
 class Capture(object):
     _subprocess = None
@@ -82,18 +83,26 @@ class HubEventListManager(EventListManagerBase):
 
 class EndpointEventListManager(EventListManagerBase):
     def push(self, tic, transaction_type, data):
-        if transaction_type == MESSAGE_TRANSFER:
+        is_error = transaction_type in (MESSAGE_TRANSFER_ERROR, MESSAGE_TRANSACTION_ERROR)
+        if is_error:
+            caption, data =  data
+        if transaction_type in (MESSAGE_TRANSFER, MESSAGE_TRANSFER_ERROR):
             _decode = self._decode
             child_list = []
             append = child_list.append
             for _, packets in data:
                 append(_decode(packets))
-        elif transaction_type == MESSAGE_TRANSACTION:
+        elif transaction_type in (MESSAGE_TRANSACTION,
+                MESSAGE_TRANSACTION_ERROR):
             child_list = [self._decode(data)]
         first_child = child_list[0]
         device, endpoint, interface, _, speed, payload = first_child[1]
-        status = child_list[-1][1][3]
-        self._addBaseTreeItem(first_child[0], (device, endpoint, interface, status, speed, payload), first_child[2], child_list)
+        if is_error:
+            status = 'Incomplete'
+        else:
+            caption = first_child[0]
+            status = child_list[-1][1][3]
+        self._addBaseTreeItem(caption, (device, endpoint, interface, status, speed, payload), first_child[2], child_list)
 
     def _decode(self, packets):
         decoded = [decode(x) for x in packets]
@@ -155,6 +164,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         self._device_dict = {}
         self._initEventList(self.capture_list)
         self._initEventList(self.bus_list)
+        self._initEventList(self.error_list)
         if loadfile is not None:
             self.openFile(loadfile)
 
@@ -337,6 +347,8 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 wx.MutexGuiLeave()
             return HubEventListManager(event_list, addBaseTreeItem)
 
+        error_push = EndpointEventListManager(self.error_list, addBaseTreeItem).push
+
         def newPipe(address, endpoint):
             wx.MutexGuiEnter()
             try:
@@ -345,7 +357,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 wx.MutexGuiLeave()
             result = EndpointEventListManager(event_list, addBaseTreeItem)
             if endpoint == 0:
-                result = Endpoint0TransferAggregator(result, captureEvent)
+                result = Endpoint0TransferAggregator(result, error_push)
             return result
 
         read_length = 0
@@ -354,11 +366,11 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 TransactionAggregator(
                     PipeAggregator(
                         busEvent,
-                        captureEvent,
+                        error_push,
                         newHub,
                         newPipe,
                     ),
-                    captureEvent,
+                    error_push,
                 ),
                 captureEvent,
             )

@@ -335,6 +335,8 @@ MESSAGE_RAW = 0
 MESSAGE_RESET = 1
 MESSAGE_TRANSACTION = 2
 MESSAGE_TRANSFER = 3
+MESSAGE_TRANSACTION_ERROR = 4
+MESSAGE_TRANSFER_ERROR = 5
 
 TOKEN_TYPE_OUT = 'OUT'
 TOKEN_TYPE_ACK = 'ACK'
@@ -448,6 +450,10 @@ class _BaseYaccAggregator(Thread):
     def run(self):
         self._parse(lexer=self)
 
+    @staticmethod
+    def _getTokenTic(token):
+        raise NotImplementedError
+
     def p_error(self, p):
         """
         Default parser error handler. Displays the token causing the error,
@@ -456,9 +462,10 @@ class _BaseYaccAggregator(Thread):
         """
         # XXX: relies on undocumented yacc internals.
         parser = self._parser
-        statestack = parser.statestack
-        print 'yacc error on', p, 'statestack=', statestack, 'expected:', \
-            parser.action[statestack[-1]]
+        error_tokens = [x.value for x in parser.symstack if isinstance(x, LexToken)]
+        state = parser.statestack[-1]
+        self._to_top(self._getTokenTic(error_tokens[0]), self._error_type,
+            ('Expected: %r in yacc state %r, got %r' % (parser.action[state].keys(), state, p), error_tokens))
 
 class BaseYaccAggregator(BaseAggregator):
     """
@@ -513,6 +520,11 @@ ENDPOINT0_TRANSFER_TYPE_DICT = {
 class _Endpoint0TransferAggregator(_BaseYaccAggregator):
     tokens = ENDPOINT0_TRANSFER_TYPE_DICT.values()
     __start = 'transfers'
+    _error_type = MESSAGE_TRANSFER_ERROR
+
+    @staticmethod
+    def _getTokenTic(token):
+        return int(token[1][0][1][0][0])
 
     def p_transfers(self, p):
         """transfers : transfer
@@ -725,6 +737,11 @@ TRANSACTION_TYPE_DICT = {
 class _TransactionAggregator(_BaseYaccAggregator):
     tokens = TRANSACTION_TYPE_DICT.values() + [TOKEN_TYPE_SSPLIT, TOKEN_TYPE_CSPLIT]
     __start = 'transactions'
+    _error_type = MESSAGE_TRANSACTION_ERROR
+
+    @staticmethod
+    def _getTokenTic(token):
+        return token[1][0][0]
 
     def p_transactions(self, p):
         """transactions : transaction
