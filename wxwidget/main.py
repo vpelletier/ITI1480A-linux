@@ -393,8 +393,8 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
             try:
                 parse(data)
             except ParsingDone:
-                stream.stop()
                 break
+        stream.stop()
         if use_gauge:
             wx.MutexGuiEnter()
             try:
