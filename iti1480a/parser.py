@@ -540,7 +540,7 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
         data.extend(p[2])
         if len(p) == 4:
             data.extend(p[3])
-        self._to_next(None, MESSAGE_TRANSFER, data)
+        self._to_next(data[0][1][0][1][0][0], MESSAGE_TRANSFER, data)
 
     def p_out_handshake(self, p):
         """out_handshake : OUT_ACK
