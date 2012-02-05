@@ -407,19 +407,16 @@ class _BaseYaccAggregator(Thread):
     If only it had a "push" API...
     """
     __start = None
+    _must_stop = False
 
-    def __init__(self, token, to_next, to_top):
+    def __init__(self, to_next, to_top):
         """
-        token (callable)
-            Returns a single token, to be fed to ply.yacc.
-            No parameters.
         to_next (BaseAggregator.push)
         to_top (callable)
             Irregular parser production (ie, errors or warnings). Invocation
             details are subclass-dependant.
         """
         super(_BaseYaccAggregator, self).__init__()
-        self.token = token
         self._to_next = to_next
         self._to_top = to_top
         yacc_basename = self.__class__.__name__
@@ -445,7 +442,25 @@ class _BaseYaccAggregator(Thread):
         finally:
             # Restore access to class's "start" method
             del self.start
-        self._parse = parser.parse
+        try:
+            self.to_yacc = parser.push
+        except AttributeError:
+            queue = SimpleQueue()
+            self.token = queue.get
+            self.to_yacc = queue.put
+            self._parse = parser.parse
+            self._must_stop = True
+            self.daemon = True
+            self.start()
+        else:
+            parser.startPush()
+
+    def stop(self):
+        if self._must_stop:
+            assert self.is_alive()
+        self.to_yacc(None)
+        if self._must_stop:
+            self.join()
 
     def run(self):
         self._parse(lexer=self)
@@ -483,11 +498,8 @@ class BaseYaccAggregator(BaseAggregator):
         """
         self._to_next = to_next
         self._to_top = to_top
-        self.__to_yacc = to_yacc = SimpleQueue()
-        self._thread = thread = self._yacc_class(to_yacc.get, to_next.push,
-            to_top)
-        thread.daemon = True
-        thread.start()
+        self._thread = thread = self._yacc_class(to_next.push, to_top)
+        self.__to_yacc = thread.to_yacc
 
     def _to_yacc(self, token_type, token_data):
         token = LexToken()
@@ -495,12 +507,10 @@ class BaseYaccAggregator(BaseAggregator):
         token.value = (token_type, token_data)
         token.lineno = 0 # TODO: file offset
         token.lexpos = 0
-        self.__to_yacc.put(token)
+        self.__to_yacc(token)
 
     def stop(self):
-        assert self._thread.is_alive()
-        self.__to_yacc.put(None)
-        self._thread.join()
+        self._thread.stop()
         self._to_next.stop()
 
 ENDPOINT0_TRANSFER_TYPE_DICT = {
