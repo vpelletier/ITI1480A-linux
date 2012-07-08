@@ -1,9 +1,10 @@
-from struct import unpack, error as struct_error
-from cStringIO import StringIO
 from ply.yacc import yacc
 from ply.lex import LexToken
 from collections import deque
 from threading import Thread, Lock
+import itertools
+from ctypes import cast, POINTER, c_ushort
+c_ushort_p = POINTER(c_ushort)
 
 # I would like to use a Queue.Queue, but profiling shows they cause bad lock
 # contention: out of 1:30s total run, 40s of lock wait are spend on
@@ -966,7 +967,7 @@ class ReorderedStream(BaseAggregator):
             - type (TYPE_EVENT, TYPE_DATA or TYPE_RXCMD)
             - data (1-byte integer)
         """
-        self._remain = ''
+        self._remain = ()
         self._out = out
         self._tic = 0
 
@@ -975,48 +976,61 @@ class ReorderedStream(BaseAggregator):
         data (string)
             File chunk to process.
         """
+        if len(data) % 2:
+            raise ValueError('data len must be even')
         out = self._out.push
         tic = self._tic
-        read = StringIO(self._remain + data).read
-        def read16():
-            data = read(2)
-            # In case we won't have enough data to decode packet entirely
-            self._remain += data
-            return unpack('<H', data)[0]
+        data_short_list = cast(data, c_ushort_p)
+        next_data = itertools.chain(self._remain,
+            (data_short_list[x] for x in xrange(len(data) / 2))).next
         try:
             while True:
-                # Clear backlog at packet boundary
-                self._remain = ''
-                packet = read16()
-                head = packet >> 8
+                try:
+                    p1 = next_data()
+                except StopIteration:
+                    self._remain = ()
+                    break
+                head = p1 >> 8
                 packet_type = head >> TYPE_SHIFT
                 packet_len = (head >> LENGTH_SHIFT) & LENGTH_MASK
                 tic_count = head & TIC_HEAD_MASK
                 if packet_len:
-                    tic_count |= (packet & 0xff) << 4
+                    tic_count |= (p1 & 0xff) << 4
                     if packet_len > 1:
-                        packet = read16()
-                        tic_count |= (packet & 0xff00) << 4
+                        try:
+                            p2 = next_data()
+                        except StopIteration:
+                            self._remain = p1,
+                            break
+                        tic_count |= (p2 & 0xff00) << 4
                         if packet_len > 2:
-                            tic_count |= (packet & 0xff) << 20
+                            tic_count |= (p2 & 0xff) << 20
                             if packet_type == TYPE_TIME_DELTA:
                                 tic += tic_count
                                 continue
-                            packet = read16()
-                            assert packet & 0xff == 0, hex(packet)
-                            data = packet >> 8
+                            try:
+                                p3 = next_data()
+                            except StopIteration:
+                                self._remain = p1, p2
+                                break
+                            assert p3 & 0xff == 0, hex(p3)
+                            data = p3 >> 8
                         else:
-                            data = packet & 0xff
+                            data = p2 & 0xff
                     else:
-                        data = read16() >> 8
+                        try:
+                            data = next_data()
+                        except StopIteration:
+                            self._remain = p1,
+                            break
+                        assert data & 0xff == 0, hex(data)
+                        data >>= 8
                 else:
-                    data = packet & 0xff
+                    data = p1 & 0xff
                 tic += tic_count
                 out(tic, packet_type, data)
-        except struct_error:
-            assert read() == ''
-        # XXX: self._tic is not updated if any unhandled exception is raised.
-        self._tic = tic
+        finally:
+            self._tic = tic
 
     def stop(self):
         self._out.stop()
