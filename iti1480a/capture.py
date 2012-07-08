@@ -3,7 +3,6 @@ import sys
 import os
 import usb1
 import libusb1
-import select
 from struct import pack
 import time
 import signal
@@ -219,8 +218,6 @@ def main():
     signal.signal(signal.SIGCONT, resumingSignalHandler(analyzer,
         verbose=verbose))
 
-    poller = usb1.USBPoller(context, select.poll())
-
     usb_file_data_reader = usb1.USBTransferHelper()
     transfer_dump_callback = TransferDumpCallback(out_file, verbose=verbose)
     usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
@@ -246,22 +243,17 @@ def main():
             '(signals the pause to analyser)\nSIGCONT (fg) to unpause\n'
             'SIGINT (^C) / SIGTERM to gracefuly exit\n')
 
-    poll = poller.poll
     try:
         try:
             while pending(reader_list):
-                try:
-                    poll()
-                except select.error, (select_errno, error_text):
-                    if select_errno != errno.EINTR:
-                        raise
+                context.handleEventsTimeout(.5)
             sys.stderr.write('\n')
         finally:
             if verbose:
                 sys.stderr.write('\nExiting...\n')
             analyzer.stopCapture()
             while pending(reader_list):
-                poll()
+                context.handleEventsTimeout(.5)
             handle.releaseInterface(0)
     except Terminate:
         pass
