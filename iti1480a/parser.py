@@ -479,9 +479,23 @@ class _BaseYaccAggregator(Thread):
         # XXX: relies on undocumented yacc internals.
         parser = self._parser
         error_tokens = [x.value for x in parser.symstack if isinstance(x, LexToken)]
+        if error_tokens:
+            token_tic = self._getTokenTic(error_tokens[0])
+        elif p is None:
+            token_tic = None
+        else:
+            token_tic = self._getTokenTic(p.value)
         state = parser.statestack[-1]
-        self._to_top(self._getTokenTic(error_tokens[0]), self._error_type,
+        self._to_top(token_tic, self._error_type,
             ('Expected: %r in yacc state %r, got %r' % (parser.action[state].keys(), state, p), error_tokens))
+        if error_tokens:
+            # Restart parser and try again.
+            if hasattr(parser, 'startPush'):
+                parser.startPush()
+            else:
+                parser.restart()
+            parser.errok()
+            return p
 
 class BaseYaccAggregator(BaseAggregator):
     """
@@ -637,7 +651,14 @@ class Endpoint0TransferAggregator(BaseYaccAggregator):
         self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(TOKEN_TYPE_PING, data[-1][0])], data)
 
     def __data(self, offset, data):
-        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(data[offset][0], data[-1][0])], data)
+        try:
+            token_type = ENDPOINT0_TRANSFER_TYPE_DICT[(data[offset][0],
+                data[-1][0])]
+        except KeyError:
+            self._to_top(data[offset][1][0][0], MESSAGE_RAW,
+                ('Unexpected ep0 transfer token', data))
+        else:
+            self._to_yacc(token_type, data)
 
     def _data(self, data):
         self.__data(0, data)
