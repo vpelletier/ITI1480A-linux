@@ -1066,21 +1066,21 @@ class ReorderedStream(BaseAggregator):
                                 self._remain = p1, p2
                                 break
                             assert p3 & 0xff == 0, hex(p3)
-                            data = p3 >> 8
+                            payload = p3 >> 8
                         else:
-                            data = p2 & 0xff
+                            payload = p2 & 0xff
                     else:
                         try:
-                            data = next_data()
+                            payload = next_data()
                         except StopIteration:
                             self._remain = p1,
                             break
-                        assert data & 0xff == 0, hex(data)
-                        data >>= 8
+                        assert payload & 0xff == 0, hex(payload)
+                        payload >>= 8
                 else:
-                    data = p1 & 0xff
+                    payload = p1 & 0xff
                 tic += tic_count
-                out(tic, packet_type, data)
+                out(tic, packet_type, payload)
         finally:
             self._tic = tic
 
