@@ -1,9 +1,13 @@
+from struct import unpack
+from cStringIO import StringIO
 from ply.yacc import yacc
 from ply.lex import LexToken
 from collections import deque
 from threading import Thread, Lock
 import itertools
+import sys
 from ctypes import cast, POINTER, c_ushort
+LITTLE_ENDIAN = sys.byteorder == 'little'
 c_ushort_p = POINTER(c_ushort)
 
 # I would like to use a Queue.Queue, but profiling shows they cause bad lock
@@ -1032,9 +1036,14 @@ class ReorderedStream(BaseAggregator):
             raise ValueError('data len must be even')
         out = self._out.push
         tic = self._tic
-        data_short_list = cast(data, c_ushort_p)
-        next_data = itertools.chain(self._remain,
-            (data_short_list[x] for x in xrange(len(data) / 2))).next
+        if LITTLE_ENDIAN:
+            data_short_list = cast(data, c_ushort_p)
+            reader = (data_short_list[x] for x in xrange(len(data) / 2))
+        else:
+            read = StringIO(data).read
+            reader = (unpack('<H', read(2))[0]
+                for x in xrange(0, len(data) - 1, 2))
+        next_data = itertools.chain(self._remain, reader).next
         try:
             while True:
                 try:
