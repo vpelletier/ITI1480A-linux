@@ -71,6 +71,11 @@ class NoopAggregator(BaseAggregator):
         self.push = push
 
 # RxCmd: see ISP1505A/ISP1505C datasheet
+RXCMD_LINESTATE_MASK = 0x3
+RXCMD_LINESTATE_SE0 = 0x0
+RXCMD_LINESTATE_FS_J = 0x1
+RXCMD_LINESTATE_FS_K = 0x2
+RXCMD_LINESTATE_SE1 = 0x3
 RXCMD_LIST = (
     (0x01, 'DATA0'),
     (0x02, 'DATA1'),
@@ -226,9 +231,12 @@ RXCMD_VBUS_HL_DICT = {
     0xc: 'OTG VBus on',
 }
 
-# Duration of a reset after which a device is supposed to have noticed it (as
-# per USB specs).
+# Duration of an SE0 state after which a reset is detected.
+# See 7.1.7.5
 MIN_RESET_TIC = 2500 / TIME_INITIAL_MULTIPLIER # 2.5 us
+# See 7.1.13.2
+MIN_LS_EOP_TIC = 670 / TIME_INITIAL_MULTIPLIER # 670 ns
+MIN_FS_EOP_TIC = 82 / TIME_INITIAL_MULTIPLIER # 82 ns
 
 # Standard USB PIDs.
 PID_OUT = 0x1
@@ -338,6 +346,8 @@ MESSAGE_TRANSACTION = 2
 MESSAGE_TRANSFER = 3
 MESSAGE_TRANSACTION_ERROR = 4
 MESSAGE_TRANSFER_ERROR = 5
+MESSAGE_LS_EOP = 6
+MESSAGE_FS_EOP = 7
 
 TOKEN_TYPE_OUT = 'OUT'
 TOKEN_TYPE_ACK = 'ACK'
@@ -888,6 +898,8 @@ class Packetiser(BaseAggregator):
     _reset_start_tic = None
     _vbus = None
     _connected = False
+    _device_chirp = False
+    _high_speed = False
 
     def __init__(self, to_next, to_top):
         """
@@ -921,10 +933,21 @@ class Packetiser(BaseAggregator):
         # TODO: recognise low-speed keep-alive.
         if self._reset_start_tic is not None and \
                 packet_type != TYPE_EVENT and (packet_type != TYPE_RXCMD or
-                data & RXCMD_VBUS_MASK != RXCMD_VBUS_MASK):
-            if tic >= self._reset_start_tic + MIN_RESET_TIC:
-                self._to_top(self._reset_start_tic, MESSAGE_RESET,
-                    tic - self._reset_start_tic)
+                data & RXCMD_LINESTATE_MASK != RXCMD_LINESTATE_SE0):
+            duration = tic - self._reset_start_tic
+            if duration >= MIN_RESET_TIC:
+                ep0_type = MESSAGE_RESET
+            elif duration >= MIN_LS_EOP_TIC:
+                ep0_type = MESSAGE_LS_EOP
+            elif duration >= MIN_FS_EOP_TIC:
+                ep0_type = MESSAGE_FS_EOP
+            else:
+                ep0_type = None
+            if ep0_type is None:
+                self._to_top(self._reset_start_tic, MESSAGE_RAW,
+                    'Too short SE0 state: %s' % (duration, ))
+            elif ep0_type != MESSAGE_RESET or not self._high_speed:
+                self._to_top(self._reset_start_tic, ep0_type, duration)
             self._reset_start_tic = None
         self._type_dict[packet_type](tic, data)
 
@@ -942,9 +965,15 @@ class Packetiser(BaseAggregator):
         except KeyError:
             caption = '(unknown event 0x%02x)' % (data, )
         self._to_top(tic, MESSAGE_RAW, caption)
-        if data in (0xf, 0xb):
+        if data == 0xf or data == 0xb:
             self._connected = True
-        elif data in (0xf0, 0xf1):
+        elif data == 0x15:
+            self._device_chirp = True
+        elif data == 0x18 and self._device_chirp:
+            self._high_speed = True
+        elif data == 0x24:
+            self._high_speed = False
+        elif data == 0xf0 or data == 0xf1:
             raise ParsingDone
 
     def _data(self, tic, data):
@@ -954,7 +983,6 @@ class Packetiser(BaseAggregator):
     def _rxcmd(self, tic, data):
         # TODO:
         # - RxError
-        # - Data0 & Data1
         rxactive = data & 0x10
         if self._rxactive and not rxactive:
             self._to_next.push(self._data)
@@ -963,11 +991,14 @@ class Packetiser(BaseAggregator):
         if data & 0x20 and self._connected:
             rendered = 'Device disconnected'
             self._connected = False
+            self._device_chirp = False
+            self._high_speed = False
         else:
-            vbus = data & RXCMD_VBUS_MASK
-            if data == RXCMD_VBUS_MASK:
+            if self._reset_start_tic is None and \
+                    data & RXCMD_LINESTATE_MASK == RXCMD_LINESTATE_SE0:
                 # Maybe a reset, detect on next data
                 self._reset_start_tic = tic
+            vbus = data & RXCMD_VBUS_MASK
             if vbus == self._vbus:
                 return
             self._vbus = vbus

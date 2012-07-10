@@ -1,7 +1,8 @@
 #!/usr/bin/python
 from iti1480a.parser import MESSAGE_RAW, MESSAGE_RESET, MESSAGE_TRANSACTION, \
     tic_to_time, ReorderedStream, decode, ParsingDone, Packetiser, \
-    TransactionAggregator
+    TransactionAggregator, MESSAGE_LS_EOP, MESSAGE_FS_EOP, short_tic_to_time, \
+    MESSAGE_TRANSACTION_ERROR
 import sys
 
 class HumanReadable(object):
@@ -12,6 +13,9 @@ class HumanReadable(object):
             MESSAGE_RAW: lambda _, x: x,
             MESSAGE_RESET: self._reset,
             MESSAGE_TRANSACTION: self._transaction,
+            MESSAGE_TRANSACTION_ERROR: lambda _, x: repr(x),
+            MESSAGE_LS_EOP: self._ls_eop,
+            MESSAGE_FS_EOP: self._fs_eop,
         }
 
     def _print(self, tic, printable):
@@ -24,6 +28,14 @@ class HumanReadable(object):
 
     def _reset(self, _, data):
         return 'Device reset (%s)' % (short_tic_to_time(data), )
+
+    def _ls_eop(self, _, data):
+        return 'LS EOP (%s)' % (short_tic_to_time(data), )
+        pass
+
+    def _fs_eop(self, _, data):
+        return 'FS EOP (%s)' % (short_tic_to_time(data), )
+        pass
 
     def _transaction(self, tic, data, force=False):
         decoded = [decode(x) for x in data]
@@ -68,16 +80,14 @@ def main():
         raw_write = open(options.tee, 'w').write
     else:
         raw_write = lambda x: None
-    def log(tic, packet_type, data):
-        # Note: printed out-of-order compared to HumanReadable output.
-        print tic_to_time(tic), packet_type, data
+    human_readable = HumanReadable(write, options.verbose)
     stream = ReorderedStream(
         Packetiser(
             TransactionAggregator(
-                HumanReadable(write, options.verbose),
-                log,
+                human_readable,
+                human_readable.push,
             ),
-            log
+            human_readable.push
         )
     )
     push = stream.push
