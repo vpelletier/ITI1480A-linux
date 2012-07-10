@@ -103,7 +103,7 @@ class TransferDumpCallback(object):
         if not size:
             return True
         data = transfer.getBuffer()[:size]
-        if data[:2] in ('\xf0\x41', '\xf1\x41', '\x41\xf0', '\x41\xf1'):
+        if data[-2:] in ('\xf0\x41', '\xf1\x41', '\x41\xf0', '\x41\xf1'):
             self.transfer_end_count += 1
             result = self.transfer_end_count < 2
         else:
