@@ -121,13 +121,15 @@ class TransferDumpCallback(object):
                     sdelta = cap_size - last_size
                     if sdelta:
                         speed = sdelta / (now - last_time)
-                        suffix = ''
                         if speed > 1024:
                             speed /= 1024.
-                            suffix = 'k'
-                        if speed > 1024:
-                            speed /= 1024
-                            suffix = 'M'
+                            if speed > 1024:
+                                speed /= 1024
+                                suffix = 'M'
+                            else:
+                                suffix = 'k'
+                        else:
+                            suffix = ''
                         sys.stderr.write('\nSpeed: %.02f %sB/s\n' % (
                             speed, suffix))
                 sys.stderr.write('Capture size: %i\r' % (cap_size, ))
