@@ -186,7 +186,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
             event_list, = self._device_dict[device]
         except KeyError:
             event_list = self._newEventList(self.device_notebook)
-            self._device_dict[endpoint] = (event_list, )
+            self._device_dict[device] = (event_list, )
             self.device_notebook.AddPage(event_list, 'Hub %i' % (device, ))
         assert not isinstance(event_list, dict), (device, event_list)
         return event_list
