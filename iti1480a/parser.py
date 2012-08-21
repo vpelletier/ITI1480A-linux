@@ -423,6 +423,7 @@ class _BaseYaccAggregator(Thread):
     """
     _start = None
     _must_stop = False
+    _error_type = None
 
     def __init__(self, to_next, to_top):
         """
