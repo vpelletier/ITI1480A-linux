@@ -30,7 +30,7 @@ class Capture(object):
 
     def start(self):
         # TODO: unhardcode paths and make them portable.
-        self._subprocess = capture = subprocess.Popen([
+        self._subprocess = subprocess.Popen([
             sys.executable, '-m', 'iti1480a.capture', '-f', '/lib/firmware/ITI1480A.rbf', '-v'],
             stdout=subprocess.PIPE,
         )
@@ -214,7 +214,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         return event_list
 
     def _initEventList(self, tree):
-        for column_id, (column_name, width) in enumerate([
+        for column_name, width in [
                     ('Time (min:sec.ms\'us"ns)', 140),
                     ('Item', 170),
                     ('Device', 40),
@@ -223,7 +223,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                     ('Status', 40),
                     ('Speed', 40),
                     ('Payload', 300),
-                ]):
+                ]:
             tree.AddColumn(column_name, width=width)
         tree.SetMainColumn(1)
         tree.AddRoot('')
