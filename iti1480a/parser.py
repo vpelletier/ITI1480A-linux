@@ -929,7 +929,7 @@ class Packetiser(BaseAggregator):
         }
         self._to_next = to_next
         self._to_top = to_top
-        self._data = []
+        self._data_list = []
 
     def push(self, tic, packet_type, data):
         """
@@ -963,9 +963,9 @@ class Packetiser(BaseAggregator):
     def stop(self):
         # TODO: flush any pending reset ? requires knowing last tic before
         # stop was called
-        if self._data:
-            self._to_next.push(self._data)
-            self._data = []
+        if self._data_list:
+            self._to_next.push(self._data_list)
+            self._data_list = []
         self._to_next.stop()
 
     def _event(self, tic, data):
@@ -987,15 +987,15 @@ class Packetiser(BaseAggregator):
 
     def _data(self, tic, data):
         assert self._rxactive
-        self._data.append((tic, data))
+        self._data_list.append((tic, data))
 
     def _rxcmd(self, tic, data):
         # TODO:
         # - RxError
         rxactive = data & 0x10
         if self._rxactive and not rxactive:
-            self._to_next.push(self._data)
-            self._data = []
+            self._to_next.push(self._data_list)
+            self._data_list = []
         self._rxactive = rxactive
         if data & 0x20 and self._connected:
             rendered = 'Device disconnected'
