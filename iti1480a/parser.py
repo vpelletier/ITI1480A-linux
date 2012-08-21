@@ -421,7 +421,7 @@ class _BaseYaccAggregator(Thread):
     Threaded, so ply.yacc can produce output as input is received.
     If only it had a "push" API...
     """
-    __start = None
+    _start = None
     _must_stop = False
 
     def __init__(self, to_next, to_top):
@@ -449,7 +449,7 @@ class _BaseYaccAggregator(Thread):
             # generated).
             self._parser = parser = yacc(
                 module=self,
-                start=self.__start,
+                start=self._start,
                 debugfile=yacc_basename + '_parser.out',
                 errorlog=_DummyLogger(),
                 write_tables=False,
@@ -558,7 +558,7 @@ ENDPOINT0_TRANSFER_TYPE_DICT = {
 
 class _Endpoint0TransferAggregator(_BaseYaccAggregator):
     tokens = ENDPOINT0_TRANSFER_TYPE_DICT.values()
-    __start = 'transfers'
+    _start = 'transfers'
     _error_type = MESSAGE_TRANSFER_ERROR
 
     @staticmethod
@@ -782,7 +782,7 @@ TRANSACTION_TYPE_DICT = {
 
 class _TransactionAggregator(_BaseYaccAggregator):
     tokens = TRANSACTION_TYPE_DICT.values() + [TOKEN_TYPE_SSPLIT, TOKEN_TYPE_CSPLIT]
-    __start = 'transactions'
+    _start = 'transactions'
     _error_type = MESSAGE_TRANSACTION_ERROR
 
     @staticmethod
