@@ -511,6 +511,9 @@ class _BaseYaccAggregator(Thread):
             parser.errok()
             return p
 
+    def p_empty(self, p):
+        """empty :"""
+
 class BaseYaccAggregator(BaseAggregator):
     """
     Base class for ply.yacc-based aggregators.
@@ -568,6 +571,7 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
     def p_transfers(self, p):
         """transfers : transfer
                      | transfers transfer
+                     | empty
         """
 
     def p_transfer(self, p):
@@ -792,6 +796,7 @@ class _TransactionAggregator(_BaseYaccAggregator):
     def p_transactions(self, p):
         """transactions : transaction
                         | transactions transaction
+                        | empty
         """
 
     def p_transaction(self, p):
