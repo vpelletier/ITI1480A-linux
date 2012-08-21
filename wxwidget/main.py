@@ -404,7 +404,6 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 wx.MutexGuiLeave()
 
 def main():
-    import sys
     if len(sys.argv) == 2:
         loadfile = sys.argv[1]
     else:
