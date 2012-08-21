@@ -35,11 +35,9 @@ class HumanReadable(object):
 
     def _ls_eop(self, _, data):
         return 'LS EOP (%s)' % (short_tic_to_time(data), )
-        pass
 
     def _fs_eop(self, _, data):
         return 'FS EOP (%s)' % (short_tic_to_time(data), )
-        pass
 
     def _transaction(self, tic, data, force=False):
         decoded = [decode(x) for x in data]
