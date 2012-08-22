@@ -88,6 +88,8 @@ def toIntelHex(spt_file):
                 else:
                     raise ValueError('Unknown CPUCS register value: %r' % (
                         data, ))
+            if offset in memory:
+                raise ValueError('Code overwriting itself: 0x%x' % (offset, ))
             memory[offset] = data
         if not found:
             break
