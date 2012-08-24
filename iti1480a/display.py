@@ -2,33 +2,38 @@
 from iti1480a.parser import MESSAGE_RAW, MESSAGE_RESET, MESSAGE_TRANSACTION, \
     tic_to_time, ReorderedStream, decode, ParsingDone, Packetiser, \
     TransactionAggregator, MESSAGE_LS_EOP, MESSAGE_FS_EOP, short_tic_to_time, \
-    MESSAGE_TRANSACTION_ERROR
+    MESSAGE_TRANSACTION_ERROR, TOKEN_TYPE_NAK, TOKEN_TYPE_SOF
 import sys
 
 class HumanReadable(object):
-    def __init__(self, write, verbose):
-        self._verbose = verbose
+    def __init__(self, write, error, verbosity):
         self._write = write
+        self._error_write = error
+        self._verbosity = verbosity
+        noop = lambda _, __: None
         self._dispatch = {
-            MESSAGE_RAW: lambda _, x: x,
-            MESSAGE_RESET: self._reset,
+            MESSAGE_RAW: (lambda _, x: x) if verbosity > -1 else noop,
+            MESSAGE_RESET: self._reset if verbosity > -1 else noop,
             MESSAGE_TRANSACTION: self._transaction,
-            MESSAGE_TRANSACTION_ERROR: lambda _, x: repr(x),
-            MESSAGE_LS_EOP: self._ls_eop,
-            MESSAGE_FS_EOP: self._fs_eop,
+            MESSAGE_TRANSACTION_ERROR: self._error,
+            MESSAGE_LS_EOP: self._ls_eop if verbosity > 1 else noop,
+            MESSAGE_FS_EOP: self._fs_eop if verbosity > 1 else noop,
         }
 
-    def _print(self, tic, printable):
+    def _print(self, tic, printable, write):
         if tic is None:
             time = '?'
         else:
             time = tic_to_time(tic)
-        self._write(time + ' ' + printable + '\n')
+        write(time + ' ' + printable + '\n')
 
     def push(self, tic, message_type, data):
         printable = self._dispatch[message_type](tic, data)
         if printable is not None:
-            self._print(tic, printable)
+            self._print(tic, printable, self._write)
+
+    def _error(self, tic, data):
+        self._print(tic, repr(data), self._error_write)
 
     def _reset(self, _, data):
         return 'Device reset (%s)' % (short_tic_to_time(data), )
@@ -39,8 +44,10 @@ class HumanReadable(object):
     def _fs_eop(self, _, data):
         return 'FS EOP (%s)' % (short_tic_to_time(data), )
 
-    def _transaction(self, tic, data, force=False):
-        decoded = [decode(x) for x in data]
+    def _transaction(self, _, data):
+        if (data[0][0] == TOKEN_TYPE_SOF and self._verbosity < 3) or (
+                data[-1][0] == TOKEN_TYPE_NAK and self._verbosity < 1):
+            return None
         result = ''
         for packet in data:
             if result:
@@ -58,8 +65,10 @@ CHUNK_SIZE = 16 * 1024
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option('-v', '--verbose', action='store_true',
-        help='Increase verbosity')
+    parser.add_option('-v', '--verbose', action='count',
+        default=0, help='Increase verbosity')
+    parser.add_option('-q', '--quiet', action='count',
+        default=0, help='Decrease verbosity')
     parser.add_option('-i', '--infile', default='-',
         help='Data source (default: stdin)')
     parser.add_option('-o', '--outfile', default='-',
@@ -82,7 +91,8 @@ def main():
         raw_write = open(options.tee, 'w').write
     else:
         raw_write = lambda x: None
-    human_readable = HumanReadable(write, options.verbose)
+    human_readable = HumanReadable(write, sys.stderr.write,
+        options.verbose - options.quiet)
     stream = ReorderedStream(
         Packetiser(
             TransactionAggregator(
