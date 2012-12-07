@@ -407,10 +407,8 @@ class _DummyLogger(object):
     def error(self, message, *args, **kw):
         # Actually, raising right away is more aggressive than what ply does...
         # But much simpler too.
-        assert bool(args) ^ bool(kw), (args, kw)
-        if args or kw:
-            message %= args or kw
-        raise Exception(message)
+        assert not (args and kw), (message, args, kw)
+        raise Exception(message % (args or kw))
 
     critical = error
 
