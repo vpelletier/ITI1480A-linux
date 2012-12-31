@@ -7,6 +7,8 @@ from threading import Thread, Lock
 import itertools
 import sys
 from ctypes import cast, POINTER, c_ushort
+import platform
+PYPY = platform.python_implementation() == 'PyPy'
 LITTLE_ENDIAN = sys.byteorder == 'little'
 c_ushort_p = POINTER(c_ushort)
 
@@ -1040,7 +1042,7 @@ class ReorderedStream(BaseAggregator):
             raise ValueError('data len must be even')
         out = self._out.push
         tic = self._tic
-        if LITTLE_ENDIAN:
+        if LITTLE_ENDIAN and not PYPY:
             data_short_list = cast(data, c_ushort_p)
             reader = (data_short_list[x] for x in xrange(len(data) / 2))
         else:
