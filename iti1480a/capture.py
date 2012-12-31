@@ -70,11 +70,6 @@ class USBAnalyzer(object):
             write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
                 conf_data)
         write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
-        # Experimental duration: measured delay between
-        # COMMAND_FPGA_CONFIGURE_STOP and async "read capture data" query, as
-        # sent by original software.
-        # It seems that accessing the device too early confuses it.
-        time.sleep(0.1)
 
     def stopCapture(self):
         self.writeCommand(COMMAND_STOP)
