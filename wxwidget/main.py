@@ -6,6 +6,7 @@ import signal
 import subprocess
 import sys
 from cStringIO import StringIO
+from collections import deque
 
 # TODO: use wxWidget 2.9 wxTreeCtrl
 from wx.gizmos import TreeListCtrl
@@ -18,6 +19,12 @@ from iti1480a.parser import tic_to_time, short_tic_to_time, \
     Endpoint0TransferAggregator, MESSAGE_TRANSFER, ParsingDone, \
     TOKEN_TYPE_PRE_ERR, BaseAggregator, MESSAGE_TRANSACTION_ERROR, \
     MESSAGE_TRANSFER_ERROR
+
+def maybeCallAfter(func, *args, **kw):
+    if wx.Thread_IsMain():
+        func(*args, **kw)
+    else:
+        wx.CallAfter(func, *args, **kw)
 
 class Capture(object):
     _subprocess = None
@@ -67,11 +74,21 @@ class Capture(object):
 
 class EventListManagerBase(BaseAggregator):
     # XXX: horrible API
-    def __init__(self, event_list, addBaseTreeItem):
+    def __init__(self, app, device, endpoint, addBaseTreeItem, event_list=None):
+        self._pipe = (device, endpoint)
+        self._app = app
         self._event_list = event_list
         self.__addBaseTreeItem = addBaseTreeItem
 
     def _addBaseTreeItem(self, *args, **kw):
+        if self._event_list is None:
+            maybeCallAfter(self._realAddBaseTreeItem, args, kw)
+        else:
+            self._realAddBaseTreeItem(args, kw)
+
+    def _realAddBaseTreeItem(self, args, kw):
+        if self._event_list is None:
+            self._event_list = self._app.getPipeEventList(*self._pipe)
         self.__addBaseTreeItem(self._event_list, *args, **kw)
 
     def push(self, tic, transaction_type, data):
@@ -181,53 +198,35 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         self.menubar.Enable(ident, enable)
         self.toolbar.EnableTool(ident, enable)
 
-    def _getHubEventList(self, device):
-        # XXX: might acquire gui mutex !
-        try:
-            event_list, = self._device_dict[device]
-        except KeyError:
-            wx.MutexGuiEnter()
-            try:
-                event_list = self._newEventList(self.device_notebook)
-                self.device_notebook.AddPage(event_list, 'Hub %i' % (device, ))
-            finally:
-                wx.MutexGuiLeave()
-            self._device_dict[endpoint] = (event_list, )
-        assert not isinstance(event_list, dict), (device, event_list)
-        return event_list
+    def _newHub(self, device):
+        event_list = self._newEventList(self.device_notebook)
+        self.device_notebook.AddPage(event_list, 'Hub %i' % (device, ))
+        self._device_dict[endpoint] = event_list
 
-    def _getEndpointEventList(self, device, endpoint):
-        # XXX: might acquire gui mutex !
+    def _newEndpoint(self, device, endpoint):
+        assert wx.Thread_IsMain()
         try:
             endpoint_notebook, endpoint_dict = self._device_dict[device]
         except KeyError:
             create_device = True
             endpoint_dict = {}
-            # XXX: gui mutex will be acquired twice, it is sub-optimal. It
-            # shouldn't harm too much, as it only happens on device misses
-            # (ie, once per device).
-            wx.MutexGuiEnter()
-            try:
-                endpoint_notebook = wx.Notebook(self.device_notebook, -1, style=0)
-            finally:
-                wx.MutexGuiLeave()
+            endpoint_notebook = wx.Notebook(self.device_notebook, -1, style=0)
             self._device_dict[device] = (endpoint_notebook, endpoint_dict)
         else:
             create_device = False
-        try:
-            event_list = endpoint_dict[endpoint]
-        except KeyError:
-            wx.MutexGuiEnter()
-            try:
-                endpoint_dict[endpoint] = event_list = self._newEventList(endpoint_notebook)
-                endpoint_notebook.AddPage(event_list, 'Ep %i' % (endpoint, ))
-                if create_device:
-                    self.device_notebook.AddPage(
-                        endpoint_notebook,
-                        'Device %i' % (device, ),
-                    )
-            finally:
-                wx.MutexGuiLeave()
+        endpoint_dict[endpoint] = event_list = self._newEventList(
+            endpoint_notebook)
+        endpoint_notebook.AddPage(event_list, 'Ep %i' % (endpoint, ))
+        if create_device:
+            self.device_notebook.AddPage(
+                endpoint_notebook,
+                'Device %i' % (device, ),
+            )
+
+    def getPipeEventList(self, device, endpoint):
+        event_list = self._device_dict[device]
+        if endpoint is not None:
+            event_list = event_list[1][endpoint]
         return event_list
 
     def _initEventList(self, tree):
@@ -331,22 +330,22 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                     grand_child_list) in child_list:
                 addTreeItem(tree_item, event_list, child_caption, child_data,
                     child_absolute_tic, grand_child_list)
-        tree_list = []
-        THRESHOLD = 500 # TODO: tweak (adaptatively ? use a timestamp ?)
+        tree_list = deque()
 
         def flushTreeList():
-            wx.MutexGuiEnter()
-            try:
-                for args, kw in tree_list:
-                    addTreeItem(args[0].GetRootItem(), *args, **kw)
-            finally:
-                wx.MutexGuiLeave()
-            del tree_list[:]
+            pop = tree_list.popleft
+            while True:
+                try:
+                    args, kw = pop()
+                except IndexError:
+                    break
+                addTreeItem(args[0].GetRootItem(), *args, **kw)
 
         def addBaseTreeItem(*args, **kw):
+            need_reschedule = not tree_list
             tree_list.append((args, kw))
-            if len(tree_list) > THRESHOLD:
-                flushTreeList()
+            if need_reschedule:
+                maybeCallAfter(flushTreeList)
 
         def captureEvent(tic, event_type, data):
             if event_type == MESSAGE_RAW:
@@ -366,18 +365,22 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         busEvent.push = busEvent
 
         def newHub(address):
-            return HubEventListManager(self._getHubEventList(address), addBaseTreeItem)
+            maybeCallAfter(self._newHub, address)
+            return HubEventListManager(self, address, None, addBaseTreeItem)
 
-        error_push = EndpointEventListManager(self.error_list, addBaseTreeItem).push
+        error_push = EndpointEventListManager(None, None, None,
+            addBaseTreeItem, event_list=self.error_list).push
 
         def newPipe(address, endpoint):
-            result = EndpointEventListManager(
-                self._getEndpointEventList(address, endpoint), addBaseTreeItem)
+            maybeCallAfter(self._newEndpoint, address, endpoint)
+            result = EndpointEventListManager(self, address, endpoint,
+                addBaseTreeItem)
             if endpoint == 0:
                 result = Endpoint0TransferAggregator(result, error_push)
             return result
 
-        read_length = 0
+        update_delta = self.load_gauge.GetRange() / 100
+        read_length = last_update = 0
         stream = ReorderedStream(
             Packetiser(
                 TransactionAggregator(
@@ -402,23 +405,24 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 break
             if use_gauge:
                 read_length += len(data)
-                wx.MutexGuiEnter()
-                try:
-                    SetGaugeValue(read_length)
-                finally:
-                    wx.MutexGuiLeave()
+                if read_length > last_update + update_delta:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+                    last_update = read_length
+                    # Side effect: causes a gui refresh, flushing "CallAfter" queue.
+                    wx.MutexGuiEnter()
+                    try:
+                        SetGaugeValue(read_length)
+                    finally:
+                        wx.MutexGuiLeave()
             try:
                 parse(data)
             except ParsingDone:
                 break
-        flushTreeList()
+        maybeCallAfter(flushTreeList)
         stream.stop()
         if use_gauge:
-            wx.MutexGuiEnter()
-            try:
-                gauge.Show(False)
-            finally:
-                wx.MutexGuiLeave()
+            maybeCallAfter(gauge.Show, False)
 
 def main():
     if len(sys.argv) == 2:
