@@ -311,7 +311,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         open_thread.start()
 
     def _openFile(self, read, use_gauge=False, read_buf=CHUNK_SIZE):
-        def addTreeItem(event_list, parent, caption, data, absolute_tic,
+        def addTreeItem(parent, event_list, caption, data, absolute_tic,
                 child_list):
             SetItemText = event_list.SetItemText
             SetItemImage = event_list.SetItemImage
@@ -329,16 +329,24 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                     which=wx.TreeItemIcon_Normal)
             for (child_caption, child_data, child_absolute_tic,
                     grand_child_list) in child_list:
-                addTreeItem(event_list, tree_item, child_caption, child_data,
+                addTreeItem(tree_item, event_list, child_caption, child_data,
                     child_absolute_tic, grand_child_list)
+        tree_list = []
+        THRESHOLD = 500 # TODO: tweak (adaptatively ? use a timestamp ?)
 
-        def addBaseTreeItem(event_list, caption, data, tic, child_list):
+        def flushTreeList():
             wx.MutexGuiEnter()
             try:
-                addTreeItem(event_list, event_list.GetRootItem(), caption, data, tic,
-                    child_list)
+                for args, kw in tree_list:
+                    addTreeItem(args[0].GetRootItem(), *args, **kw)
             finally:
                 wx.MutexGuiLeave()
+            del tree_list[:]
+
+        def addBaseTreeItem(*args, **kw):
+            tree_list.append((args, kw))
+            if len(tree_list) > THRESHOLD:
+                flushTreeList()
 
         def captureEvent(tic, event_type, data):
             if event_type == MESSAGE_RAW:
@@ -403,6 +411,7 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
                 parse(data)
             except ParsingDone:
                 break
+        flushTreeList()
         stream.stop()
         if use_gauge:
             wx.MutexGuiEnter()
