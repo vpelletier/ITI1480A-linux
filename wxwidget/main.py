@@ -182,35 +182,52 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         self.toolbar.EnableTool(ident, enable)
 
     def _getHubEventList(self, device):
+        # XXX: might acquire gui mutex !
         try:
             event_list, = self._device_dict[device]
         except KeyError:
-            event_list = self._newEventList(self.device_notebook)
-            self._device_dict[device] = (event_list, )
-            self.device_notebook.AddPage(event_list, 'Hub %i' % (device, ))
+            wx.MutexGuiEnter()
+            try:
+                event_list = self._newEventList(self.device_notebook)
+                self.device_notebook.AddPage(event_list, 'Hub %i' % (device, ))
+            finally:
+                wx.MutexGuiLeave()
+            self._device_dict[endpoint] = (event_list, )
         assert not isinstance(event_list, dict), (device, event_list)
         return event_list
 
     def _getEndpointEventList(self, device, endpoint):
+        # XXX: might acquire gui mutex !
         try:
             endpoint_notebook, endpoint_dict = self._device_dict[device]
         except KeyError:
             create_device = True
             endpoint_dict = {}
-            endpoint_notebook = wx.Notebook(self.device_notebook, -1, style=0)
+            # XXX: gui mutex will be acquired twice, it is sub-optimal. It
+            # shouldn't harm too much, as it only happens on device misses
+            # (ie, once per device).
+            wx.MutexGuiEnter()
+            try:
+                endpoint_notebook = wx.Notebook(self.device_notebook, -1, style=0)
+            finally:
+                wx.MutexGuiLeave()
             self._device_dict[device] = (endpoint_notebook, endpoint_dict)
         else:
             create_device = False
         try:
             event_list = endpoint_dict[endpoint]
         except KeyError:
-            endpoint_dict[endpoint] = event_list = self._newEventList(endpoint_notebook)
-            endpoint_notebook.AddPage(event_list, 'Ep %i' % (endpoint, ))
-            if create_device:
-                self.device_notebook.AddPage(
-                    endpoint_notebook,
-                    'Device %i' % (device, ),
-                )
+            wx.MutexGuiEnter()
+            try:
+                endpoint_dict[endpoint] = event_list = self._newEventList(endpoint_notebook)
+                endpoint_notebook.AddPage(event_list, 'Ep %i' % (endpoint, ))
+                if create_device:
+                    self.device_notebook.AddPage(
+                        endpoint_notebook,
+                        'Device %i' % (device, ),
+                    )
+            finally:
+                wx.MutexGuiLeave()
         return event_list
 
     def _initEventList(self, tree):
@@ -341,22 +358,13 @@ class ITI1480AMainFrame(wxITI1480AMainFrame):
         busEvent.push = busEvent
 
         def newHub(address):
-            wx.MutexGuiEnter()
-            try:
-                event_list = self._getHubEventList(address)
-            finally:
-                wx.MutexGuiLeave()
-            return HubEventListManager(event_list, addBaseTreeItem)
+            return HubEventListManager(self._getHubEventList(address), addBaseTreeItem)
 
         error_push = EndpointEventListManager(self.error_list, addBaseTreeItem).push
 
         def newPipe(address, endpoint):
-            wx.MutexGuiEnter()
-            try:
-                event_list = self._getEndpointEventList(address, endpoint)
-            finally:
-                wx.MutexGuiLeave()
-            result = EndpointEventListManager(event_list, addBaseTreeItem)
+            result = EndpointEventListManager(
+                self._getEndpointEventList(address, endpoint), addBaseTreeItem)
             if endpoint == 0:
                 result = Endpoint0TransferAggregator(result, error_push)
             return result
