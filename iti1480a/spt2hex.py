@@ -76,9 +76,7 @@ def toIntelHex(spt_file):
     ihx_list = []
     while True:
         memory = {}
-        found = False
         for offset, data in iterSPTCommands(spt_file):
-            found = True
             # Handle writes to CPUCS here, so we can detect end of file.
             if offset == CPUCS_OFFSET:
                 if data == CPUCS_RUN:
@@ -91,9 +89,7 @@ def toIntelHex(spt_file):
             if offset in memory:
                 raise ValueError('Code overwriting itself: 0x%x' % (offset, ))
             memory[offset] = data
-        if not found:
-            break
-        if len(memory):
+        if memory:
             ihx_file = StringIO()
             write = ihx_file.write
             offset_list = memory.keys()
