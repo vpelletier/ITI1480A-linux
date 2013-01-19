@@ -14,8 +14,10 @@ Dependencies:
 - libusb 1.0 [2]
 - python-libusb1 [3]
 - cycfx2prog [4]
-- ITI1480A.spt and ulpitest.rbf from "1480A USB Protocol Analyzer Software" [5]
+- ulpitest.rbf from "1480A USB Protocol Analyzer Software" [5]
   (and a way to install it: wine, Windows, ...)
+- either ITI1480A.spt from "1480A USB Protocol Analyzer Software" [5], or
+  fx2lib [8] and sdcc [9], see sources in CY7C68013A directory
 - udev [6]
 - ply (python lex yacc) [7]
 
@@ -26,11 +28,19 @@ Install:
   might not be what you want, or might even not be an existing user group in
   your distro (Debian here).
 - Install udev/ITI1480A.sh to /lib/udev
-- Extract Cypress FX2 firmware:
-    spt2hex.py /path/to/ITI1480A.spt
-  This can generate several files, use the highest-numbered one
-  (ITI1480A_1.hex is assumed here).
-- Install ITI1480A_1.hex to /lib/firmware/ITI1480A.hex
+- Install firmware. There are two possibilities:
+  Using ITI's ITI1480A.spt:
+  - Extract Cypress FX2 firmware:
+      spt2hex.py /path/to/ITI1480A.spt
+    This can generate several files, use the highest-numbered one
+    (ITI1480A_1.hex is assumed here).
+  - Install ITI1480A_1.hex to /lib/firmware/ITI1480A.hex
+  Otherwise, Using bundled firmware sources:
+  - Build the firmware:
+    cd CY7C68013A
+    FX2LIBDIR=/path_to/fx2lib/ make
+  - Install:
+    cp build/ITI1480A.ihx /lib/firmware
 - (Re)plug your protocol analyser
 
 To start a capture, run
@@ -61,3 +71,5 @@ too much.
     are welcome.
 [7] http://www.dabeaz.com/ply/
     See also https://github.com/vpelletier/ply for higher parsing speed.
+[8] https://github.com/mulicheng/fx2lib
+[9] http://sdcc.sourceforge.net

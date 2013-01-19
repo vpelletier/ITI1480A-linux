@@ -1,0 +1,12 @@
+Firmware for the Cypress FX2-LP chip on analyser board.
+
+To build it, you need fx2lib[1] and its dependencies.
+Download and build it, then put its path in your environement:
+  export FX2LIBDIR=~/git/fx2lib/
+  make
+
+Result is in "build" directory. To load it once on a plugged & unconfigured
+ITI1480A, there are two options. If you have fx2load:
+  make load
+If you have cycfx2prog:
+  make load-cycfx2prog
