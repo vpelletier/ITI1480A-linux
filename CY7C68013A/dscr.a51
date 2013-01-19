@@ -83,14 +83,16 @@ highspd_dscr_end:
 	.db	DSCR_ENDPOINT_TYPE	; bDescriptorType
 	.db	0x01			; bEndpointAdress
 	.db	ENDPOINT_TYPE_BULK	; bmAttributes
-	.dw	0x4000			; wMaxPacketSize
+	; this is a lie (64 bytes actually...)
+	.dw	0x0002			; wMaxPacketSize
 	.db	0x00			; bInterval
 ; endpoint 1 in
 	.db	DSCR_ENDPOINT_LEN	; bLength
 	.db	DSCR_ENDPOINT_TYPE	; bDescriptorType
 	.db	0x81			; bEndpointAdress
 	.db	ENDPOINT_TYPE_BULK	; bmAttributes
-	.dw	0x4000			; wMaxPacketSize
+	; this is a lie (64 bytes actually...)
+	.dw	0x0002			; wMaxPacketSize
 	.db	0x00			; bInterval
 ; endpoint 2 in
 	.db	DSCR_ENDPOINT_LEN	; bLength
