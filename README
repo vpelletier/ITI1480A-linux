@@ -49,6 +49,9 @@ get a human-friendly dump, you can use display.py:
   Watching and saving current capture session:
     capture.py -f /path/to/ulpitest.rbf | display.py -ft > out.usb
 
+Well, actually, there is a GUI. Look in wxwidget directory. But don't expect
+too much.
+
 [1] http://python.org/
 [2] http://www.libusb.org/wiki/libusb-1.0
 [3] http://pypi.python.org/pypi/libusb1
