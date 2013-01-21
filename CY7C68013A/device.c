@@ -149,7 +149,7 @@ void main_init(void) {
     handle_set_configuration(CONFIG_UNCONFIGURED);
 }
 
-static inline void FPGAConfigureStart(void) {
+inline void FPGAConfigureStart(void) {
     /* Put FPGA into reset stage. */
     /* Pull nCONFIG down */
     IOE &= ~FPGA_nCONFIG;
@@ -166,7 +166,7 @@ static inline void FPGAConfigureStart(void) {
 }
 
 __sbit __at 0x98+1 TI_clear;
-static inline void FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
+inline void FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
     /* Send len bytes from buf to FPGA. */
     __idata unsigned char preloaded;
     while (len) {
@@ -183,7 +183,7 @@ static inline void FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char 
 }
 
 
-static inline void outPortC(unsigned char value, unsigned char ioe_mask) {
+inline void outPortC(unsigned char value, unsigned char ioe_mask) {
     IOC = value;
     OEC = 0xff;
     IOE &= ~ioe_mask;
@@ -191,7 +191,7 @@ static inline void outPortC(unsigned char value, unsigned char ioe_mask) {
     OEC = 0;
 }
 
-static inline unsigned char inPortC(unsigned char ioe_mask) {
+inline unsigned char inPortC(unsigned char ioe_mask) {
     unsigned char result;
     IOE &= ~ioe_mask;
     result = IOC;
@@ -199,17 +199,17 @@ static inline unsigned char inPortC(unsigned char ioe_mask) {
     return result;
 }
 
-static inline unsigned char FPGACommandRecv(void) {
+inline unsigned char FPGACommandRecv(void) {
     outPortC(0x80, bmBIT0);
     return inPortC(bmBIT1);
 }
 
-static inline void FPGACommandSend(unsigned char command) {
+inline void FPGACommandSend(unsigned char command) {
     outPortC(0, bmBIT0);
     outPortC(command, bmBIT2);
 }
 
-static inline void compatible_main_loop(void) {
+inline void compatible_main_loop(void) {
     if (!(EP01STAT & bmEP1OUTBSY)) {
         if (EP1OUTBC == 64) {
             switch (EP1OUTBUF[0]) {
