@@ -60,3 +60,4 @@ too much.
 [6] Should come with your distro... Intergation with other similar mechanisms
     are welcome.
 [7] http://www.dabeaz.com/ply/
+    See also https://github.com/vpelletier/ply for higher parsing speed.
