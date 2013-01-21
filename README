@@ -31,7 +31,6 @@ Install:
   This can generate several files, use the highest-numbered one
   (ITI1480A_1.hex is assumed here).
 - Install ITI1480A_1.hex to /lib/firmware/ITI1480A.hex
-- Restart udev
 - (Re)plug your protocol analyser
 
 To start a capture, run
