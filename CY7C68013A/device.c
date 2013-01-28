@@ -166,7 +166,7 @@ inline void FPGAConfigureStart(void) {
 }
 
 __sbit __at 0x98+1 TI_clear;
-inline void FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
+inline BOOL FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
     /* Send len bytes from buf to FPGA. */
     __idata unsigned char preloaded;
     while (len) {
@@ -180,8 +180,26 @@ inline void FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
         TI_clear = 0;
         SBUF0 = preloaded;
     }
+    return !(IOE & FPGA_nSTATUS);
 }
 
+inline void FPGAConfigureStop(void) {
+    /* XXX: doesn't ensure the init stage is over.
+    INIT_DONE pin is attached to PD6/FD4. Maybe it
+    can be used ?
+    If FPGA uses internal 10MHz clock for init, it
+    takes 29.9us to finish configuration (and it
+    probably does, CLKUSR doesn't seem connected to
+    anything). */
+    IOA &= ~bmBIT1;
+    /* PortB pinout: FD[7:0]
+       PortD pinout: FD[15:8]
+    */
+    IFCONFIG = IFCFGFIFO;
+    /* XXX: assuming output clock is 48MHz */
+    SYNCDELAY; RESETFIFOS();
+    IOA |= bmBIT1;
+}
 
 inline void outPortC(unsigned char value, unsigned char ioe_mask) {
     IOC = value;
@@ -209,6 +227,18 @@ inline void FPGACommandSend(unsigned char command) {
     outPortC(command, bmBIT2);
 }
 
+inline void CommandPause(BYTE arg) {
+    FPGACommandSend(arg ? 2 : 0);
+}
+
+inline void CommandStop(void) {
+    FPGACommandSend(1);
+}
+
+inline BYTE CommandStatus() {
+    return FPGACommandRecv();
+}
+
 inline void compatible_main_loop(void) {
     if (!(EP01STAT & bmEP1OUTBSY)) {
         if (EP1OUTBC == 64) {
@@ -219,27 +249,12 @@ inline void compatible_main_loop(void) {
                             FPGAConfigureStart();
                             break;
                         case COMMAND_FPGA_CONFIGURE_WRITE:
-                            FPGAConfigureWrite(EP1OUTBUF + 2, EP1OUTBUF[63]);
-                            if (!(IOE & FPGA_nSTATUS)) {
+                            if (FPGAConfigureWrite(EP1OUTBUF + 2, EP1OUTBUF[63])) {
                                 EP1OUTCS |= bmEPSTALL;
                             }
                             break;
                         case COMMAND_FPGA_CONFIGURE_STOP:
-                            /* XXX: doesn't ensure the init stage is over.
-                            INIT_DONE pin is attached to PD6/FD4. Maybe it
-                            can be used ?
-                            If FPGA uses internal 10MHz clock for init, it
-                            takes 29.9us to finish configuration (and it
-                            probably does, CLKUSR doesn't seem connected to
-                            anything). */
-                            IOA &= ~bmBIT1;
-                            /* PortB pinout: FD[7:0]
-                               PortD pinout: FD[15:8]
-                            */
-                            IFCONFIG = IFCFGFIFO;
-                            /* XXX: assuming output clock is 48MHz */
-                            SYNCDELAY; RESETFIFOS();
-                            IOA |= bmBIT1;
+                            FPGAConfigureStop();
                             break;
                         default:
                             EP1OUTCS |= bmEPSTALL;
@@ -247,15 +262,15 @@ inline void compatible_main_loop(void) {
                     }
                     break;
                 case COMMAND_STOP:
-                    FPGACommandSend(1);
+                    CommandStop();
                     break;
                 case COMMAND_STATUS:
                     EP1INBUF[0] = 2;
-                    EP1INBUF[1] = FPGACommandRecv();
+                    EP1INBUF[1] = CommandStatus();
                     SYNCDELAY; EP1INBC = 64;
                     break;
                 case COMMAND_PAUSE:
-                    FPGACommandSend(EP1OUTBUF[1] ? 2 : 0);
+                    CommandPause(EP1OUTBUF[1]);
                     break;
                 default:
                     EP1OUTCS |= bmEPSTALL;
