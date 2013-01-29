@@ -7,8 +7,6 @@
 #define IFCFGFIFO (bmIFCFG0 | bmIFCFG1)
 #define bmSLCS bmBIT6
 #define bmEP1OUTBSY bmBIT1
-#define bmDYN_OUT bmBIT1
-#define bmENH_PKT bmBIT0
 #define TYPEBULK bmBIT5
 
 #define FPGA_nCONFIG bmBIT7
@@ -60,7 +58,7 @@ BOOL handle_set_configuration(BYTE cfg) {
     endpoints even if there is no clock on IFCLK input */
     IFCONFIG = bmIFCLKSRC | bm3048MHZ;
     SYNCDELAY;
-    REVCTL = bmDYN_OUT | bmENH_PKT; SYNCDELAY;
+    REVCTL = bmNOAUTOARM | bmSKIPCOMMIT; SYNCDELAY;
     FIFORESET = bmNAKALL; SYNCDELAY;
     FIFORESET = bmNAKALL | 2; SYNCDELAY;
     FIFORESET = bmNAKALL | 4; SYNCDELAY;
