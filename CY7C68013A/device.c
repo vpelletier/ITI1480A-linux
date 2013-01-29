@@ -2,7 +2,7 @@
 #include <delay.h>
 #include <eputils.h>
 
-#define SYNCDELAY SYNCDELAY3
+#define SYNCDELAY() SYNCDELAY3
 #define CLKSPD48 bmCLKSPD1
 #define IFCFGFIFO (bmIFCFG0 | bmIFCFG1)
 #define bmSLCS bmBIT6
@@ -57,44 +57,44 @@ BOOL handle_set_configuration(BYTE cfg) {
     /* When changing configuration, use internal clock so we can configure
     endpoints even if there is no clock on IFCLK input */
     IFCONFIG = bmIFCLKSRC | bm3048MHZ;
-    SYNCDELAY;
-    REVCTL = bmNOAUTOARM | bmSKIPCOMMIT; SYNCDELAY;
-    FIFORESET = bmNAKALL; SYNCDELAY;
-    FIFORESET = bmNAKALL | 2; SYNCDELAY;
-    FIFORESET = bmNAKALL | 4; SYNCDELAY;
-    FIFORESET = bmNAKALL | 6; SYNCDELAY;
-    FIFORESET = bmNAKALL | 8; SYNCDELAY;
+    SYNCDELAY();
+    REVCTL = bmNOAUTOARM | bmSKIPCOMMIT; SYNCDELAY();
+    FIFORESET = bmNAKALL; SYNCDELAY();
+    FIFORESET = bmNAKALL | 2; SYNCDELAY();
+    FIFORESET = bmNAKALL | 4; SYNCDELAY();
+    FIFORESET = bmNAKALL | 6; SYNCDELAY();
+    FIFORESET = bmNAKALL | 8; SYNCDELAY();
     switch (cfg) {
         case CONFIG_UNCONFIGURED:
-            EP1OUTCFG &= ~bmVALID; SYNCDELAY;
-            EP1INCFG &= ~bmVALID; SYNCDELAY;
-            EP2CFG &= ~bmVALID; SYNCDELAY;
-            EP4CFG &= ~bmVALID; SYNCDELAY;
-            EP6CFG &= ~bmVALID; SYNCDELAY;
-            EP8CFG &= ~bmVALID; SYNCDELAY;
+            EP1OUTCFG &= ~bmVALID; SYNCDELAY();
+            EP1INCFG &= ~bmVALID; SYNCDELAY();
+            EP2CFG &= ~bmVALID; SYNCDELAY();
+            EP4CFG &= ~bmVALID; SYNCDELAY();
+            EP6CFG &= ~bmVALID; SYNCDELAY();
+            EP8CFG &= ~bmVALID; SYNCDELAY();
             break;
         case CONFIG_COMPATIBLE:
-            EP1OUTCFG = bmVALID | TYPEBULK; SYNCDELAY;
-            EP1INCFG = bmVALID | TYPEBULK; SYNCDELAY;
+            EP1OUTCFG = bmVALID | TYPEBULK; SYNCDELAY();
+            EP1INCFG = bmVALID | TYPEBULK; SYNCDELAY();
             // XXX: syncdelay not required by spec, although required for
             // similar regs.
-            EP1OUTBC = 0; SYNCDELAY;
-            EP2CFG = bmVALID | bmDIR | TYPEBULK; SYNCDELAY;
-            EP2FIFOCFG = bmAUTOIN | bmWORDWIDE; SYNCDELAY;
+            EP1OUTBC = 0; SYNCDELAY();
+            EP2CFG = bmVALID | bmDIR | TYPEBULK; SYNCDELAY();
+            EP2FIFOCFG = bmAUTOIN | bmWORDWIDE; SYNCDELAY();
             /* Autocommit 512B packets */
-            EP2AUTOINLENH = 2; SYNCDELAY;
-            EP2AUTOINLENL = 0; SYNCDELAY;
-            EP4CFG &= ~bmVALID; SYNCDELAY;
-            EP6CFG &= ~bmVALID; SYNCDELAY;
-            EP8CFG &= ~bmVALID; SYNCDELAY;
-            PINFLAGSAB = 0; SYNCDELAY;
-            PINFLAGSCD = 0; SYNCDELAY;
-            FIFOPINPOLAR = 0; SYNCDELAY;
+            EP2AUTOINLENH = 2; SYNCDELAY();
+            EP2AUTOINLENL = 0; SYNCDELAY();
+            EP4CFG &= ~bmVALID; SYNCDELAY();
+            EP6CFG &= ~bmVALID; SYNCDELAY();
+            EP8CFG &= ~bmVALID; SYNCDELAY();
+            PINFLAGSAB = 0; SYNCDELAY();
+            PINFLAGSCD = 0; SYNCDELAY();
+            FIFOPINPOLAR = 0; SYNCDELAY();
             break;
         default:
             return FALSE;
     }
-    FIFORESET = 0; SYNCDELAY;
+    FIFORESET = 0; SYNCDELAY();
     config = cfg;
     return TRUE;
 }
@@ -195,7 +195,7 @@ inline void FPGAConfigureStop(void) {
     */
     IFCONFIG = IFCFGFIFO;
     /* XXX: assuming output clock is 48MHz */
-    SYNCDELAY; RESETFIFOS();
+    SYNCDELAY(); RESETFIFOS();
     IOA |= bmBIT1;
 }
 
@@ -265,7 +265,7 @@ inline void compatible_main_loop(void) {
                 case COMMAND_STATUS:
                     EP1INBUF[0] = 2;
                     EP1INBUF[1] = CommandStatus();
-                    SYNCDELAY; EP1INBC = 64;
+                    SYNCDELAY(); EP1INBC = 64;
                     break;
                 case COMMAND_PAUSE:
                     CommandPause(EP1OUTBUF[1]);
@@ -275,8 +275,8 @@ inline void compatible_main_loop(void) {
                     break;
             }
         }
-        SYNCDELAY;
-        EP1OUTBC = 0; SYNCDELAY;
+        SYNCDELAY();
+        EP1OUTBC = 0; SYNCDELAY();
     }
 }
 
