@@ -4,6 +4,7 @@ from iti1480a.parser import MESSAGE_RAW, MESSAGE_RESET, MESSAGE_TRANSACTION, \
     TransactionAggregator, MESSAGE_LS_EOP, MESSAGE_FS_EOP, short_tic_to_time, \
     MESSAGE_TRANSACTION_ERROR, TOKEN_TYPE_ACK, TOKEN_TYPE_SOF
 import sys
+import time
 
 class HumanReadable(object):
     def __init__(self, write, error, verbosity):
@@ -110,8 +111,11 @@ def main():
             push(data)
         except ParsingDone:
             break
-        if len(data) < CHUNK_SIZE and not options.follow:
-            break
+        if len(data) < CHUNK_SIZE:
+            if options.follow:
+                time.sleep(1)
+            else:
+                break
     stream.stop()
 
 if __name__ == '__main__':
