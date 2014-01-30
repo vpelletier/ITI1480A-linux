@@ -5,6 +5,7 @@ from iti1480a.parser import MESSAGE_RAW, MESSAGE_RESET, MESSAGE_TRANSACTION, \
     MESSAGE_TRANSACTION_ERROR, TOKEN_TYPE_ACK, TOKEN_TYPE_SOF
 import sys
 import time
+import errno
 
 class HumanReadable(object):
     def __init__(self, write, error, verbosity):
@@ -104,19 +105,25 @@ def main():
         )
     )
     push = stream.push
-    while True:
-        data = read(CHUNK_SIZE)
-        raw_write(data)
-        try:
-            push(data)
-        except ParsingDone:
-            break
-        if len(data) < CHUNK_SIZE:
-            if options.follow:
-                time.sleep(1)
-            else:
+    try:
+        while True:
+            data = read(CHUNK_SIZE)
+            raw_write(data)
+            try:
+                push(data)
+            except ParsingDone:
                 break
-    stream.stop()
+            if len(data) < CHUNK_SIZE:
+                if options.follow:
+                    time.sleep(1)
+                else:
+                    break
+        stream.stop()
+    except IOError, exc:
+        if exc.errno != errno.EPIPE:
+            raise
+    except KeyboardInterrupt:
+        pass
 
 if __name__ == '__main__':
     main()
