@@ -929,8 +929,15 @@ class Packetiser(BaseAggregator):
             TYPE_RXCMD: self._rxcmd,
         }
         self._to_next = to_next
-        self._to_top = to_top
+        self._real_to_top = to_top
         self._data_list = []
+        self._reset_queue = []
+
+    def _to_top(self, *args, **kw):
+        if self._reset_start_tic is None:
+            self._real_to_top(*args, **kw)
+        else:
+            self._reset_queue.append((args, kw))
 
     def push(self, tic, packet_type, data):
         """
@@ -954,12 +961,16 @@ class Packetiser(BaseAggregator):
             else:
                 ep0_type = None
             if ep0_type is None:
-                self._to_top(self._reset_start_tic, MESSAGE_RAW,
+                self._real_to_top(self._reset_start_tic, MESSAGE_RAW,
                     'Too short SE0 state: %s' % (duration, ))
             elif ep0_type != MESSAGE_RESET or \
                     not self._reset_start_high_speed or \
                     not self._high_speed:
-                self._to_top(self._reset_start_tic, ep0_type, duration)
+                self._real_to_top(self._reset_start_tic, ep0_type, duration)
+            if self._reset_queue:
+                for args, kw in self._reset_queue:
+                    self._real_to_top(*args, **kw)
+                del self._reset_queue[:]
             self._reset_start_tic = None
         self._type_dict[packet_type](tic, data)
 
