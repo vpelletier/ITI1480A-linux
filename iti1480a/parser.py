@@ -950,7 +950,9 @@ class Packetiser(BaseAggregator):
         # TODO: recognise low-speed keep-alive.
         if self._reset_start_tic is not None and \
                 packet_type != TYPE_EVENT and (packet_type != TYPE_RXCMD or
-                data & RXCMD_LINESTATE_MASK != RXCMD_LINESTATE_SE0):
+                data & (
+                    RXCMD_EVENT_MASK | RXCMD_LINESTATE_MASK
+                ) != RXCMD_LINESTATE_SE0):
             duration = tic - self._reset_start_tic
             if duration >= MIN_RESET_TIC:
                 ep0_type = MESSAGE_RESET
