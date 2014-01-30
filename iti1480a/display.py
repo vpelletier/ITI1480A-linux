@@ -2,7 +2,7 @@
 from iti1480a.parser import MESSAGE_RAW, MESSAGE_RESET, MESSAGE_TRANSACTION, \
     tic_to_time, ReorderedStream, decode, ParsingDone, Packetiser, \
     TransactionAggregator, MESSAGE_LS_EOP, MESSAGE_FS_EOP, short_tic_to_time, \
-    MESSAGE_TRANSACTION_ERROR, TOKEN_TYPE_NAK, TOKEN_TYPE_SOF
+    MESSAGE_TRANSACTION_ERROR, TOKEN_TYPE_ACK, TOKEN_TYPE_SOF
 import sys
 
 class HumanReadable(object):
@@ -46,7 +46,7 @@ class HumanReadable(object):
 
     def _transaction(self, _, data):
         if (data[0][0] == TOKEN_TYPE_SOF and self._verbosity < 3) or (
-                data[-1][0] == TOKEN_TYPE_NAK and self._verbosity < 1):
+                data[-1][0] != TOKEN_TYPE_ACK and self._verbosity < 1):
             return None
         result = ''
         for packet in data:
