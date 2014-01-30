@@ -909,7 +909,7 @@ class Packetiser(BaseAggregator):
     _vbus = None
     _connected = False
     _device_chirp = False
-    _high_speed = False
+    _reset_start_high_speed = _high_speed = False
 
     def __init__(self, to_next, to_top):
         """
@@ -956,7 +956,9 @@ class Packetiser(BaseAggregator):
             if ep0_type is None:
                 self._to_top(self._reset_start_tic, MESSAGE_RAW,
                     'Too short SE0 state: %s' % (duration, ))
-            elif ep0_type != MESSAGE_RESET or not self._high_speed:
+            elif ep0_type != MESSAGE_RESET or \
+                    not self._reset_start_high_speed or \
+                    not self._high_speed:
                 self._to_top(self._reset_start_tic, ep0_type, duration)
             self._reset_start_tic = None
         self._type_dict[packet_type](tic, data)
@@ -1008,6 +1010,7 @@ class Packetiser(BaseAggregator):
                     data & RXCMD_LINESTATE_MASK == RXCMD_LINESTATE_SE0:
                 # Maybe a reset, detect on next data
                 self._reset_start_tic = tic
+                self._reset_start_high_speed = self._high_speed
             vbus = data & RXCMD_VBUS_MASK
             if vbus == self._vbus:
                 return
