@@ -57,7 +57,7 @@ get a human-friendly dump, you can use display.py:
     capture.py -f /path/to/ulpitest.rbf | display.py -f
 
   Watching and saving current capture session:
-    capture.py -f /path/to/ulpitest.rbf | display.py -ft > out.usb
+    capture.py -f /path/to/ulpitest.rbf | display.py -ft out.usb
 
 Well, actually, there is a GUI. Look in wxwidget directory. But don't expect
 too much.
