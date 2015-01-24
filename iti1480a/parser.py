@@ -812,12 +812,14 @@ class _TransactionAggregator(_BaseYaccAggregator):
                        | CSPLIT token handshake
                        | PRE_ERR SETUP PRE_ERR DATA0 ACK
                        | IN data ACK
+                       | IN data
                        | IN NAK
                        | IN STALL
                        | PRE_ERR IN low_speed_data PRE_ERR ACK
                        | PRE_ERR IN NAK
                        | PRE_ERR IN STALL
                        | OUT data handshake
+                       | OUT data
                        | PRE_ERR OUT PRE_ERR low_speed_data low_speed_handshake
                        | PING ACK
                        | PING NAK
