@@ -11,6 +11,5 @@ include $(FX2LIBDIR)/lib/fx2.mk
 load-cycfx2prog: $(BUILDDIR)/$(BASENAME).ihx
 	cycfx2prog -id="$(VID).$(PID)" "prg:$(BUILDDIR)/$(BASENAME).ihx" run
 
-# XXX: how portable is this ? Debian (& derived) only ? udev-based only ?
-#install: $(BUILDDIR)/$(BASENAME).ihx
-#	install -T "$(BUILDDIR)/$(BASENAME).ihx" /lib/firmware/ITI1480A.ihx
+install: $(BUILDDIR)/$(BASENAME).ihx
+	install -T "$(BUILDDIR)/$(BASENAME).ihx" /lib/firmware/ITI1480A.ihx
