@@ -911,7 +911,7 @@ class Packetiser(BaseAggregator):
     _device_chirp = False
     _reset_start_high_speed = _high_speed = False
 
-    def __init__(self, to_next, to_top):
+    def __init__(self, to_next, to_top, verbose=False):
         """
         to_next (BaseAggregator)
             "push" is called with a list of 2-tuples:
@@ -922,6 +922,7 @@ class Packetiser(BaseAggregator):
             - tic
             - event type (MESSAGE_RAW, MESSAGE_RESET)
             - event
+        verbose (bool)
         """
         self._type_dict = {
             TYPE_EVENT: self._event,
@@ -932,6 +933,7 @@ class Packetiser(BaseAggregator):
         self._real_to_top = to_top
         self._data_list = []
         self._reset_queue = []
+        self._verbose = verbose
 
     def _to_top(self, *args, **kw):
         if self._reset_start_tic is None:
@@ -988,8 +990,14 @@ class Packetiser(BaseAggregator):
         try:
             caption = EVENT_DICT[data]
         except KeyError:
-            caption = '(unknown event 0x%02x)' % (data, )
-        self._to_top(tic, MESSAGE_RAW, caption)
+            if self._verbose:
+                self._to_top(
+                    tic,
+                    MESSAGE_RAW,
+                    '(unknown event 0x%02x)' % (data, ),
+                )
+        else:
+            self._to_top(tic, MESSAGE_RAW, caption)
         if data == 0xf or data == 0xb:
             self._connected = True
         elif data == 0x15:
