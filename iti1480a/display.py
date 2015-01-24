@@ -31,8 +31,6 @@ TOKEN_COLOR = {
     TOKEN_TYPE_DATA2: COLOR_GREEN,
     TOKEN_TYPE_MDATA: COLOR_GREEN,
 
-    TOKEN_TYPE_PRE_ERR: COLOR_RED,
-
     TOKEN_TYPE_SOF: COLOR_GREY,
 }
 
@@ -150,7 +148,16 @@ class HumanReadable(object):
                 decoded = decode(packet)
             except IndexError:
                 break
-            result += '%s%-7s\x1b[0m ' % (TOKEN_COLOR[packet[0]], decoded['name'])
+            try:
+                result += TOKEN_COLOR[packet[0]]
+            except KeyError:
+                assert packet[0] == TOKEN_TYPE_PRE_ERR
+                # PRE if first token in transaction, ERR otherwise.
+                # Color & name appropriately.
+                result += COLOR_GREEN + 'PRE' if data[0][0] == TOKEN_TYPE_PRE_ERR else COLOR_RED + 'ERR'
+            else:
+                result += decoded['name'].ljust(7)
+            result += '\x1b[0m '
             if 'endpoint' in decoded:
                 result += '@%03i.%02i ' % (decoded['address'], decoded['endpoint'])
             elif 'port' in decoded:
