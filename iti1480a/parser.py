@@ -1020,7 +1020,7 @@ class Packetiser(BaseAggregator):
         # TODO:
         # - RxError
         rxactive = data & 0x10
-        if self._rxactive and not rxactive:
+        if self._rxactive and not rxactive and self._data_list:
             self._to_next.push(self._data_list)
             self._data_list = []
         self._rxactive = rxactive
