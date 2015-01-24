@@ -199,8 +199,9 @@ def short_tic_to_time(tic):
     Represent tic count as a human-readable time with limited precision to the
     most significant value pair:
     - minutes & seconds
+    - seconds & milliseconds
     - milli- & microseconds
-    - micro- & nanoseconds.
+    - micro- & nanoseconds
     """
     # XXX: is the seconds & milliseconds needed ? Actually, minutes & seconds
     # should not be of much use here...
@@ -208,8 +209,10 @@ def short_tic_to_time(tic):
     tic, nano = divmod(tic, 1000)
     tic, micro = divmod(tic, 1000)
     tic, mili = divmod(tic, 1000)
+    if tic > 60:
+        return '%i m, %i s' % divmod(tic, 60)
     if tic:
-        return '%03i:%02i' % divmod(tic, 60)
+        return '%i.%03i s' % (tic, mili)
     if mili:
         return '%i ms, %i us' % (mili, micro)
     return '%i us, %i ns' % (micro, nano)
