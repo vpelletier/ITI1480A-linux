@@ -13,7 +13,8 @@ I had no privileged access to any documentation of any kind.
 Dependencies
 ============
 
-- Python_ 2.4+ (though mostly tested with 2.7 nowadays) or pypy_
+- Python_ 2.4+ (though mostly tested with 2.7 nowadays) or pypy_ for ~7 times
+  faster parsing
 
 - libusb_ 1.0
 
@@ -21,9 +22,9 @@ Dependencies
 
 - cycfx2prog_
 
-- udev (should come from your distribution
+- udev (should come from your distribution)
 
-- ply_, or for better parsing performance you can try `my ply fork`_
+- ply_
 
 - ulpitest.rbf from `1480A USB Protocol Analyzer Software`_
   (`4.1.0b ultitest.rbf`_ is released stand-alone)
@@ -114,9 +115,8 @@ happens for implementation detail reasons, and is considered a bug.
 .. _libusb: http://www.libusb.org/wiki/libusb-1.0
 .. _python-libusb1: http://pypi.python.org/pypi/libusb1
 .. _cycfx2prog: http://www.triplespark.net/elec/periph/USB-FX2/software/
-.. _1480A USB Protocol Analyzer Software: http://www.internationaltestinstruments.com/ , can be installed with wine
+.. _1480A USB Protocol Analyzer Software: http://www.internationaltestinstruments.com/
 .. _4.1.0b ultitest.rbf: http://www.internationaltestinstruments.com/Downloads/UlpiTest.rbf
 .. _ply: http://www.dabeaz.com/ply/
-.. _my ply fork:  https://github.com/vpelletier/ply
 .. _fx2lib: https://github.com/henryhallam/fx2lib
 .. _sdcc: http://sdcc.sourceforge.net
