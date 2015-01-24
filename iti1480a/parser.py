@@ -973,8 +973,7 @@ class Packetiser(BaseAggregator):
             else:
                 ep0_type = None
             if ep0_type is None:
-                self._real_to_top(self._reset_start_tic, MESSAGE_RAW,
-                    'Too short SE0 state: %s' % (duration, ))
+                pass
             elif ep0_type != MESSAGE_RESET or \
                     not self._reset_start_high_speed or \
                     not self._high_speed:
