@@ -176,8 +176,8 @@ def pending(transfer_list):
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option('-f', '--firmware',
-        help='Path to firmware file to upload. (required)')
+    parser.add_option('-f', '--firmware', default='/lib/firmware/ITI1480A.rbf',
+        help='Path to firmware file to upload')
     parser.add_option('-d', '--device',
         help='USB device to use, in "bus.dev" format')
     parser.add_option('-o', '--out',
