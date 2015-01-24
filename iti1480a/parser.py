@@ -801,7 +801,6 @@ class _TransactionAggregator(_BaseYaccAggregator):
 
     def p_transaction(self, p):
         """transaction : SETUP DATA0 ACK
-                       | SETUP DATA0
                        | SSPLIT token data handshake
                        | SSPLIT token data
                        | SSPLIT token
@@ -812,21 +811,33 @@ class _TransactionAggregator(_BaseYaccAggregator):
                        | CSPLIT token handshake
                        | PRE_ERR SETUP PRE_ERR DATA0 ACK
                        | IN data ACK
-                       | IN data
                        | IN NAK
                        | IN STALL
                        | PRE_ERR IN low_speed_data PRE_ERR ACK
                        | PRE_ERR IN NAK
                        | PRE_ERR IN STALL
                        | OUT data handshake
-                       | OUT data
                        | PRE_ERR OUT PRE_ERR low_speed_data low_speed_handshake
                        | PING ACK
                        | PING NAK
                        | PING STALL
                        | SOF
         """
-        self._to_next(p[1][1][0][0], MESSAGE_INCOMPLETE if p[1][0] in NEED_HANDSHAKE_LIST and p[len(p) - 1][0] not in HANDSHAKE_LIST else MESSAGE_TRANSACTION, p[1:])
+        self._to_next(p[1][1][0][0], MESSAGE_TRANSACTION, p[1:])
+
+    def p_error(self, p):
+        # XXX: relying on undocumented properties
+        parser = self._parser
+        error_tokens = [x.value for x in parser.symstack if isinstance(x, LexToken)]
+        if error_tokens:
+            self._to_next(error_tokens[0][1][0][0], MESSAGE_INCOMPLETE, error_tokens)
+            # Restart parser and try again.
+            if hasattr(parser, 'startPush'):
+                parser.startPush()
+            else:
+                parser.restart()
+            parser.errok()
+            return p
 
     def p_token(self, p):
         """token : IN
