@@ -74,7 +74,7 @@ class HumanReadable(object):
             MESSAGE_RAW: (lambda _, x: x) if verbosity > -1 else noop,
             MESSAGE_RESET: self._reset if verbosity > -1 else noop,
             MESSAGE_TRANSACTION: self._transaction,
-            MESSAGE_INCOMPLETE: lambda x, y: self._transaction(x, y, incomplete=True),
+            MESSAGE_INCOMPLETE: (lambda x, y: self._transaction(x, y, incomplete=True)) if verbosity > 0 else noop,
             MESSAGE_TRANSACTION_ERROR: self._error,
             MESSAGE_LS_EOP: self._ls_eop if verbosity > 2 else noop,
             MESSAGE_FS_EOP: self._fs_eop if verbosity > 2 else noop,
