@@ -3,46 +3,17 @@ from struct import unpack
 from cStringIO import StringIO
 from ply.yacc import yacc
 from ply.lex import LexToken
-from collections import deque
-from threading import Thread, Lock
 import itertools
 import sys
 from ctypes import cast, POINTER, c_ushort
 import platform
+
+# Monkey-patch for ply.yacc defining startPush and push methods.
+from . import incremental_yacc
+
 PYPY = platform.python_implementation() == 'PyPy'
 LITTLE_ENDIAN = sys.byteorder == 'little'
 c_ushort_p = POINTER(c_ushort)
-
-# I would like to use a Queue.Queue, but profiling shows they cause bad lock
-# contention: out of 1:30s total run, 40s of lock wait are spend on
-# producer side and 30s on consumer side.
-# Moving to threading.Semaphore doesn't improve the state, as they rely on
-# threading.Lock object internally in the same pattern as Queue.Queue.
-# Chosen scheme shows great success: total run time when profiled went under
-# 40s for same data set.
-class SimpleQueue(object):
-    """
-    Similar to Queue.Queue but with simpler locking scheme, reducing lock
-    contention. Also means it becomes just a queue: no reliable way to tell if
-    it's empty nor how many objects are in it. As a result, there is no limit
-    to queue size.
-    """
-    def __init__(self):
-        self._lock = Lock()
-        self._queue = deque()
-
-    def get(self):
-        while True:
-            try:
-                return self._queue.popleft()
-            except IndexError:
-                self._lock.acquire(False)
-                self._lock.acquire()
-
-    def put(self, item):
-        self._queue.append(item)
-        self._lock.acquire(False)
-        self._lock.release()
 
 class ParsingDone(Exception):
     """
@@ -417,13 +388,8 @@ class _DummyLogger(object):
 
 # TODO: merge BaseYaccAggregator and _BaseYaccAggregator ? (watch out for more
 # API collision...)
-class _BaseYaccAggregator(Thread):
-    """
-    Threaded, so ply.yacc can produce output as input is received.
-    If only it had a "push" API...
-    """
+class _BaseYaccAggregator(object):
     _start = None
-    _must_stop = False
     _error_type = None
 
     def __init__(self, to_next, to_top):
@@ -433,49 +399,21 @@ class _BaseYaccAggregator(Thread):
             Irregular parser production (ie, errors or warnings). Invocation
             details are subclass-dependant.
         """
-        super(_BaseYaccAggregator, self).__init__()
         self._to_next = to_next
         self._to_top = to_top
-        yacc_basename = self.__class__.__name__
-        # We need to fool ply.yacc into thinking there is no "start" property
-        # on its "module", otherwise it will try to use it as a sting in its
-        # grammar signature, failing (it's actually a method from Thread
-        # class).
-        self.start = None
-        try:
-            self._parser = parser = yacc(
-                module=self,
-                start=self._start,
-                debug=bool(os.environ.get('ITI1480A_DEBUG')),
-                debugfile=yacc_basename + '_parser.out',
-                errorlog=_DummyLogger(),
-                write_tables=False,
-            )
-        finally:
-            # Restore access to class's "start" method
-            del self.start
-        try:
-            self.to_yacc = parser.push
-        except AttributeError:
-            queue = SimpleQueue()
-            self.token = queue.get
-            self.to_yacc = queue.put
-            self._parse = parser.parse
-            self._must_stop = True
-            self.daemon = True
-            self.start()
-        else:
-            parser.startPush()
+        self._parser = parser = yacc(
+            module=self,
+            start=self._start,
+            debug=bool(os.environ.get('ITI1480A_DEBUG')),
+            debugfile=self.__class__.__name__ + '_parser.out',
+            errorlog=_DummyLogger(),
+            write_tables=False,
+        )
+        self.to_yacc = parser.push
+        parser.startPush()
 
     def stop(self):
-        if self._must_stop:
-            assert self.is_alive()
         self.to_yacc(None)
-        if self._must_stop:
-            self.join()
-
-    def run(self):
-        self._parse(lexer=self)
 
     @staticmethod
     def _getTokenTic(token):
