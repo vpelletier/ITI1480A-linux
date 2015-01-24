@@ -88,12 +88,15 @@ all data to host and exit.
 Send signal SIGTSTP (^Z) to pause the analyser, SIGCONT (fg) to resume.
 
 To get a human-friendly text dump of a previos capture::
+
   iti1480a-display -i captured.usb
 
 To wath running capture without saving it::
+
   iti1480a-capture | iti1480a-display -f
 
 To watch running capture and save it for later analysis::
+
   iti1480a-capture | iti1480a-display -ft captured.usb
 
 By default, iti1480a-display hides a lot of verbose events, like NAK'ed and SOF
