@@ -1,0 +1,858 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- This file was created with the aha Ansi HTML Adapter. http://ziz.delphigl.com/tool_aha.php -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8" />
+<title>stdin</title>
+</head>
+<body style="color:white; background-color:black">
+<pre>
+000:00.000'000&quot;016n Capture started
+000:04.437'901&quot;983n OTG Session end
+000:04.437'902&quot;166n <span style="color:fuchsia;">Device reset (8 us, 400 ns)</span>
+000:04.437'902&quot;166n OTG Session start
+000:04.437'910&quot;566n <span style="color:fuchsia;">Device reset (37.070 s)</span>
+000:04.437'910&quot;566n OTG VBus on
+000:41.508'091&quot;150n FS device connection
+000:41.848'354&quot;500n <span style="color:fuchsia;">Device reset (4 us, 616 ns)</span>
+000:41.848'356&quot;766n Device chirp
+000:41.848'359&quot;200n <span style="color:fuchsia;">Device reset (1 ms, 85 us)</span>
+000:41.849'588&quot;633n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+000:41.849'588&quot;683n Host chirp
+000:42.033'209&quot;250n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 40 00                          ........        </span>
+000:42.033'226&quot;350n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'227&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'228&quot;683n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'229&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'231&quot;016n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'232&quot;183n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'233&quot;350n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'234&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'235&quot;683n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'236&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'238&quot;016n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'239&quot;150n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'240&quot;316n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'241&quot;483n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'242&quot;650n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.033'243&quot;816n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+000:42.033'259&quot;016n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @000.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.036'319&quot;750n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+000:42.039'319&quot;783n HS idle
+000:42.039'420&quot;050n Device chirp
+000:42.039'600&quot;850n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+000:42.039'600&quot;900n Host chirp
+000:42.216'413&quot;816n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 02 00 00 00 00 00                          ........        </span>
+000:42.216'434&quot;783n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.216'435&quot;950n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.216'437&quot;116n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.216'438&quot;283n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.216'439&quot;450n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.216'440&quot;616n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:42.216'441&quot;783n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.232'361&quot;733n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:42.232'381&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'382&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'384&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'385&quot;166n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'386&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'387&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'388&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'389&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'390&quot;833n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'391&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'393&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'394&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'395&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'396&quot;500n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'397&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'398&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+000:42.232'410&quot;266n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.232'457&quot;533n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 0f 00 00 05 00                          ........        </span>
+000:42.232'466&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'467&quot;166n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'468&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'469&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'470&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'471&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'472&quot;833n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'473&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'475&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'476&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'477&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'478&quot;500n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>   5B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">05 0f 16 00 02                                   .....           </span>
+000:42.232'487&quot;850n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.232'527&quot;583n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 0f 00 00 16 00                          ........        </span>
+000:42.232'535&quot;883n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'537&quot;016n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'538&quot;150n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'539&quot;283n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'540&quot;416n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'541&quot;550n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'542&quot;683n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'543&quot;816n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'544&quot;950n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'546&quot;083n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'547&quot;216n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'548&quot;350n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'549&quot;483n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'550&quot;616n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'551&quot;750n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'552&quot;883n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'554&quot;016n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>  22B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">05 0f 16 00 02 07 10 02  02 00 00 00 0a 10 03 00 ................</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">0e 00 01 0a 20 00                                .... .          </span>
+000:42.232'563&quot;550n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.232'619&quot;400n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 02 00 00 09 00                          ........        </span>
+000:42.232'628&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'629&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'630&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'632&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'633&quot;166n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'634&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'635&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'636&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'637&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'638&quot;833n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'639&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'641&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'642&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'643&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>   9B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">09 02 20 00 01 01 00 80  fa                      .. ......       </span>
+000:42.232'653&quot;366n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.232'693&quot;700n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 02 00 00 20 00                          ...... .        </span>
+000:42.232'701&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'707&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'708&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'709&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'711&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'712&quot;166n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'713&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'714&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'715&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'716&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'717&quot;833n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'718&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'720&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'721&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'722&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'723&quot;500n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'724&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'725&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>  32B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">09 02 20 00 01 01 00 80  fa 09 04 00 00 02 08 06 .. .............</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">50 00 07 05 02 02 00 02  00 07 05 81 02 00 02 00 P...............</span>
+000:42.232'735&quot;433n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.232'792&quot;383n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 03 00 00 ff 00                          ........        </span>
+000:42.232'801&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'802&quot;650n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'803&quot;783n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'804&quot;916n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'806&quot;050n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'807&quot;183n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'808&quot;316n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'809&quot;450n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'810&quot;583n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'811&quot;716n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>   4B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">04 03 09 04                                      ....            </span>
+000:42.232'820&quot;983n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.232'863&quot;583n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 02 03 09 04 ff 00                          ........        </span>
+000:42.232'872&quot;183n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'873&quot;350n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'874&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'875&quot;683n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'876&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'878&quot;016n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'879&quot;183n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'880&quot;350n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'881&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'882&quot;683n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'883&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'885&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'886&quot;200n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'887&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'888&quot;533n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'889&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'890&quot;866n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'892&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'893&quot;200n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'894&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>  28B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">1c 03 53 00 74 00 6f 00  72 00 61 00 67 00 65 00 ..S.t.o.r.a.g.e.</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">20 00 4d 00 65 00 64 00  69 00 61 00              .M.e.d.i.a.    </span>
+000:42.232'904&quot;233n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.232'962&quot;433n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 01 03 09 04 ff 00                          ........        </span>
+000:42.232'970&quot;866n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'972&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'973&quot;200n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'974&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'975&quot;533n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'976&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'977&quot;866n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'979&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'980&quot;200n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'981&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'982&quot;533n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.232'983&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>  10B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">0a 03 53 00 6f 00 6e 00  79 00                   ..S.o.n.y.      </span>
+000:42.232'993&quot;600n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.233'037&quot;650n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 03 03 09 04 ff 00                          ........        </span>
+000:42.233'046&quot;383n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'047&quot;550n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'048&quot;716n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'049&quot;883n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'051&quot;050n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'052&quot;216n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'053&quot;383n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'054&quot;550n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'055&quot;716n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'056&quot;883n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'058&quot;050n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'059&quot;216n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'060&quot;383n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'061&quot;550n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'062&quot;716n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'063&quot;883n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'065&quot;050n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'066&quot;216n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'067&quot;383n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'068&quot;550n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.233'069&quot;716n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>  30B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">1e 03 46 00 42 00 41 00  33 00 36 00 31 00 33 00 ..F.B.A.3.6.1.3.</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">46 00 46 00 46 00 31 00  42 00 35 00 42 00       F.F.F.1.B.5.B.  </span>
+000:42.233'082&quot;783n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:42.240'692&quot;883n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 09 01 00 00 00 00 00                          ........        </span>
+000:42.240'715&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.240'716&quot;733n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.240'717&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.240'719&quot;066n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.240'720&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.240'721&quot;400n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.240'722&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.240'723&quot;733n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:42.240'724&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:43.256'496&quot;666n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">a1 fe 00 00 00 00 01 00                          ........        </span>
+000:43.256'518&quot;400n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.256'519&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.256'520&quot;733n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.256'521&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.256'523&quot;066n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.256'524&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.256'525&quot;400n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:lime;">DATA1  </span>   1B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00                                               .               </span>
+000:43.256'538&quot;900n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:43.256'799&quot;866n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.02 <span style="color:lime;">DATA0  </span>  31B <span style="color:yellow;font-weight:bold;">NYET   </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 43 00 00 00 01  24 00 00 00 80 00 06 12 USBC............</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">00 00 00 24 00 00 00 00  00 00 00 00 00 00 00    ............... </span>
+000:43.256'864&quot;950n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.01 <span style="color:lime;">DATA0  </span>  36B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 80 06 02 5b 00 00 00  53 6f 6e 79 20 20 20 20 ........Sony    </span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">53 74 6f 72 61 67 65 20  4d 65 64 69 61 20 20 20 Storage Media   </span>
+                    <span style="color:black;font-weight:bold;">020 </span><span style="color:aqua;">31 2e 30 30                                      1.00            </span>
+000:43.256'913&quot;250n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.01 <span style="color:lime;">DATA1  </span>  13B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 53 00 00 00 01  00 00 00 00 00          USBS.........   </span>
+000:43.271'051&quot;933n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.02 <span style="color:lime;">DATA1  </span>  31B <span style="color:yellow;font-weight:bold;">NYET   </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 43 00 00 00 02  00 00 00 00 00 00 06 00 USBC............</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">00 00 00 00 00 00 00 00  00 00 00 00 00 00 00    ............... </span>
+000:43.271'215&quot;483n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.01 <span style="color:lime;">DATA0  </span>  13B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 53 00 00 00 02  00 00 00 00 00          USBS.........   </span>
+000:43.271'420&quot;816n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.02 <span style="color:lime;">DATA0  </span>  31B <span style="color:yellow;font-weight:bold;">NYET   </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 43 00 00 00 03  08 00 00 00 80 00 0a 25 USBC............</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">00 00 00 00 00 00 00 00  00 00 00 00 00 00 00    ............... </span>
+000:43.271'488&quot;083n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.01 <span style="color:lime;">DATA1  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 ea ff ff 00 00 02 00                          ........        </span>
+000:43.271'542&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.01 <span style="color:lime;">DATA0  </span>  13B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 53 00 00 00 03  00 00 00 00 00          USBS.........   </span>
+000:43.278'318&quot;466n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.02 <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+000:43.278'348&quot;033n <span style="color:yellow;font-weight:bold;">PING   </span> @002.02 <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:43.278'349&quot;600n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.02 <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+000:43.278'365&quot;766n <span style="color:yellow;font-weight:bold;">PING   </span> @002.02 <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:43.278'367&quot;300n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.02 <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+000:43.278'375&quot;233n <span style="color:yellow;font-weight:bold;">PING   </span> @002.02 <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:43.278'376&quot;766n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @002.02 <span style="color:lime;">DATA1  </span>   7B <span style="color:yellow;font-weight:bold;">NYET   </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 00 00 00 00 00 00                             .......         </span>
+000:43.278'428&quot;350n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.01 <span style="color:red;font-weight:bold;">STALL  </span> 
+000:43.278'481&quot;450n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>  31B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 43 00 00 00 04  c0 00 00 00 80 00 06 1a USBC............</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">00 3f 00 c0 00 00 00 00  00 00 00 00 00 00 00    ............... </span>
+000:43.278'493&quot;616n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.278'494&quot;750n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.278'495&quot;883n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.278'497&quot;016n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.278'498&quot;150n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.278'499&quot;283n <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;">NAK    </span> 
+000:43.278'500&quot;833n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+000:43.281'500&quot;850n HS idle
+000:43.281'601&quot;116n Device chirp
+000:43.281'781&quot;933n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+000:43.281'781&quot;983n Host chirp
+<span style="color:red;">000:43.278'500&quot;416n</span> <span style="color:#3333FF;font-weight:bold;">IN     </span> @002.00 <span style="color:red;font-weight:bold;">STALL  </span> 
+000:43.465'618&quot;583n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>  31B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 43 00 00 00 04  c0 00 00 00 80 00 06 1a USBC............</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">00 3f 00 c0 00 00 00 00  00 00 00 00 00 00 00    ............... </span>
+000:43.465'639&quot;050n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.465'640&quot;183n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.465'641&quot;316n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.465'642&quot;450n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.465'643&quot;583n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.465'644&quot;716n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.465'645&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;font-weight:bold;">STALL  </span> 
+000:43.468'568&quot;650n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>  31B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">55 53 42 43 00 00 00 04  c0 00 00 00 80 00 06 1a USBC............</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">00 3f 00 c0 00 00 00 00  00 00 00 00 00 00 00    ............... </span>
+000:43.468'587&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'589&quot;016n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'590&quot;183n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'591&quot;350n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'592&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'593&quot;683n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;font-weight:bold;">STALL  </span> 
+000:43.468'643&quot;483n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">02 01 00 00 81 00 00 00                          ........        </span>
+000:43.468'652&quot;116n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'653&quot;283n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'654&quot;450n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'655&quot;616n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'656&quot;783n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'657&quot;950n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.468'659&quot;500n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+000:43.471'659&quot;516n HS idle
+000:43.471'759&quot;783n Device chirp
+000:43.471'940&quot;583n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+000:43.471'940&quot;633n Host chirp
+<span style="color:red;">000:43.468'659&quot;083n</span> <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;font-weight:bold;">STALL  </span> 
+000:43.756'569&quot;916n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 40 00                          ........        </span>
+000:43.756'591&quot;750n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'592&quot;916n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'594&quot;083n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'595&quot;250n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'596&quot;416n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'597&quot;583n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'598&quot;750n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'599&quot;916n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'601&quot;083n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'606&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'607&quot;683n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'608&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.756'610&quot;016n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+000:43.756'630&quot;416n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+000:43.759'630&quot;433n HS idle
+000:43.759'730&quot;700n Device chirp
+000:43.759'911&quot;550n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+000:43.759'911&quot;600n Host chirp
+<span style="color:red;">000:43.756'629&quot;483n</span> <span style="color:#3333FF;font-weight:bold;">OUT    </span> @000.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:43.936'655&quot;866n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 40 00                          ........        </span>
+000:43.936'678&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'680&quot;133n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'681&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'682&quot;466n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'683&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'684&quot;800n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'685&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'687&quot;133n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'688&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'689&quot;466n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'690&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'691&quot;800n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'692&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'694&quot;133n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'695&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:43.936'696&quot;466n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+000:43.952'628&quot;516n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 40 00                          ........        </span>
+000:43.952'654&quot;783n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 40 00                          ........        </span>
+000:43.952'666&quot;283n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 02 00 00 00 00 00                          ........        </span>
+000:43.952'779&quot;166n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:43.952'799&quot;333n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:43.952'809&quot;733n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:43.952'853&quot;066n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:43.952'866&quot;233n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:43.952'874&quot;250n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:43.957'019&quot;866n <span style="color:fuchsia;">Device reset (3 ms, 34 us)</span>
+000:43.960'019&quot;900n HS idle
+000:43.960'619&quot;416n <span style="color:fuchsia;">Device reset (3 ms, 403 us)</span>
+000:43.964'022&quot;533n Device disconnected
+000:43.964'022&quot;550n OTG HNP (Host-role changed)
+000:44.351'924&quot;050n FS device connection
+000:44.352'684&quot;766n <span style="color:fuchsia;">Device reset (869 us, 216 ns)</span>
+000:44.352'687&quot;033n Device chirp
+000:44.353'697&quot;600n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+000:44.353'697&quot;650n Host chirp
+000:44.537'733&quot;883n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:44.537'752&quot;116n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'753&quot;250n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'754&quot;383n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'755&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'756&quot;650n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'757&quot;783n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'758&quot;916n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'760&quot;050n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'761&quot;183n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'762&quot;316n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'763&quot;450n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'764&quot;583n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'765&quot;716n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'766&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'767&quot;983n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'769&quot;116n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.537'770&quot;250n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+000:44.556'665&quot;600n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:44.556'690&quot;800n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:44.556'702&quot;133n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 02 00 00 00 00 00                          ........        </span>
+000:44.556'779&quot;733n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.556'796&quot;583n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.556'805&quot;716n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.556'847&quot;216n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.556'860&quot;750n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.556'868&quot;350n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'681&quot;933n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'708&quot;816n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'720&quot;250n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'799&quot;516n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'816&quot;183n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'825&quot;083n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'866&quot;766n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'880&quot;466n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.680'888&quot;266n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.788'575&quot;683n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+000:44.791'575&quot;716n HS idle
+000:44.791'675&quot;983n Device chirp
+000:44.791'856&quot;800n Host chirp
+000:44.973'797&quot;683n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.973'816&quot;050n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'817&quot;183n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'818&quot;316n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'819&quot;450n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'820&quot;583n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'821&quot;716n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'822&quot;850n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'823&quot;983n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'825&quot;116n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'826&quot;250n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'827&quot;383n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'828&quot;516n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'829&quot;650n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:44.973'830&quot;783n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40                          ........        </span>
+000:44.992'718&quot;616n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.992'743&quot;283n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.992'754&quot;466n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 02 00 00 00 00 00                          ........        </span>
+000:44.992'831&quot;600n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.992'848&quot;533n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.992'857&quot;100n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.992'898&quot;916n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.992'912&quot;316n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:44.992'920&quot;150n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'741&quot;233n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'769&quot;566n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'781&quot;266n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'866&quot;983n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'884&quot;683n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'893&quot;716n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'935&quot;100n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'948&quot;466n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.116'956&quot;400n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @002.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+000:45.224'657&quot;833n <span style="color:fuchsia;">Device reset (3 ms, 34 us)</span>
+000:45.227'657&quot;866n HS idle
+000:45.404'846&quot;000n <span style="color:fuchsia;">Device reset (2 us, 516 ns)</span>
+000:45.404'848&quot;516n Device disconnected
+000:45.404'848&quot;533n OTG HNP (Host-role changed)
+000:45.796'089&quot;800n FS device connection
+000:45.800'876&quot;350n <span style="color:fuchsia;">Device reset (1 ms, 121 us)</span>
+000:45.800'878&quot;616n Device chirp
+000:45.802'141&quot;450n Host chirp
+000:45.985'696&quot;766n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:45.985'714&quot;200n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'715&quot;333n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'716&quot;466n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'717&quot;600n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'718&quot;733n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'719&quot;866n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'721&quot;000n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'722&quot;133n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'723&quot;266n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'724&quot;400n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'725&quot;533n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'726&quot;666n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'727&quot;800n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'728&quot;933n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'730&quot;066n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'731&quot;200n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:45.985'732&quot;333n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+000:45.985'748&quot;533n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @000.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+000:45.992'750&quot;750n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+000:45.995'750&quot;783n HS idle
+000:45.995'851&quot;050n Device chirp
+000:45.996'031&quot;883n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+000:45.996'031&quot;933n Host chirp
+000:46.172'886&quot;100n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:46.172'908&quot;600n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'909&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'910&quot;933n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'912&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'913&quot;266n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'914&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'915&quot;600n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'916&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'917&quot;933n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'919&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'920&quot;266n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'921&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'922&quot;600n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'923&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'924&quot;933n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+000:46.172'926&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+000:46.188'846&quot;266n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:46.188'867&quot;466n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 40 00                          ........        </span>
+000:46.188'878&quot;533n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 04 00 00 00 00 00                          ........        </span>
+000:46.188'916&quot;883n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:46.188'931&quot;116n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:46.188'938&quot;950n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:46.188'977&quot;516n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:46.188'990&quot;783n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:46.188'998&quot;750n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @004.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+000:46.193'115&quot;550n <span style="color:fuchsia;">Device reset (3 ms, 34 us)</span>
+000:46.196'115&quot;583n HS idle
+000:46.196'894&quot;350n <span style="color:fuchsia;">Device reset (3 ms, 223 us)</span>
+000:46.200'118&quot;216n Device disconnected
+000:46.200'118&quot;233n OTG HNP (Host-role changed)
+000:47.071'922&quot;966n FS device connection
+001:00.202'329&quot;016n <span style="color:fuchsia;">Device reset (11 ms, 4 us)</span>
+001:00.202'331&quot;283n Device chirp
+001:00.213'333&quot;966n Device disconnected
+001:09.795'881&quot;683n FS device connection
+001:10.123'846&quot;850n <span style="color:fuchsia;">Device reset (1 ms, 88 us)</span>
+001:10.123'849&quot;116n Device chirp
+001:10.125'078&quot;866n Host chirp
+001:10.308'674&quot;683n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:10.308'690&quot;466n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'691&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'692&quot;800n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'693&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'695&quot;133n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'696&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'697&quot;466n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'698&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'699&quot;800n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'700&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'702&quot;133n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'703&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.308'704&quot;466n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40                          ........        </span>
+001:10.308'722&quot;433n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @000.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+001:10.308'933&quot;700n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+001:10.311'933&quot;733n HS idle
+001:10.312'034&quot;000n Device chirp
+001:10.312'214&quot;816n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+001:10.312'214&quot;866n Host chirp
+001:10.487'870&quot;450n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:10.487'889&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'890&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'891&quot;833n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'892&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'894&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'895&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'896&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'897&quot;500n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'898&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'899&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'900&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'902&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'903&quot;166n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.487'904&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40                          ........        </span>
+001:10.503'842&quot;766n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:10.503'864&quot;966n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 40 00                          ........        </span>
+001:10.503'876&quot;166n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 07 00 00 00 00 00                          ........        </span>
+001:10.503'917&quot;200n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.503'930&quot;050n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.503'938&quot;183n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.503'973&quot;116n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.503'985&quot;816n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.503'993&quot;850n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @007.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.508'093&quot;916n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+001:10.511'093&quot;966n HS idle
+001:10.511'194&quot;233n Device chirp
+001:10.511'375&quot;033n Host chirp
+001:10.692'720&quot;600n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.692'736&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'737&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'738&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'739&quot;500n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'740&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'741&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'742&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'744&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'745&quot;166n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'746&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'747&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'748&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'749&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'750&quot;833n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'751&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'753&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.692'754&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+001:10.692'767&quot;500n <span style="color:#3333FF;font-weight:bold;">OUT    </span> @000.00 <span style="color:lime;">DATA1  </span>   0B <span style="color:lime;font-weight:bold;">ACK    </span> 
+001:10.692'900&quot;966n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+001:10.695'901&quot;000n HS idle
+001:10.696'001&quot;266n Device chirp
+001:10.696'182&quot;000n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+001:10.696'182&quot;050n Host chirp
+001:10.871'917&quot;933n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.871'937&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'938&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'939&quot;500n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'940&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'941&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'942&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'944&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'945&quot;166n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'946&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'947&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'948&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'949&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'950&quot;833n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'951&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'953&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'954&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:10.871'955&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+001:10.887'884&quot;133n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.887'912&quot;166n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 40 00                          ........        </span>
+001:10.887'921&quot;733n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 08 00 00 00 00 00                          ........        </span>
+001:10.887'962&quot;183n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.887'975&quot;083n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.887'983&quot;183n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.888'018&quot;050n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.888'030&quot;683n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.888'038&quot;650n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @008.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:10.892'163&quot;316n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+001:10.895'163&quot;350n HS idle
+001:10.895'263&quot;616n Device chirp
+001:10.895'444&quot;483n Host chirp
+001:11.076'760&quot;333n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:11.076'776&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'777&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'778&quot;833n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'779&quot;966n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'781&quot;100n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'782&quot;233n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'783&quot;366n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'784&quot;500n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'785&quot;633n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'786&quot;766n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'787&quot;900n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'789&quot;033n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'790&quot;166n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'791&quot;300n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'792&quot;433n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'793&quot;566n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.076'794&quot;700n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>  18B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40  4c 05 b8 05 75 10 01 02 ........L...u...</span>
+                    <span style="color:black;font-weight:bold;">010 </span><span style="color:aqua;">03 01                                            ..              </span>
+001:11.091'921&quot;516n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:11.091'944&quot;350n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 12 00                          ........        </span>
+001:11.091'954&quot;550n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 09 00 00 00 00 00                          ........        </span>
+001:11.091'995&quot;416n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.092'009&quot;216n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.092'017&quot;183n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.092'052&quot;650n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.092'065&quot;266n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.092'073&quot;133n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.215'929&quot;083n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.215'955&quot;583n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.215'966&quot;516n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.216'006&quot;083n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.216'020&quot;466n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.216'028&quot;533n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.216'064&quot;133n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.216'076&quot;933n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.216'084&quot;633n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @009.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.323'817&quot;583n <span style="color:fuchsia;">Device reset (3 ms, 137 us)</span>
+001:11.326'817&quot;616n HS idle
+001:11.326'917&quot;883n Device chirp
+001:11.327'098&quot;633n <span style="color:fuchsia;">Device reset (1 ms, 528 us)</span>
+001:11.327'098&quot;683n Host chirp
+001:11.508'907&quot;783n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @000.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.508'925&quot;650n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'926&quot;816n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'927&quot;983n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'929&quot;150n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'930&quot;316n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'931&quot;483n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'932&quot;650n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'933&quot;816n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'934&quot;983n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'936&quot;150n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'937&quot;316n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'938&quot;483n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:red;">NAK    </span> 
+001:11.508'939&quot;666n <span style="color:#3333FF;font-weight:bold;">IN     </span> @000.00 <span style="color:lime;">DATA1  </span>   8B <span style="color:lime;font-weight:bold;">ACK    </span> 
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">12 01 10 02 00 00 00 40                          ........        </span>
+001:11.523'970&quot;650n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.523'993&quot;716n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.524'003&quot;950n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">00 05 0a 00 00 00 00 00                          ........        </span>
+001:11.524'042&quot;900n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.524'057&quot;266n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.524'065&quot;233n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.524'100&quot;566n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.524'113&quot;366n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.524'121&quot;233n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.647'981&quot;283n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.648'005&quot;233n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.648'015&quot;533n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.648'054&quot;800n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.648'068&quot;900n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.648'076&quot;766n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.648'112&quot;333n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.648'125&quot;183n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+001:11.648'133&quot;016n <span style="color:#3333FF;font-weight:bold;">SETUP  </span> @010.00 <span style="color:lime;">DATA0  </span>   8B <span style="color:red;font-weight:bold;">(incomplete transaction)</span>
+                    <span style="color:black;font-weight:bold;">000 </span><span style="color:aqua;">80 06 00 01 00 00 08 00                          ........        </span>
+</pre>
+</body>
+</html>
