@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from iti1480a.parser import *
+import signal
 import sys
 import time
 import errno
@@ -198,7 +199,7 @@ def main():
         'gets closed, so next process (ie, this program) does not know it '
         'should exit.')
     parser.add_option('-f', '--follow', action='store_true',
-        help='Keep waiting for more data when reaching eof.')
+        help='Ignore SIGKINT & SIGTERM so all input is read.')
     (options, args) = parser.parse_args()
     if options.infile == '-':
         read = sys.stdin.read
@@ -240,6 +241,9 @@ def main():
         )
     )
     push = stream.push
+    if options.follow:
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            signal.signal(sig, signal.SIG_IGN)
     try:
         while True:
             data = read(CHUNK_SIZE)
@@ -249,10 +253,7 @@ def main():
             except ParsingDone:
                 break
             if len(data) < CHUNK_SIZE:
-                if options.follow:
-                    time.sleep(1)
-                else:
-                    break
+                break
         stream.stop()
     except IOError, exc:
         # Happens when output is piped to a pager, and pager exits before stdin
