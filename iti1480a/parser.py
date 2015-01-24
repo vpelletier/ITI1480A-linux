@@ -272,7 +272,6 @@ TOKEN_NAME = {
 }
 
 def _decodeToken(data):
-    assert len(data) == 3, data
     crc = data[2][1]
     addr = data[1][1]
     return {
@@ -290,7 +289,6 @@ DATA_NAME = {
 }
 
 def _decodeDATA(data):
-    assert len(data) > 2, data
     return {
         'name': DATA_NAME[data[0][1] & 0xf],
         'data': ''.join(chr(x[1]) for x in data[1:-2]),
@@ -313,7 +311,6 @@ SPLIT_ENDPOINT_CONTINUATION = {
 }
 
 def _decodeSPLIT(data):
-    assert len(data) == 4, data
     endpoint_type = data[3][1] & 0x6
     result = {
         'address': data[1][1] & 0x7,
@@ -341,7 +338,6 @@ def _decodeCSPLIT(data):
     return result
 
 def _decodeSOF(data):
-    assert len(data) == 3, data
     crc = data[2][1]
     return {
         'name': 'SOF',
@@ -749,10 +745,10 @@ class PipeAggregator(BaseAggregator):
         low-speed marker) to know destination address and endpoint, and passes
         all parameters to appropriate BaseAggregator instance's "push".
         """
-        if data[0][0] == TOKEN_TYPE_PRE_ERR:
-            decoded = decode(data[1])
-        else:
-            decoded = decode(data[0])
+        try:
+            decoded = decode(data[1 if data[0][0] == TOKEN_TYPE_PRE_ERR else 0])
+        except IndexError:
+            return
         address = decoded.get('address')
         if address is None:
             aggregator = self._to_next
