@@ -203,13 +203,29 @@ def main():
     if options.infile == '-':
         read = sys.stdin.read
     else:
-        read = open(options.infile, 'r').read
+        try:
+            read = open(options.infile, 'r').read
+        except IOError:
+            print >>sys.stderr, 'Could not open --infile %r' % (
+                options.infile,
+            )
+            sys.exit(1)
     if options.outfile == '-':
         write = sys.stdout.write
     else:
-        write = open(options.outfile, 'w').write
+        try:
+            write = open(options.outfile, 'w').write
+        except IOError:
+            print >>sys.stderr, 'Could not open --outfile %r' % (
+                options.outfile,
+            )
+            sys.exit(1)
     if options.tee:
-        raw_write = open(options.tee, 'w').write
+        try:
+            raw_write = open(options.tee, 'w').write
+        except IOError:
+            print >>sys.stderr, 'Could not open --tee %r' % (options.tee, )
+            sys.exit(1)
     else:
         raw_write = lambda x: None
     human_readable = HumanReadable(write, sys.stderr.write,
