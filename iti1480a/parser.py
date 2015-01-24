@@ -1,3 +1,4 @@
+import os
 from struct import unpack
 from cStringIO import StringIO
 from ply.yacc import yacc
@@ -442,15 +443,10 @@ class _BaseYaccAggregator(Thread):
         # class).
         self.start = None
         try:
-            # I wish ply to generate parser.out file (with a name depending on
-            # instance's class, for subclassing's sake), because it's just too
-            # handy for debugging - and this module is just not stable yet.
-            # But I don't want ply to blather on stderr, nor create its
-            # parsetab files (our grammars are simple enough to be instantly
-            # generated).
             self._parser = parser = yacc(
                 module=self,
                 start=self._start,
+                debug=bool(os.environ.get('ITI1480A_DEBUG')),
                 debugfile=yacc_basename + '_parser.out',
                 errorlog=_DummyLogger(),
                 write_tables=False,
