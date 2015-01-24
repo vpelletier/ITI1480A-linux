@@ -2,7 +2,6 @@
 from iti1480a.parser import *
 import signal
 import sys
-import time
 import errno
 
 COLOR_GREEN = '\x1b[32m'
@@ -46,14 +45,18 @@ def hexdump(data):
         data = data[16:]
         append(
             ' ' * 20
-          + ('\x1b[33m%03x \x1b[0;36m' % offset)
-          + ' '.join(['%02x' % ord(x) for x in half1] + ['  '] * (8 - len(half1)))
-          + '  '
-          + ' '.join(['%02x' % ord(x) for x in half2] + ['  '] * (8 - len(half2)))
-          + ' '
-          + ''.join(x if x.isalnum() or x == ' ' else '.' for x in line)
-          + ' ' * (16 - len(line))
-          + '\x1b[0m'
+            + ('\x1b[33m%03x \x1b[0;36m' % offset)
+            + ' '.join([
+                '%02x' % ord(x) for x in half1
+            ] + ['  '] * (8 - len(half1)))
+            + '  '
+            + ' '.join([
+                '%02x' % ord(x) for x in half2
+            ] + ['  '] * (8 - len(half2)))
+            + ' '
+            + ''.join(x if x.isalnum() or x == ' ' else '.' for x in line)
+            + ' ' * (16 - len(line))
+            + '\x1b[0m'
         )
         offset += 16
     return '\n'.join(result)
@@ -73,7 +76,9 @@ class HumanReadable(object):
             MESSAGE_RAW: (lambda _, x: x) if verbosity > -1 else noop,
             MESSAGE_RESET: self._reset if verbosity > -1 else noop,
             MESSAGE_TRANSACTION: self._transaction,
-            MESSAGE_INCOMPLETE: (lambda x, y: self._transaction(x, y, incomplete=True)) if verbosity > 0 else noop,
+            MESSAGE_INCOMPLETE: (
+                lambda x, y: self._transaction(x, y, incomplete=True)
+            ) if verbosity > 0 else noop,
             MESSAGE_TRANSACTION_ERROR: self._error,
             MESSAGE_LS_EOP: self._ls_eop if verbosity > 2 else noop,
             MESSAGE_FS_EOP: self._fs_eop if verbosity > 2 else noop,
@@ -103,7 +108,10 @@ class HumanReadable(object):
         self._sof_count = 0
 
     def push(self, tic, message_type, data):
-        if self._sof_count and (message_type != MESSAGE_TRANSACTION or data[0][0] != TOKEN_TYPE_SOF):
+        if self._sof_count and (
+                    message_type != MESSAGE_TRANSACTION or
+                    data[0][0] != TOKEN_TYPE_SOF
+                ):
             self._printSOFCount()
         printable = self._dispatch[message_type](tic, data)
         if printable is not None:
@@ -112,13 +120,16 @@ class HumanReadable(object):
     def _error(self, tic, data):
         self._print(tic, '\x1b[41m%r\x1b[0m' % (data, ), self._error_write)
 
-    def _reset(self, _, data):
+    @staticmethod
+    def _reset(_, data):
         return '\x1b[35mDevice reset (%s)\x1b[0m' % (short_tic_to_time(data), )
 
-    def _ls_eop(self, _, data):
+    @staticmethod
+    def _ls_eop(_, data):
         return '\x1b[33mLS EOP (%s)\x1b[0m' % (short_tic_to_time(data), )
 
-    def _fs_eop(self, _, data):
+    @staticmethod
+    def _fs_eop(_, data):
         return '\x1b[33mFS EOP (%s)\x1b[0m' % (short_tic_to_time(data), )
 
     def _transaction(self, tic, data, incomplete=False):
@@ -155,12 +166,17 @@ class HumanReadable(object):
                 assert packet[0] == TOKEN_TYPE_PRE_ERR
                 # PRE if first token in transaction, ERR otherwise.
                 # Color & name appropriately.
-                result += COLOR_GREEN + 'PRE' if data[0][0] == TOKEN_TYPE_PRE_ERR else COLOR_RED + 'ERR'
+                result += COLOR_GREEN + 'PRE' \
+                    if data[0][0] == TOKEN_TYPE_PRE_ERR \
+                    else COLOR_RED + 'ERR'
             else:
                 result += decoded['name'].ljust(7)
             result += '\x1b[0m '
             if 'endpoint' in decoded:
-                result += '@%03i.%02i ' % (decoded['address'], decoded['endpoint'])
+                result += '@%03i.%02i ' % (
+                    decoded['address'],
+                    decoded['endpoint'],
+                )
             elif 'port' in decoded:
                 # TODO: (|C|S)SPLIT transactions
                 pass
@@ -186,18 +202,28 @@ CHUNK_SIZE = 16 * 1024
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option('-v', '--verbose', action='count',
-        default=0, help='Increase verbosity')
-    parser.add_option('-q', '--quiet', action='count',
-        default=0, help='Decrease verbosity')
-    parser.add_option('-i', '--infile', default='-',
-        help='Data source (default: stdin)')
-    parser.add_option('-o', '--outfile', default='-',
-        help='Data destination (default: stdout)')
-    parser.add_option('-t', '--tee', help='Also write raw input to that '
+    parser.add_option(
+        '-v', '--verbose', action='count',
+        default=0, help='Increase verbosity',
+    )
+    parser.add_option(
+        '-q', '--quiet', action='count',
+        default=0, help='Decrease verbosity',
+    )
+    parser.add_option(
+        '-i', '--infile', default='-',
+        help='Data source (default: stdin)',
+    )
+    parser.add_option(
+        '-o', '--outfile', default='-',
+        help='Data destination (default: stdout)',
+    )
+    parser.add_option(
+        '-t', '--tee', help='Also write raw input to that '
         'file. Useful as tee(1) doesn\'t close its stdin when its stdout '
         'gets closed, so next process (ie, this program) does not know it '
-        'should exit.')
+        'should exit.',
+    )
     parser.add_option('-f', '--follow', action='store_true',
         help='Ignore SIGKINT & SIGTERM so all input is read.')
     (options, args) = parser.parse_args()

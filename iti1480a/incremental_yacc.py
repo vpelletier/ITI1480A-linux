@@ -82,7 +82,7 @@ def push(self, token):
             # reduce a symbol on the stack
             p = productions[-t]
             pname = p.name
-            plen  = p.len
+            plen = p.len
             sym = YaccSymbol()
             sym.name = pname
             sym.value = None

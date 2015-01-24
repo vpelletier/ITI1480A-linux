@@ -378,7 +378,8 @@ class _DummyLogger(object):
     debug = warning
     info = warning
 
-    def error(self, message, *args, **kw):
+    @staticmethod
+    def error(message, *args, **kw):
         # Actually, raising right away is more aggressive than what ply does...
         # But much simpler too.
         assert not (args and kw), (message, args, kw)
@@ -427,7 +428,9 @@ class _BaseYaccAggregator(object):
         """
         # XXX: relies on undocumented yacc internals.
         parser = self._parser
-        error_tokens = [x.value for x in parser.symstack if isinstance(x, LexToken)]
+        error_tokens = [
+            x.value for x in parser.symstack if isinstance(x, LexToken)
+        ]
         if error_tokens:
             token_tic = self._getTokenTic(error_tokens[0])
         elif p is None:
@@ -435,8 +438,18 @@ class _BaseYaccAggregator(object):
         else:
             token_tic = self._getTokenTic(p.value)
         state = parser.statestack[-1]
-        self._to_top(token_tic, self._error_type,
-            ('Expected: %r in yacc state %r, got %r' % (parser.action[state].keys(), state, p), error_tokens))
+        self._to_top(
+            token_tic,
+            self._error_type,
+            (
+                'Expected: %r in yacc state %r, got %r' % (
+                    parser.action[state].keys(),
+                    state,
+                    p,
+                ),
+                error_tokens,
+            ),
+        )
         if error_tokens:
             # Restart parser and try again.
             if hasattr(parser, 'startPush'):
@@ -503,7 +516,8 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
     def _getTokenTic(token):
         return int(token[1][0][1][0][0])
 
-    def p_transfers(self, p):
+    @staticmethod
+    def p_transfers(p):
         """transfers : transfer
                      | transfers transfer
                      | empty
@@ -520,7 +534,8 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
             data.extend(p[3])
         self._to_next(data[0][1][0][1][0][0], MESSAGE_TRANSFER, data)
 
-    def p_out_handshake(self, p):
+    @staticmethod
+    def p_out_handshake(p):
         """out_handshake : OUT_ACK
                          | OUT_NAK out_handshake
                          | PING_ACK out_handshake
@@ -533,7 +548,8 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
             data.insert(0, p[1])
             p[0] = data
 
-    def p_in_data(self, p):
+    @staticmethod
+    def p_in_data(p):
         """in_data : IN_ACK
                    | IN_STALL
                    | IN_ACK in_data
@@ -546,7 +562,8 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
             data.insert(0, p[1])
             p[0] = data
 
-    def p_out_data(self, p):
+    @staticmethod
+    def p_out_data(p):
         """out_data : OUT_ACK
                     | OUT_ACK out_data
                     | OUT_STALL
@@ -592,7 +609,13 @@ class Endpoint0TransferAggregator(BaseYaccAggregator):
         self._token_dispatcher[token_type][slow](data)
 
     def __setup(self, offset, data):
-        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(TOKEN_TYPE_SETUP, data[offset][1][1][1] & 0x80)], data)
+        self._to_yacc(
+            ENDPOINT0_TRANSFER_TYPE_DICT[(
+                TOKEN_TYPE_SETUP,
+                data[offset][1][1][1] & 0x80,
+            )],
+            data,
+        )
 
     def _setup(self, data):
         self.__setup(1, data)
@@ -601,15 +624,26 @@ class Endpoint0TransferAggregator(BaseYaccAggregator):
         self.__setup(3, data)
 
     def _ping(self, data):
-        self._to_yacc(ENDPOINT0_TRANSFER_TYPE_DICT[(TOKEN_TYPE_PING, data[-1][0])], data)
+        self._to_yacc(
+            ENDPOINT0_TRANSFER_TYPE_DICT[(
+                TOKEN_TYPE_PING,
+                data[-1][0],
+            )],
+            data,
+        )
 
     def __data(self, offset, data):
         try:
-            token_type = ENDPOINT0_TRANSFER_TYPE_DICT[(data[offset][0],
-                data[-1][0])]
+            token_type = ENDPOINT0_TRANSFER_TYPE_DICT[(
+                data[offset][0],
+                data[-1][0],
+            )]
         except KeyError:
-            self._to_top(data[offset][1][0][0], MESSAGE_RAW,
-                ('Unexpected ep0 transfer token', data))
+            self._to_top(
+                data[offset][1][0][0],
+                MESSAGE_RAW,
+                ('Unexpected ep0 transfer token', data),
+            )
         else:
             self._to_yacc(token_type, data)
 
@@ -731,7 +765,8 @@ class _TransactionAggregator(_BaseYaccAggregator):
     def _getTokenTic(token):
         return token[1][0][0]
 
-    def p_transactions(self, p):
+    @staticmethod
+    def p_transactions(p):
         """transactions : transaction
                         | transactions transaction
                         | empty
@@ -780,33 +815,38 @@ class _TransactionAggregator(_BaseYaccAggregator):
             parser.errok()
             return p
 
-    def p_token(self, p):
+    @staticmethod
+    def p_token(p):
         """token : IN
                  | OUT
                  | SETUP
         """
         p[0] = p[1]
 
-    def p_data(self, p):
+    @staticmethod
+    def p_data(p):
         """data : low_speed_data
                 | DATA2
                 | MDATA
         """
         p[0] = p[1]
 
-    def p_low_speed_data(self, p):
+    @staticmethod
+    def p_low_speed_data(p):
         """low_speed_data : DATA0
                           | DATA1
         """
         p[0] = p[1]
 
-    def p_handshake(self, p):
+    @staticmethod
+    def p_handshake(p):
         """handshake : low_speed_handshake
                      | NYET
         """
         p[0] = p[1]
 
-    def p_low_speed_handshake(self, p):
+    @staticmethod
+    def p_low_speed_handshake(p):
         """low_speed_handshake : ACK
                                | NAK
                                | STALL
@@ -902,11 +942,12 @@ class Packetiser(BaseAggregator):
             Byte.
         """
         # TODO: recognise low-speed keep-alive.
-        if self._reset_start_tic is not None and \
-                packet_type != TYPE_EVENT and (packet_type != TYPE_RXCMD or
-                data & (
-                    RXCMD_EVENT_MASK | RXCMD_LINESTATE_MASK
-                ) != RXCMD_LINESTATE_SE0):
+        if self._reset_start_tic is not None and packet_type != TYPE_EVENT and (
+                    packet_type != TYPE_RXCMD or
+                    data & (
+                        RXCMD_EVENT_MASK | RXCMD_LINESTATE_MASK
+                    ) != RXCMD_LINESTATE_SE0
+                ):
             duration = tic - self._reset_start_tic
             if duration >= MIN_RESET_TIC:
                 ep0_type = MESSAGE_RESET
@@ -1022,8 +1063,10 @@ class ReorderedStream(BaseAggregator):
             reader = (data_short_list[x] for x in xrange(len(data) / 2))
         else:
             read = StringIO(data).read
-            reader = (unpack('<H', read(2))[0]
-                for x in xrange(0, len(data) - 1, 2))
+            reader = (
+                unpack('<H', read(2))[0]
+                for x in xrange(0, len(data) - 1, 2)
+            )
         next_data = itertools.chain(self._remain, reader).next
         try:
             while True:

@@ -34,13 +34,15 @@ def getDeviceHandle(context, vendor_id, device_id, usb_device=None):
                 continue
             else:
                 if (device.getVendorID(), device.getProductID()) == (
-                      vendor_id, device_id):
+                        vendor_id, device_id):
                     handle = device.open()
                     break
                 else:
-                    raise ValueError('Device at %03i.%03i is not of expected '
-                        'type: %04x.%04x, %04x.%04x expected' % (usb_device + (
-                            vendor_id, device_id)))
+                    raise ValueError(
+                        'Device at %03i.%03i is not of expected type: '
+                        '%04x.%04x, %04x.%04x expected' %
+                        usb_device + (vendor_id, device_id),
+                    )
     return handle
 
 class USBAnalyzer(object):
@@ -67,8 +69,11 @@ class USBAnalyzer(object):
             conf_data = read(COMMAND_DATA_LEN)
             if not conf_data:
                 break
-            write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_WRITE,
-                conf_data)
+            write(
+                COMMAND_FPGA,
+                COMMAND_FPGA_CONFIGURE_WRITE,
+                conf_data,
+            )
         write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
 
     def stopCapture(self):
@@ -130,11 +135,10 @@ class TransferDumpCallback(object):
                 sys.stderr.write('Capture size: %i\r' % (cap_size, ))
         try:
             self.write(data)
-        except IOError, (write_errno, error_text):
-            if write_errno == errno.EPIPE:
-                result = False
-            else:
+        except IOError, exc:
+            if exc.errno != errno.EPIPE:
                 raise
+            result = False
         return result
 
 def transferTimeoutHandler(transfer):
@@ -176,14 +180,22 @@ def pending(transfer_list):
 def main():
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option('-f', '--firmware', default='/lib/firmware/ITI1480A.rbf',
-        help='Path to firmware file to upload')
-    parser.add_option('-d', '--device',
-        help='USB device to use, in "bus.dev" format')
-    parser.add_option('-o', '--out',
-        help='File to write dump data to. Default: stdout')
-    parser.add_option('-v', '--verbose', action='store_true',
-        help='Print informative messages to stderr')
+    parser.add_option(
+        '-f', '--firmware', default='/lib/firmware/ITI1480A.rbf',
+        help='Path to firmware file to upload',
+    )
+    parser.add_option(
+        '-d', '--device',
+        help='USB device to use, in "bus.dev" format',
+    )
+    parser.add_option(
+        '-o', '--out',
+        help='File to write dump data to. Default: stdout',
+    )
+    parser.add_option(
+        '-v', '--verbose', action='store_true',
+        help='Print informative messages to stderr',
+    )
     (options, args) = parser.parse_args()
     if options.firmware is None:
         parser.print_help(sys.stderr)
@@ -202,7 +214,7 @@ def main():
     context = usb1.LibUSBContext()
     handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
     if handle is None:
-        raise ValueError, 'Unable to find usb analyzer.'
+        raise ValueError('Unable to find usb analyzer.')
     handle.claimInterface(0)
     analyzer = USBAnalyzer(handle)
     analyzer.sendFirmware(open(options.firmware, 'rb'))
@@ -210,17 +222,25 @@ def main():
     # Install signal handlers
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, terminatingSignalHandler)
-    signal.signal(signal.SIGTSTP, pausingSignalHandler(analyzer,
-        verbose=verbose))
-    signal.signal(signal.SIGCONT, resumingSignalHandler(analyzer,
-        verbose=verbose))
+    signal.signal(signal.SIGTSTP, pausingSignalHandler(
+        analyzer,
+        verbose=verbose,
+    ))
+    signal.signal(signal.SIGCONT, resumingSignalHandler(
+        analyzer,
+        verbose=verbose,
+    ))
 
     usb_file_data_reader = usb1.USBTransferHelper()
     transfer_dump_callback = TransferDumpCallback(out_file, verbose=verbose)
-    usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_COMPLETED,
-        transfer_dump_callback)
-    usb_file_data_reader.setEventCallback(libusb1.LIBUSB_TRANSFER_TIMED_OUT,
-        transfer_dump_callback)
+    usb_file_data_reader.setEventCallback(
+        libusb1.LIBUSB_TRANSFER_COMPLETED,
+        transfer_dump_callback,
+    )
+    usb_file_data_reader.setEventCallback(
+        libusb1.LIBUSB_TRANSFER_TIMED_OUT,
+        transfer_dump_callback,
+    )
 
     reader_list = []
     append = reader_list.append
@@ -236,9 +256,11 @@ def main():
         append(data_reader)
 
     if verbose:
-        sys.stderr.write('Capture started\nSIGTSTP (^Z) to pause capture '
+        sys.stderr.write(
+            'Capture started\nSIGTSTP (^Z) to pause capture '
             '(signals the pause to analyser)\nSIGCONT (fg) to unpause\n'
-            'SIGINT (^C) / SIGTERM to gracefuly exit\n')
+            'SIGINT (^C) / SIGTERM to gracefuly exit\n'
+        )
 
     try:
         try:

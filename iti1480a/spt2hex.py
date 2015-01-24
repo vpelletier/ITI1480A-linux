@@ -58,7 +58,7 @@ def iterSPTCommands(spt_file, stop_on_cpu_start=False):
             elif data == CPUCS_PAUSE:
                 continue
             else:
-                raise ValueError, 'Unknown CPUCS register value: %r' % (data, )
+                raise ValueError('Unknown CPUCS register value: %r' % (data, ))
         yield (offset, data)
 
 IHX_MAX_LINE_LENGTH = 0x10
@@ -102,11 +102,14 @@ def toIntelHex(spt_file):
                 data = memory[offset]
                 next_offset = offset
                 while data:
-                    chunk, data = (data[:IHX_MAX_LINE_LENGTH],
-                        data[IHX_MAX_LINE_LENGTH:])
+                    chunk = data[:IHX_MAX_LINE_LENGTH]
+                    data = data[IHX_MAX_LINE_LENGTH:]
                     chunk_len = len(chunk)
-                    line = [chunk_len, (next_offset >> 8) & 0xff,
-                        next_offset & 0xff, 0] + [ord(x) for x in chunk]
+                    line = [
+                        chunk_len,
+                        (next_offset >> 8) & 0xff,
+                        next_offset & 0xff, 0
+                    ] + [ord(x) for x in chunk]
                     line.append((-sum(line)) & 0xff)
                     write(':')
                     write(''.join('%02X' % x for x in line))
