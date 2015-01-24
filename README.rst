@@ -104,7 +104,7 @@ transactions, or EOP events. You can tweak its filtering using -q (quieter) and
 -v (more verbose). Default verbosity level is 0, -q decrements it and -v
 increments it. Verbosity levels go from -1 (most quiet) to 4 (most verbose).
 
-Example outputs: https://github.com/vpelletier/ITI1480a-linux/examples/
+Example outputs: https://github.com/vpelletier/ITI1480A-linux/tree/master/examples
 
 Red timestamps mean that output is detected as being non-chronological. This
 happens for implementation detail reasons, and is considered a bug.
