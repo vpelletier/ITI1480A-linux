@@ -10,7 +10,7 @@ COLOR_YELLOW = '\x1b[1;33m'
 COLOR_RED = '\x1b[31m'
 COLOR_STRONG_RED = '\x1b[1;31m'
 COLOR_BLUE = '\x1b[1;34m'
-COLOR_GREY = '\x1b[1;30m'
+COLOR_ORANGE = '\x1b[33m'
 
 TOKEN_COLOR = {
     TOKEN_TYPE_OUT: COLOR_BLUE,
@@ -31,7 +31,7 @@ TOKEN_COLOR = {
     TOKEN_TYPE_DATA2: COLOR_GREEN,
     TOKEN_TYPE_MDATA: COLOR_GREEN,
 
-    TOKEN_TYPE_SOF: COLOR_GREY,
+    TOKEN_TYPE_SOF: COLOR_ORANGE,
 }
 
 def hexdump(data):
@@ -45,7 +45,7 @@ def hexdump(data):
         data = data[16:]
         append(
             ' ' * 20
-          + ('\x1b[1;30m%03x \x1b[0;36m' % offset)
+          + ('\x1b[33m%03x \x1b[0;36m' % offset)
           + ' '.join(['%02x' % ord(x) for x in half1] + ['  '] * (8 - len(half1)))
           + '  '
           + ' '.join(['%02x' % ord(x) for x in half2] + ['  '] * (8 - len(half2)))
@@ -115,10 +115,10 @@ class HumanReadable(object):
         return '\x1b[35mDevice reset (%s)\x1b[0m' % (short_tic_to_time(data), )
 
     def _ls_eop(self, _, data):
-        return '\x1b[1;30mLS EOP (%s)\x1b[0m' % (short_tic_to_time(data), )
+        return '\x1b[33mLS EOP (%s)\x1b[0m' % (short_tic_to_time(data), )
 
     def _fs_eop(self, _, data):
-        return '\x1b[1;30mFS EOP (%s)\x1b[0m' % (short_tic_to_time(data), )
+        return '\x1b[33mFS EOP (%s)\x1b[0m' % (short_tic_to_time(data), )
 
     def _transaction(self, tic, data, incomplete=False):
         if data[0][0] == TOKEN_TYPE_SOF:
