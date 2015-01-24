@@ -806,6 +806,7 @@ class _TransactionAggregator(_BaseYaccAggregator):
                        | SSPLIT token
                        | SSPLIT token handshake
                        | CSPLIT token data
+                       | CSPLIT token PRE_ERR
                        | CSPLIT token
                        | CSPLIT PRE_ERR
                        | CSPLIT token handshake
