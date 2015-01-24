@@ -195,7 +195,8 @@ def main():
         help='Data destination (default: stdout)')
     parser.add_option('-t', '--tee', help='Also write raw input to that '
         'file. Useful as tee(1) doesn\'t close its stdin when its stdout '
-        'gets closed.')
+        'gets closed, so next process (ie, this program) does not know it '
+        'should exit.')
     parser.add_option('-f', '--follow', action='store_true',
         help='Keep waiting for more data when reaching eof.')
     (options, args) = parser.parse_args()
@@ -238,6 +239,8 @@ def main():
                     break
         stream.stop()
     except IOError, exc:
+        # Happens when output is piped to a pager, and pager exits before stdin
+        # is fully parsed.
         if exc.errno != errno.EPIPE:
             raise
     except KeyboardInterrupt:
