@@ -357,6 +357,7 @@ MESSAGE_TRANSACTION_ERROR = 4
 MESSAGE_TRANSFER_ERROR = 5
 MESSAGE_LS_EOP = 6
 MESSAGE_FS_EOP = 7
+MESSAGE_INCOMPLETE = 8
 
 TOKEN_TYPE_OUT = 'OUT'
 TOKEN_TYPE_ACK = 'ACK'
@@ -788,6 +789,9 @@ TRANSACTION_TYPE_DICT = {
     PID_MDATA: TOKEN_TYPE_MDATA,
 }
 
+NEED_HANDSHAKE_LIST = ('SETUP', 'IN', 'OUT')
+HANDSHAKE_LIST = ('ACK', 'NAK', 'STALL', 'NYET')
+
 class _TransactionAggregator(_BaseYaccAggregator):
     tokens = TRANSACTION_TYPE_DICT.values() + [TOKEN_TYPE_SSPLIT, TOKEN_TYPE_CSPLIT]
     _start = 'transactions'
@@ -805,6 +809,7 @@ class _TransactionAggregator(_BaseYaccAggregator):
 
     def p_transaction(self, p):
         """transaction : SETUP DATA0 ACK
+                       | SETUP DATA0
                        | SSPLIT token data handshake
                        | SSPLIT token data
                        | SSPLIT token
@@ -829,7 +834,7 @@ class _TransactionAggregator(_BaseYaccAggregator):
                        | PING STALL
                        | SOF
         """
-        self._to_next(p[1][1][0][0], MESSAGE_TRANSACTION, p[1:])
+        self._to_next(p[1][1][0][0], MESSAGE_INCOMPLETE if p[1][0] in NEED_HANDSHAKE_LIST and p[len(p) - 1][0] not in HANDSHAKE_LIST else MESSAGE_TRANSACTION, p[1:])
 
     def p_token(self, p):
         """token : IN
