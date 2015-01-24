@@ -4,7 +4,7 @@ setup(
     name='ITI1480A-linux',
     description='Tools for the ITI1480A usb protocol analyser',
     keywords='usb protocol analyser ITI1480A',
-    version='2.0.1',
+    version='2.1',
     author='Vincent Pelletier',
     author_email='plr.vincent@gmail.com',
     url='http://github.com/vpelletier/ITI1480A-linux',
