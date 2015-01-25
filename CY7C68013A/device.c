@@ -194,7 +194,7 @@ static inline void FPGAConfigureStop(void) {
     /* PortB pinout: FD[7:0]
        PortD pinout: FD[15:8]
     */
-    IFCONFIG = IFCFGFIFO; SYNCDELAY;
+    IFCONFIG = IFCFGFIFO; SYNCDELAY4;
     RESETFIFOS();
     IOA |= bmBIT1;
 }
