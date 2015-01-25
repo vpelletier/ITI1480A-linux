@@ -195,5 +195,5 @@ _string2: ; device
 string2end:
 
 ; Canary descriptor: null length, but more importantly null type.
-        .db     0
-        .db     0
+	.db	0
+	.db	0
