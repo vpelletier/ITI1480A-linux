@@ -27,7 +27,7 @@
 #define COMMAND_FPGA_CONFIGURE_WRITE 1
 #define COMMAND_FPGA_CONFIGURE_STOP 2
 
-volatile BYTE config;
+static BYTE config;
 
 //************************** Configuration Handlers *****************************
 
@@ -147,7 +147,7 @@ void main_init(void) {
     handle_set_configuration(CONFIG_UNCONFIGURED);
 }
 
-inline void FPGAConfigureStart(void) {
+static inline void FPGAConfigureStart(void) {
     /* Put FPGA into reset stage. */
     /* Pull nCONFIG down */
     IOE &= ~FPGA_nCONFIG;
@@ -163,8 +163,8 @@ inline void FPGAConfigureStart(void) {
     while (!(IOE & FPGA_nSTATUS));
 }
 
-__sbit __at 0x98+1 TI_clear;
-inline BOOL FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
+static __sbit __at 0x98+1 TI_clear;
+static inline BOOL FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
     /* Send len bytes from buf to FPGA. */
     __idata unsigned char preloaded;
     while (len) {
@@ -181,7 +181,7 @@ inline BOOL FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
     return !(IOE & FPGA_nSTATUS);
 }
 
-inline void FPGAConfigureStop(void) {
+static inline void FPGAConfigureStop(void) {
     /* XXX: doesn't ensure the init stage is over.
     INIT_DONE pin is attached to PD6/FD4. Maybe it
     can be used ?
@@ -199,7 +199,7 @@ inline void FPGAConfigureStop(void) {
     IOA |= bmBIT1;
 }
 
-inline void outPortC(unsigned char value, unsigned char ioe_mask) {
+static inline void outPortC(unsigned char value, unsigned char ioe_mask) {
     IOC = value;
     OEC = 0xff;
     IOE &= ~ioe_mask;
@@ -207,7 +207,7 @@ inline void outPortC(unsigned char value, unsigned char ioe_mask) {
     OEC = 0;
 }
 
-inline unsigned char inPortC(unsigned char ioe_mask) {
+static inline unsigned char inPortC(unsigned char ioe_mask) {
     unsigned char result;
     IOE &= ~ioe_mask;
     result = IOC;
@@ -215,29 +215,29 @@ inline unsigned char inPortC(unsigned char ioe_mask) {
     return result;
 }
 
-inline unsigned char FPGACommandRecv(void) {
+static inline unsigned char FPGACommandRecv(void) {
     outPortC(0x80, bmBIT0);
     return inPortC(bmBIT1);
 }
 
-inline void FPGACommandSend(unsigned char command) {
+static inline void FPGACommandSend(unsigned char command) {
     outPortC(0, bmBIT0);
     outPortC(command, bmBIT2);
 }
 
-inline void CommandPause(BYTE arg) {
+static inline void CommandPause(BYTE arg) {
     FPGACommandSend(arg ? 2 : 0);
 }
 
-inline void CommandStop(void) {
+static inline void CommandStop(void) {
     FPGACommandSend(1);
 }
 
-inline BYTE CommandStatus() {
+static inline BYTE CommandStatus() {
     return FPGACommandRecv();
 }
 
-inline void compatible_main_loop(void) {
+static void compatible_main_loop(void) {
     if (!(EP01STAT & bmEP1OUTBSY)) {
         if (EP1OUTBC == 64) {
             switch (EP1OUTBUF[0]) {
