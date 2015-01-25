@@ -8,6 +8,20 @@
 #define bmSLCS bmBIT6
 #define bmEP1OUTBSY bmBIT1
 #define TYPEBULK bmBIT5
+#define RESETFIFOS_START() do { \
+    FIFORESET=bmNAKALL; SYNCDELAY;\
+    FIFORESET=bmNAKALL | 2; SYNCDELAY;\
+    FIFORESET=bmNAKALL | 4; SYNCDELAY;\
+    FIFORESET=bmNAKALL | 6; SYNCDELAY;\
+    FIFORESET=bmNAKALL | 8; SYNCDELAY;\
+} while (0)
+#define RESETFIFOS_STOP() do { FIFORESET=0; SYNCDELAY; } while (0)
+#ifdef RESETFIFOS
+  /* Some versions of RESETFIFOS do not keep bmNAKALL asserted when reseting
+     individual fifos. */
+  #undef RESETFIFOS
+#endif
+#define RESETFIFOS() {RESETFIFOS_START(); RESETFIFOS_STOP();}
 
 #define FPGA_nCONFIG bmBIT7
 #define FPGA_nSTATUS bmBIT6
@@ -50,11 +64,7 @@ BOOL handle_set_configuration(BYTE cfg) {
     IFCONFIG = bmIFCLKSRC | bm3048MHZ;
     SYNCDELAY;
     REVCTL = bmNOAUTOARM | bmSKIPCOMMIT; SYNCDELAY;
-    FIFORESET = bmNAKALL; SYNCDELAY;
-    FIFORESET = bmNAKALL | 2; SYNCDELAY;
-    FIFORESET = bmNAKALL | 4; SYNCDELAY;
-    FIFORESET = bmNAKALL | 6; SYNCDELAY;
-    FIFORESET = bmNAKALL | 8; SYNCDELAY;
+    RESETFIFOS_START();
     switch (cfg) {
         case CONFIG_UNCONFIGURED:
             EP1OUTCFG &= ~bmVALID; SYNCDELAY;
@@ -85,8 +95,8 @@ BOOL handle_set_configuration(BYTE cfg) {
         default:
             return FALSE;
     }
-    FIFORESET = 0; SYNCDELAY;
     config = cfg;
+    RESETFIFOS_STOP();
     return TRUE;
 }
 
@@ -184,9 +194,8 @@ static inline void FPGAConfigureStop(void) {
     /* PortB pinout: FD[7:0]
        PortD pinout: FD[15:8]
     */
-    IFCONFIG = IFCFGFIFO;
-    /* XXX: assuming output clock is 48MHz */
-    SYNCDELAY; RESETFIFOS();
+    IFCONFIG = IFCFGFIFO; SYNCDELAY;
+    RESETFIFOS();
     IOA |= bmBIT1;
 }
 
