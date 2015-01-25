@@ -31,22 +31,13 @@ static BYTE config;
 
 //************************** Configuration Handlers *****************************
 
-// change to support as many interfaces as you need
-//volatile xdata BYTE interface=0;
-//volatile xdata BYTE alt=0; // alt interface
-
-// set *alt_ifc to the current alt interface for ifc
 BOOL handle_get_interface(BYTE ifc, BYTE* alt_ifc) {
-// *alt_ifc=alt;
-    return TRUE;
+    *alt_ifc = 0;
+    return ifc == 0;
 }
-// return TRUE if you set the interface requested
-// NOTE this function should reconfigure and reset the endpoints
-// according to the interface descriptors you provided.
+
 BOOL handle_set_interface(BYTE ifc,BYTE alt_ifc) {
-    //interface=ifc;
-    //alt=alt_ifc;
-    return TRUE;
+    return ifc == 0 && alt_ifc == 0;
 }
 
 BYTE handle_get_configuration(void) {
