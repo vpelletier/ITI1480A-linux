@@ -150,6 +150,6 @@ happens for implementation detail reasons, and is considered a bug
 .. _1480A USB Protocol Analyzer Software: http://www.internationaltestinstruments.com/
 .. _4.1.0b ultitest.rbf: http://www.internationaltestinstruments.com/Downloads/UlpiTest.rbf
 .. _ply: http://www.dabeaz.com/ply/
-.. _fx2lib: https://github.com/henryhallam/fx2lib
+.. _fx2lib: https://github.com/djmuhlestein/fx2lib
 .. _sdcc: http://sdcc.sourceforge.net
 .. _issue #4: https://github.com/vpelletier/ITI1480A-linux/issues/4
