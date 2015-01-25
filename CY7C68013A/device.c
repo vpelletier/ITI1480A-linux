@@ -29,7 +29,7 @@
 #define FPGA_DCLK bmBIT4
 
 #define CONFIG_UNCONFIGURED 0
-/* Device configuration compatible with ITI's firmware */
+/* Device configuration compatible with ITI's software */
 #define CONFIG_COMPATIBLE 1
 
 #define COMMAND_FPGA 0
