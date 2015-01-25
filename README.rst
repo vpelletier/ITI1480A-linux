@@ -26,24 +26,55 @@ Dependencies
 
 - ply_
 
-- ulpitest.rbf from `1480A USB Protocol Analyzer Software`_
-  (`4.1.0b ultitest.rbf`_ is released stand-alone)
+Firmwares
+---------
 
-FX2 firmware
-------------
+The ITI1480A analyser is composed of 2 programable chips:
 
-A free software version of this firmware has been reimplemented, so there are
-two ways:
+- A Cypress FX2, to be programmed on first device enumeration after connection
+  to analysis computer. Its firmware transmits commands send by analysis
+  computer to the main analyser chip and streams capture data back.
 
-Either
+  This chip controls the "Host power" led: if the firmware is properly loaded,
+  this led must be on.
 
-- ITI1480A.spt from `1480A USB Protocol Analyzer Software`_
+- An Altera Cyclone 2 FPGA, which produces data which is stored in capture
+  files by listening to events from the link under test. Its firmware is
+  loaded at the beginning of each capture session.
 
-or
+  This chip controls the "Link power" and "Link activity" leds.
 
-- fx2lib_
+Just for completeness, there is a small flash chip which merely contains
+power-on vendor and device identifiers so an unprogrammed ITI1480A FX2 can
+still be distinguished from any other device's FX2.
 
-- sdcc_
+FX2
++++
+
+A free software implementation of this firmware exists, so you have two
+options:
+
+- Either using the proprietary firmware from
+  `1480A USB Protocol Analyzer Software`_, found under the name `ITI1480A.spt`
+  in installation directory.
+
+- Or building the free software firmware from source, for which you need:
+
+  - fx2lib_
+
+  - sdcc_
+
+Cyclone 2
++++++++++
+
+No free software implementation exist (yet). Contributions welcome.
+
+I the mean time, you need to use the proprietary implementation from
+`1480A USB Protocol Analyzer Software`_, found under the name
+`ulpitest.rbf` in installation directory.
+
+`4.1.0b ultitest.rbf`_ (latest version as of this writing) has been released
+stand-alone.
 
 Installation
 ============
@@ -108,7 +139,8 @@ increments it. Verbosity levels go from -1 (most quiet) to 4 (most verbose).
 Example outputs: https://github.com/vpelletier/ITI1480A-linux/tree/master/examples
 
 Red timestamps mean that output is detected as being non-chronological. This
-happens for implementation detail reasons, and is considered a bug.
+happens for implementation detail reasons, and is considered a bug
+(`issue #4`_).
 
 .. _Python: http://www.python.org/
 .. _pypy: http://www.pypy.org/
@@ -120,3 +152,4 @@ happens for implementation detail reasons, and is considered a bug.
 .. _ply: http://www.dabeaz.com/ply/
 .. _fx2lib: https://github.com/henryhallam/fx2lib
 .. _sdcc: http://sdcc.sourceforge.net
+.. _issue #4: https://github.com/vpelletier/ITI1480A-linux/issues/4
