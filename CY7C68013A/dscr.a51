@@ -133,7 +133,7 @@ _dev_strings:
 _string0:
 	.db	string0end-_string0	; bLength
 	.db	DSCR_STRING_TYPE	; bDescriptorType
-	.db	0x09, 0x04		; wLANGID
+	.db	0x09, 0x04		; wLANGID (0x0409 is en-US)
 string0end:
 
 _string1: ; vendor
