@@ -68,7 +68,7 @@ _highspd_dscr:
 	.db	(highspd_dscr_realend-_highspd_dscr) / 256
 	.db	1				; bNumInterfaces
 	.db	1				; bConfigurationValue
-	.db	0				; iConfiguration
+	.db	3				; iConfiguration
 	.db	0x80				; bmAttributes
 	.db	0x32				; bMaxPower
 highspd_dscr_end:
@@ -197,6 +197,39 @@ string2: ; device
 	.db	'0, 0
 	.db	'A, 0
 string2end:
+
+string3: ; Configuration 1
+	.db	string3end-string3	; bLength
+	.db	DSCR_STRING_TYPE	; bDescriptorType
+	.db	'C, 0
+	.db	'o, 0
+	.db	'm, 0
+	.db	'p, 0
+	.db	'a, 0
+	.db	't, 0
+	.db	'i, 0
+	.db	'b, 0
+	.db	'l, 0
+	.db	'e, 0
+	.db	' , 0
+	.db	'w, 0
+	.db	'i, 0
+	.db	't, 0
+	.db	'h, 0
+	.db	' , 0
+	.db	'I, 0
+	.db	'T, 0
+	.db	'I, 0
+	.db	' , 0
+	.db	's, 0
+	.db	'o, 0
+	.db	'f, 0
+	.db	't, 0
+	.db	'w, 0
+	.db	'a, 0
+	.db	'r, 0
+	.db	'e, 0
+string3end:
 
 ; Canary descriptor: null length, but more importantly null type.
 	.db	0
