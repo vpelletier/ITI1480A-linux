@@ -41,7 +41,7 @@
 #define COMMAND_FPGA_CONFIGURE_WRITE 1
 #define COMMAND_FPGA_CONFIGURE_STOP 2
 
-static BYTE config;
+static BYTE config = CONFIG_UNCONFIGURED;
 
 //************************** Configuration Handlers *****************************
 
