@@ -27,6 +27,7 @@ BCD_USB2 = 0x0002
 ; in code memory otherwise SUDPTRH:L don't work right
     .area	DSCR_AREA	(CODE)
 
+.even
 _dev_dscr:
 	.db	dev_dscr_end-_dev_dscr	; bLength
 	.db	DSCR_DEVICE_TYPE	; bDescriptorType
@@ -44,6 +45,7 @@ _dev_dscr:
 	.db	1			; bNumConfigurations
 dev_dscr_end:
 
+.even
 _dev_qual_dscr:
 	.db	dev_qualdscr_end-_dev_qual_dscr	; bLength
 	.db	DSCR_DEVQUAL_TYPE		; bDescriptorType
@@ -56,6 +58,8 @@ _dev_qual_dscr:
 	.db	0				; bReserved
 dev_qualdscr_end:
 
+; Configuration 1
+.even
 _highspd_dscr:
 	.db	highspd_dscr_end-_highspd_dscr	; bLength
 	.db	DSCR_CONFIG_TYPE		; bDescriptorType
