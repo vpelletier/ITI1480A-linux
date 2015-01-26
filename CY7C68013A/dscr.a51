@@ -130,14 +130,14 @@ fullspd_dscr_realend:
 
 .even
 _dev_strings:
-_string0:
-	.db	string0end-_string0	; bLength
+string0:
+	.db	string0end-string0	; bLength
 	.db	DSCR_STRING_TYPE	; bDescriptorType
 	.db	0x09, 0x04		; wLANGID (0x0409 is en-US)
 string0end:
 
-_string1: ; vendor
-	.db	string1end-_string1	; bLength
+string1: ; vendor
+	.db	string1end-string1	; bLength
 	.db	DSCR_STRING_TYPE	; bDescriptorType
 	.db	'I, 0
 	.db	'n, 0
@@ -171,8 +171,8 @@ _string1: ; vendor
 	.db	's, 0
 string1end:
 
-_string2: ; device
-	.db	string2end-_string2	; bLength
+string2: ; device
+	.db	string2end-string2	; bLength
 	.db	DSCR_STRING_TYPE	; bDescriptorType
 	.db	'U, 0
 	.db	'S, 0
