@@ -145,6 +145,7 @@ void main_init(void) {
     /* SCON0 = XXXXX100: CLKOUT / 4, mode 0 */
     SM2 = 1;
 
+    EP0BCH = 0; SYNCDELAY; /* As of TRM rev.*D 8.6.1.2 */
     handle_set_configuration(CONFIG_UNCONFIGURED);
 }
 
