@@ -126,6 +126,7 @@ def main():
     if len(argv) != 2:
         print 'Usage: %s <file.spt>\n  Result: <file_0.ihx> [<file_1.ihx> ' \
             '[...]]' % (argv[0], )
+        sys.exit(1)
 
     infile_name = argv[1]
     prefix = splitext(basename(infile_name))[0]
