@@ -117,6 +117,8 @@ def toIntelHex(spt_file):
                     next_offset += chunk_len
             write(':00000001FF') # end of file
             ihx_list.append(ihx_file.getvalue())
+        else:
+            break
     return ihx_list
 
 def main():
