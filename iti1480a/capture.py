@@ -214,7 +214,8 @@ def main():
     context = usb1.LibUSBContext()
     handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
     if handle is None:
-        raise ValueError('Unable to find usb analyzer.')
+        print >>sys.stderr, 'Unable to find usb analyzer.'
+        sys.exit(1)
     handle.claimInterface(0)
     analyzer = USBAnalyzer(handle)
     analyzer.sendFirmware(open(options.firmware, 'rb'))
