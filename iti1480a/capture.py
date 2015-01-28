@@ -141,9 +141,6 @@ class TransferDumpCallback(object):
             result = False
         return result
 
-def transferTimeoutHandler(transfer):
-    return True
-
 class Terminate(Exception):
     pass
 
