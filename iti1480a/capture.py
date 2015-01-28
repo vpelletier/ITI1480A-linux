@@ -263,7 +263,11 @@ def main():
     try:
         try:
             while pending(reader_list):
-                context.handleEventsTimeout(.5)
+                try:
+                    context.handleEventsTimeout(.5)
+                except libusb1.USBError, exc:
+                    if exc.value != libusb1.LIBUSB_ERROR_INTERRUPTED:
+                        raise
             sys.stderr.write('\n')
         finally:
             if verbose:
