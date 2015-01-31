@@ -169,10 +169,7 @@ class resumingSignalHandler(object):
             sys.stderr.write('Capture resumed\n')
 
 def pending(transfer_list):
-    for transfer in transfer_list:
-        if transfer.isSubmitted():
-            return True
-    return False
+    return any(x.isSubmitted() for x in transfer_list)
 
 def main():
     from optparse import OptionParser
