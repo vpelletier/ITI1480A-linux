@@ -204,9 +204,9 @@ def main():
         assert len(usb_device) == 2
         usb_device = (int(usb_device[0]), int(usb_device[1]))
     if options.out is None:
-        out_file = sys.stdout
+        out_file = os.fdopen(sys.stdout.fileno(), 'w', 0)
     else:
-        out_file = open(options.out, 'wb')
+        out_file = open(options.out, 'wb', 0)
     verbose = options.verbose
     context = usb1.LibUSBContext()
     handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
