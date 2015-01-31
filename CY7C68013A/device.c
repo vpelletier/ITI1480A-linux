@@ -197,13 +197,6 @@ static inline BOOL FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char 
 static inline void FPGAConfigureStop(void) {
     /* Switch FIFO clock source to external */
     IFCONFIG &= ~bmIFCLKSRC;
-    /* XXX: doesn't ensure the init stage is over.
-    INIT_DONE pin is attached to PD6/FD4. Maybe it
-    can be used ?
-    If FPGA uses internal 10MHz clock for init, it
-    takes 29.9us to finish configuration (and it
-    probably does, CLKUSR doesn't seem connected to
-    anything). */
     IOA &= ~bmBIT1;
     /* PortB pinout: FD[7:0]
        PortD pinout: FD[15:8]
