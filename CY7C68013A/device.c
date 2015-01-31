@@ -4,7 +4,6 @@
 
 #define SYNCDELAY SYNCDELAY3
 #define CLKSPD48 bmCLKSPD1
-#define IFCFGFIFO (bmIFCFG0 | bmIFCFG1)
 #define bmSLCS bmBIT6
 #define bmEP1OUTBSY bmBIT1
 #define TYPEBULK bmBIT5
@@ -61,8 +60,7 @@ BYTE handle_get_configuration(void) {
 BOOL handle_set_configuration(BYTE cfg) {
     /* When changing configuration, use internal clock so we can configure
     endpoints even if there is no clock on IFCLK input */
-    IFCONFIG = bmIFCLKSRC | bm3048MHZ;
-    SYNCDELAY;
+    IFCONFIG |= bmIFCLKSRC; SYNCDELAY;
     REVCTL = bmNOAUTOARM | bmSKIPCOMMIT; SYNCDELAY;
     RESETFIFOS_START();
     switch (cfg) {
@@ -109,10 +107,20 @@ BOOL handle_vendorcommand(BYTE cmd) {
 //********************  INIT ***********************
 
 void main_init(void) {
-    /* 1 CLKOUT: CLK0 23 */
-    CPUCS = CLKSPD48 | bmCLKOE;
     /* Disable extra movx delays */
     CKCON &= ~(bmBIT2 | bmBIT1 | bmBIT0);
+    /* Setup FIFO before CPUCS:
+       - Use internal clock source as FPGA is not providing one yet
+       - Set internal clock to 48MHz
+       - Keep clock out disabled
+       - Do not inverse clock polarity
+       - Keep FIFO synchronous
+       - Do not enable GSTATE
+       - Set ports B and D as 16bits slave FIFO
+    */
+    IFCONFIG = bmIFCLKSRC | bm3048MHZ | bmIFCFG1 | bmIFCFG0; SYNCDELAY;
+    /* 1 CLKOUT: CLK0 23 */
+    CPUCS = CLKSPD48 | bmCLKOE;
 
     /* PortA pinout:
     INT0: TP14, 133
@@ -150,6 +158,8 @@ void main_init(void) {
 }
 
 static inline void FPGAConfigureStart(void) {
+    /* Switch to internal clock as FPGA will stop feeding IFCLK */
+    IFCONFIG |= bmIFCLKSRC; SYNCDELAY4;
     /* Put FPGA into reset stage. */
     /* Pull nCONFIG down */
     IOE &= ~FPGA_nCONFIG;
@@ -184,6 +194,8 @@ static inline BOOL FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char 
 }
 
 static inline void FPGAConfigureStop(void) {
+    /* Switch FIFO clock source to external */
+    IFCONFIG &= ~bmIFCLKSRC;
     /* XXX: doesn't ensure the init stage is over.
     INIT_DONE pin is attached to PD6/FD4. Maybe it
     can be used ?
@@ -195,7 +207,6 @@ static inline void FPGAConfigureStop(void) {
     /* PortB pinout: FD[7:0]
        PortD pinout: FD[15:8]
     */
-    IFCONFIG = IFCFGFIFO; SYNCDELAY4;
     RESETFIFOS();
     IOA |= bmBIT1;
 }
