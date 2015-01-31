@@ -90,6 +90,16 @@ class USBAnalyzer(object):
         self.writeCommand(COMMAND_PAUSE, COMMAND_PAUSE_CONTINUE)
 
 class TransferDumpCallback(object):
+    __slots__ = (
+        'write',
+        'transfer_end_count',
+        'capture_size',
+        'next_measure',
+        'last_measure',
+        'verbose',
+        'stop_condition',
+    )
+
     def __init__(self, stream, verbose=False):
         self.write = stream.write
         self.transfer_end_count = 0
@@ -97,13 +107,17 @@ class TransferDumpCallback(object):
         self.next_measure = time.time()
         self.last_measure = (None, None)
         self.verbose = verbose
+        self.stop_condition = (
+            '\xf0\x41', '\xf1\x41',
+            '\x41\xf0', '\x41\xf1',
+        )
 
     def __call__(self, transfer):
         size = transfer.getActualLength()
         if not size:
             return True
         data = transfer.getBuffer()[:size]
-        if data[-2:] in ('\xf0\x41', '\xf1\x41', '\x41\xf0', '\x41\xf1'):
+        if data[-2:] in self.stop_condition:
             self.transfer_end_count += 1
             result = self.transfer_end_count < 2
         else:
