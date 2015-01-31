@@ -1,3 +1,4 @@
+#include <autovector.h>
 #include <fx2macros.h>
 #include <delay.h>
 #include <eputils.h>
@@ -297,4 +298,16 @@ void main_loop(void) {
             compatible_main_loop();
             break;
     }
+}
+
+void ibn_isr() __interrupt IBN_ISR {
+    BYTE old_ibnie = IBNIE;
+    IBNIE = 0;
+    CLEAR_USBINT();
+    if (IBNIRQ & bmEP2IBN && !(EP24FIFOFLGS & bmBIT1)) {
+        INPKTEND = 2;
+        IBNIRQ = bmEP2IBN;
+    }
+    NAKIRQ = bmIBN;
+    IBNIE = old_ibnie;
 }

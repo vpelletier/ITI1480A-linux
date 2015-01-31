@@ -40,6 +40,10 @@ void main() {
  ENABLE_HISPEED();
  ENABLE_SUSPEND();
  ENABLE_RESUME();
+ NAKIRQ = bmIBN;
+ NAKIE |= bmIBN;
+ IBNIRQ = 0xff;
+ IBNIE |= bmEP2IBN;
 
  EA=1;
 
