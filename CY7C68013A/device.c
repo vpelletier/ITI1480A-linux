@@ -54,10 +54,15 @@
 #define COMMAND_STOP 1
 #define COMMAND_STATUS 2
 #define COMMAND_PAUSE 3
+#define COMMAND_MEMORY 0xff
 
 #define COMMAND_FPGA_CONFIGURE_START 0
 #define COMMAND_FPGA_CONFIGURE_WRITE 1
 #define COMMAND_FPGA_CONFIGURE_STOP 2
+
+#define COMMAND_MEMORY_INTERNAL 0
+#define COMMAND_MEMORY_EXTERNAL 1
+#define COMMAND_MEMORY_CODE     2
 
 static BYTE config = CONFIG_UNCONFIGURED;
 static __bit fpga_configure_running = FALSE;
@@ -286,6 +291,67 @@ BOOL handle_vendorcommand(BYTE cmd) {
                 (REQUESTTYPE_TYPE_VENDOR | REQUESTTYPE_RECIPIENT_DEVICE)) {
         return FALSE;
     }
+#if 0
+    /* Useful for debugging from host */
+    if (command == COMMAND_MEMORY) {
+        __xdata BYTE * buf = EP0BUF;
+        BYTE count = LSB(data_length);
+        if (data_length > 64)
+            return FALSE;
+        switch (subcommand) {
+            case COMMAND_MEMORY_INTERNAL:
+                {
+                    __data BYTE *ram = (__data BYTE *) SETUPDAT[4];
+                    if (SETUPDAT[5])
+                        return FALSE;
+                    if (direction_in) {
+                        while (count--) {
+                            *buf++ = *ram++;
+                        }
+                        EP0BCH = SETUPDAT[7]; SYNCDELAY;
+                        EP0BCL = SETUPDAT[6]; SYNCDELAY;
+                    } else {
+                        while (count--) {
+                            *ram++ = *buf++;
+                        }
+                    }
+                    return TRUE;
+                }
+            case COMMAND_MEMORY_EXTERNAL:
+                {
+                    __xdata BYTE *ram = (__xdata BYTE *) ((WORD *) SETUPDAT)[2];
+                    if (direction_in) {
+                        while (count--) {
+                            *buf++ = *ram++;
+                        }
+                        EP0BCH = SETUPDAT[7]; SYNCDELAY;
+                        EP0BCL = SETUPDAT[6]; SYNCDELAY;
+                    } else {
+                        while (count--) {
+                            *ram++ = *buf++;
+                        }
+                    }
+                    return TRUE;
+                }
+            case COMMAND_MEMORY_CODE:
+                {
+                    __code BYTE *ram = (__code BYTE *) ((WORD *) SETUPDAT)[2];
+                    if (direction_in) {
+                        while (count--) {
+                            *buf++ = *ram++;
+                        }
+                        EP0BCH = SETUPDAT[7]; SYNCDELAY;
+                        EP0BCL = SETUPDAT[6]; SYNCDELAY;
+                    } else {
+                        return FALSE;
+                    }
+                    return TRUE;
+                }
+            default:
+                return FALSE;
+        }
+    }
+#endif
     switch (fpga_configure_running) {
         case FALSE:
             switch (direction_in) {

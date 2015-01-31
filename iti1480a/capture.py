@@ -111,6 +111,10 @@ class CompliantUSBAnalyzer(BaseUSBAnalyzer):
     COMMAND_FPGA_CONFIGURE_START = 0
     COMMAND_FPGA_CONFIGURE_WRITE = 1
     COMMAND_FPGA_CONFIGURE_STOP = 2
+    COMMAND_MEMORY = 0xff
+    COMMAND_MEMORY_INTERNAL = 0
+    COMMAND_MEMORY_EXTERNAL = 1
+    COMMAND_MEMORY_CODE = 2
 
     def writeCommand(self, command, sub_command=0, data='', index=0):
         self._handle.controlWrite(
@@ -129,6 +133,21 @@ class CompliantUSBAnalyzer(BaseUSBAnalyzer):
             index,
             length,
         )
+
+    def peek(self, address, length=1):
+        return self.readCommand(length, self.COMMAND_MEMORY, self.COMMAND_MEMORY_INTERNAL, address)
+
+    def xpeek(self, address, length=1):
+        return self.readCommand(length, self.COMMAND_MEMORY, self.COMMAND_MEMORY_EXTERNAL, address)
+
+    def cpeek(self, address, length=1):
+        return self.readCommand(length, self.COMMAND_MEMORY, self.COMMAND_MEMORY_CODE, address)
+
+    def poke(self, address, data):
+        self.writeCommand(self.COMMAND_MEMORY, self.COMMAND_MEMORY_INTERNAL, data, address)
+
+    def xpoke(self, address, data):
+        self.writeCommand(self.COMMAND_MEMORY, self.COMMAND_MEMORY_EXTERNAL, data, address)
 
 def USBAnalyzer(handle):
     # Free Software firmware exposes an incompatible, standard-compliant
