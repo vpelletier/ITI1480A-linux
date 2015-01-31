@@ -61,7 +61,7 @@ BOOL handle_set_configuration(BYTE cfg) {
     /* When changing configuration, use internal clock so we can configure
     endpoints even if there is no clock on IFCLK input */
     IFCONFIG |= bmIFCLKSRC; SYNCDELAY;
-    REVCTL = bmNOAUTOARM | bmSKIPCOMMIT; SYNCDELAY;
+    /* Keep NAK running until FIFOs are fully configured */
     RESETFIFOS_START();
     switch (cfg) {
         case CONFIG_UNCONFIGURED:
@@ -121,6 +121,7 @@ void main_init(void) {
     IFCONFIG = bmIFCLKSRC | bm3048MHZ | bmIFCFG1 | bmIFCFG0; SYNCDELAY;
     /* 1 CLKOUT: CLK0 23 */
     CPUCS = CLKSPD48 | bmCLKOE;
+    REVCTL = bmNOAUTOARM | bmSKIPCOMMIT; SYNCDELAY;
 
     /* PortA pinout:
     INT0: TP14, 133
