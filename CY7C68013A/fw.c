@@ -22,113 +22,110 @@
 #include <delay.h>
 #include <setupdat.h>
 
-#define ENABLE_EP0OUT() EPIE|=bmEP0OUT
-#define CLEAR_EP0OUT() CLEAR_USBINT(); EPIRQ=bmEP0OUT
+#define ENABLE_EP0OUT() EPIE |= bmEP0OUT
+#define CLEAR_EP0OUT() CLEAR_USBINT(); EPIRQ = bmEP0OUT
 
-volatile __bit dosud=FALSE;
-volatile __bit dosuspend=FALSE;
-volatile __bit doep0out=FALSE;
+volatile __bit dosud = FALSE;
+volatile __bit dosuspend = FALSE;
+volatile __bit doep0out = FALSE;
 
-// custom functions
 extern void main_loop();
 extern void main_init();
 extern void handle_ep0_out();
 
 void main() {
- main_init();
+    main_init();
 
- // set up interrupts.
- USE_USB_INTS();
+    USE_USB_INTS();
+    ENABLE_SUDAV();
+    ENABLE_USBRESET();
+    ENABLE_HISPEED();
+    ENABLE_SUSPEND();
+    ENABLE_RESUME();
+    NAKIRQ = bmIBN;
+    NAKIE |= bmIBN;
+    IBNIRQ = 0xff;
+    IBNIE |= bmEP2IBN;
+    ENABLE_EP0OUT();
 
- ENABLE_SUDAV();
- ENABLE_USBRESET();
- ENABLE_HISPEED();
- ENABLE_SUSPEND();
- ENABLE_RESUME();
- NAKIRQ = bmIBN;
- NAKIE |= bmIBN;
- IBNIRQ = 0xff;
- IBNIE |= bmEP2IBN;
- ENABLE_EP0OUT();
+    EA = 1;
 
- EA=1;
-
-// iic files (c2 load) don't need to renumerate/delay
-// trm 3.6
+/* iic files (c2 load) don't need to renumerate/delay, see TRM 3.6 */
 #ifndef NORENUM
- RENUMERATE();
+    RENUMERATE();
 #else
- USBCS &= ~bmDISCON;
+    USBCS &= ~bmDISCON;
 #endif
 
- while(TRUE) {
+    while(TRUE) {
 
-     main_loop();
+        main_loop();
 
-     if (dosud) {
-       dosud=FALSE;
-       handle_setupdata();
-     }
-
-     if (doep0out) {
-       doep0out=FALSE;
-       handle_ep0_out();
-     }
-
-     if (dosuspend) {
-        dosuspend=FALSE;
-        do {
-           WAKEUPCS |= bmWU|bmWU2; // make sure ext wakeups are cleared
-           SUSPEND=1;
-           PCON |= 1;
-           __asm
-           nop
-           nop
-           nop
-           nop
-           nop
-           nop
-           nop
-           __endasm;
-        } while ( !remote_wakeup_allowed && REMOTE_WAKEUP());
-        // resume
-        // trm 6.4
-        if ( REMOTE_WAKEUP() ) {
-            delay(5);
-            USBCS |= bmSIGRESUME;
-            delay(15);
-            USBCS &= ~bmSIGRESUME;
+        if (dosud) {
+            dosud = FALSE;
+            handle_setupdata();
         }
 
-     }
+        if (doep0out) {
+            doep0out = FALSE;
+            handle_ep0_out();
+        }
 
- } // end while
+        if (dosuspend) {
+            dosuspend = FALSE;
+            do {
+                WAKEUPCS |= bmWU | bmWU2; /* clear external wakeups */
+                SUSPEND = 1;
+                PCON |= 1;
+                __asm
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+                __endasm;
+            } while (!remote_wakeup_allowed && REMOTE_WAKEUP());
+            /* resume, see TRM 6.4 */
+            if (REMOTE_WAKEUP()) {
+                delay(5);
+                USBCS |= bmSIGRESUME;
+                delay(15);
+                USBCS &= ~bmSIGRESUME;
+            }
 
-} // end main
+        }
+
+    }
+
+}
 
 void resume_isr() __interrupt RESUME_ISR {
- CLEAR_RESUME();
+    CLEAR_RESUME();
 }
 
 void sudav_isr() __interrupt SUDAV_ISR {
- dosud=TRUE;
- CLEAR_SUDAV();
+    dosud=TRUE;
+    CLEAR_SUDAV();
 }
+
 void usbreset_isr() __interrupt USBRESET_ISR {
- handle_hispeed(FALSE);
- CLEAR_USBRESET();
+    handle_hispeed(FALSE);
+    CLEAR_USBRESET();
 }
+
 void hispeed_isr() __interrupt HISPEED_ISR {
- handle_hispeed(TRUE);
- CLEAR_HISPEED();
+    handle_hispeed(TRUE);
+    CLEAR_HISPEED();
 }
 
 void suspend_isr() __interrupt SUSPEND_ISR {
- dosuspend=TRUE;
- CLEAR_SUSPEND();
+    dosuspend=TRUE;
+    CLEAR_SUSPEND();
 }
 
 void ep0out_isr() __interrupt EP0OUT_ISR {
- doep0out=TRUE;
- CLEAR_EP0OUT();
+    doep0out=TRUE;
+    CLEAR_EP0OUT();
 }
