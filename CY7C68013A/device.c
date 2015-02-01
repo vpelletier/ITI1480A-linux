@@ -167,6 +167,14 @@ static inline void FPGAConfigureStart(void) {
     IOE &= ~FPGA_nCONFIG;
     /* Pull PE4 up to allow TXD0 signal to reach DCLK */
     IOE |= FPGA_DCLK;
+
+    /* Empty fifo and (re)enable AUTOIN. */
+    FIFORESET = bmNAKALL; SYNCDELAY;
+    EP2FIFOCFG &= ~bmAUTOIN; SYNCDELAY;
+    FIFORESET = bmNAKALL | 2; SYNCDELAY;
+    EP2FIFOCFG |= bmAUTOIN; SYNCDELAY;
+    FIFORESET = 0; SYNCDELAY;
+
     /* Wait for nSTATUS to become low */
     while (IOE & FPGA_nSTATUS);
     /* Pull nCONFIG up */
@@ -196,12 +204,6 @@ static inline BOOL FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char 
 }
 
 static inline void FPGAConfigureStop(void) {
-    /* Empty fifo and (re)enable AUTOIN. */
-    FIFORESET = bmNAKALL; SYNCDELAY;
-    EP2FIFOCFG &= ~bmAUTOIN; SYNCDELAY;
-    FIFORESET = bmNAKALL | 2; SYNCDELAY;
-    EP2FIFOCFG |= bmAUTOIN; SYNCDELAY;
-    FIFORESET = 0; SYNCDELAY;
     /* Switch FIFO clock source to external */
     IFCONFIG &= ~bmIFCLKSRC;
     IOA &= ~bmBIT1;
