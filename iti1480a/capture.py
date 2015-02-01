@@ -65,6 +65,15 @@ class USBAnalyzer(object):
         write = self.writeCommand
 
         write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
+        try:
+            # Empty device FIFO, discarding data.
+            self._handle.bulkRead(2, 2048, 10)
+            self._handle.bulkRead(2, 2048, 10)
+        except libusb1.USBError, exc:
+            if exc.value != libusb1.LIBUSB_ERROR_TIMEOUT:
+                raise
+        else:
+            raise Exception('Read 2k, EP2 FIFO still not empty')
         while True:
             conf_data = read(COMMAND_DATA_LEN)
             if not conf_data:
