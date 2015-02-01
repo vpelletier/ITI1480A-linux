@@ -31,6 +31,8 @@ volatile __bit doep0out = FALSE;
 
 extern void main_loop();
 extern void main_init();
+extern void handle_suspend();
+extern void handle_wakeup();
 extern void handle_ep0_out();
 
 void main() {
@@ -73,6 +75,7 @@ void main() {
 
         if (dosuspend) {
             dosuspend = FALSE;
+            handle_suspend();
             do {
                 WAKEUPCS |= bmWU | bmWU2; /* clear external wakeups */
                 SUSPEND = 1;
@@ -94,6 +97,7 @@ void main() {
                 delay(15);
                 USBCS &= ~bmSIGRESUME;
             }
+            handle_wakeup();
 
         }
 

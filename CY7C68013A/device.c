@@ -124,8 +124,17 @@ BOOL handle_set_configuration(BYTE cfg) {
     return TRUE;
 }
 
-//********************  INIT ***********************
+void handle_suspend(void) {
+    /* Host power LED off */
+    OEA &= ~bmBIT3;
+}
 
+void handle_wakeup(void) {
+    /* Host power LED on */
+    OEA |= bmBIT3;
+}
+
+//********************  INIT ***********************
 void main_init(void) {
     /* Disable extra movx delays */
     CKCON &= ~(bmBIT2 | bmBIT1 | bmBIT0);
