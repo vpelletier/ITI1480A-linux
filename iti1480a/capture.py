@@ -239,7 +239,7 @@ def main():
     context = usb1.LibUSBContext()
     handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
     if handle is None:
-        print >>sys.stderr, 'Unable to find usb analyzer.'
+        print >>sys.stderr, 'ITI1480A USB Analyzer not found'
         sys.exit(1)
     handle.claimInterface(0)
     analyzer = USBAnalyzer(handle)
