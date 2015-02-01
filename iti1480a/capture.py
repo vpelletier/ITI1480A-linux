@@ -288,7 +288,7 @@ def main():
         )
 
     try:
-        while any(x.isSubmitted() for x in transfer_list):
+        while any(x.isSubmitted() for x in reader_list):
             try:
                 context.handleEvents()
             except libusb1.USBError, exc:
