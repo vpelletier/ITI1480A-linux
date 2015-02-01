@@ -306,8 +306,10 @@ void ibn_isr() __interrupt IBN_ISR {
     BYTE old_ibnie = IBNIE;
     IBNIE = 0;
     CLEAR_USBINT();
-    if (IBNIRQ & bmEP2IBN && !(EP24FIFOFLGS & bmBIT1)) {
-        INPKTEND = 2;
+    if (IBNIRQ & bmEP2IBN) {
+        if (!(EP24FIFOFLGS & bmBIT1)) {
+            INPKTEND = 2;
+        }
         IBNIRQ = bmEP2IBN;
     }
     NAKIRQ = bmIBN;
