@@ -98,6 +98,7 @@ class TransferDumpCallback(object):
         'last_measure',
         'verbose',
         'stop_condition',
+        '__call__',
     )
 
     def __init__(self, stream, verbose=False):
@@ -111,8 +112,12 @@ class TransferDumpCallback(object):
             '\xf0\x41', '\xf1\x41',
             '\x41\xf0', '\x41\xf1',
         )
+        self.__call__ = self.real_call
 
-    def __call__(self, transfer):
+    def noop_call(self, transfer):
+        return False
+
+    def real_call(self, transfer):
         size = transfer.getActualLength()
         if not size:
             return True
@@ -120,6 +125,8 @@ class TransferDumpCallback(object):
         if data[-2:] in self.stop_condition:
             self.transfer_end_count += 1
             result = self.transfer_end_count < 2
+            if not result:
+                self.__call__ = self.noop_call
         else:
             result = True
             self.transfer_end_count = 0
