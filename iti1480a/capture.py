@@ -162,11 +162,15 @@ class TransferDumpCallback(object):
             result = False
         return result
 
-class Terminate(Exception):
-    pass
+class terminatingSignalHandler(object):
+    def __init__(self, analyzer, verbose=False):
+        self._analyzer = analyzer
+        self._verbose = verbose
 
-def terminatingSignalHandler(sig, stack):
-    raise Terminate(sig)
+    def __call__(self, sig, stack):
+        if self._verbose:
+            sys.stderr.write('\nExiting...\n')
+        self._analyzer.stopCapture()
 
 class pausingSignalHandler(object):
     def __init__(self, analyzer, verbose=False):
@@ -188,9 +192,6 @@ class resumingSignalHandler(object):
         self._analyzer.continueCapture()
         if self._verbose:
             sys.stderr.write('Capture resumed\n')
-
-def pending(transfer_list):
-    return any(x.isSubmitted() for x in transfer_list)
 
 def main():
     from optparse import OptionParser
@@ -236,8 +237,12 @@ def main():
     analyzer.sendFirmware(open(options.firmware, 'rb'))
 
     # Install signal handlers
+    terminating_handler = terminatingSignalHandler(
+        analyzer,
+        verbose=verbose,
+    )
     for sig in (signal.SIGINT, signal.SIGTERM):
-        signal.signal(sig, terminatingSignalHandler)
+        signal.signal(sig, terminating_handler)
     signal.signal(signal.SIGTSTP, pausingSignalHandler(
         analyzer,
         verbose=verbose,
@@ -253,10 +258,6 @@ def main():
         libusb1.LIBUSB_TRANSFER_COMPLETED,
         transfer_dump_callback,
     )
-    usb_file_data_reader.setEventCallback(
-        libusb1.LIBUSB_TRANSFER_TIMED_OUT,
-        transfer_dump_callback,
-    )
 
     reader_list = []
     append = reader_list.append
@@ -265,7 +266,6 @@ def main():
         data_reader.setBulk(
             0x82,
             0x8000,
-            timeout=500,
             callback=usb_file_data_reader,
         )
         data_reader.submit()
@@ -279,23 +279,14 @@ def main():
         )
 
     try:
-        try:
-            while pending(reader_list):
-                try:
-                    context.handleEventsTimeout(.5)
-                except libusb1.USBError, exc:
-                    if exc.value != libusb1.LIBUSB_ERROR_INTERRUPTED:
-                        raise
-            sys.stderr.write('\n')
-        finally:
-            if verbose:
-                sys.stderr.write('\nExiting...\n')
-            analyzer.stopCapture()
-            while pending(reader_list):
-                context.handleEventsTimeout(.5)
-            handle.releaseInterface(0)
-    except Terminate:
-        pass
+        while any(x.isSubmitted() for x in transfer_list):
+            try:
+                context.handleEvents()
+            except libusb1.USBError, exc:
+                if exc.value != libusb1.LIBUSB_ERROR_INTERRUPTED:
+                    raise
+    finally:
+        handle.releaseInterface(0)
 
 if __name__ == '__main__':
     main()
