@@ -3,6 +3,9 @@ from iti1480a.parser import *
 import signal
 import sys
 import errno
+import select
+import fcntl
+import os
 
 COLOR_GREEN = '\x1b[32m'
 COLOR_STRONG_GREEN = '\x1b[1;32m'
@@ -228,10 +231,10 @@ def main():
         help='Ignore SIGKINT & SIGTERM so all input is read.')
     (options, args) = parser.parse_args()
     if options.infile == '-':
-        read = sys.stdin.read
+        infile = sys.stdin
     else:
         try:
-            read = open(options.infile, 'r').read
+            infile = open(options.infile, 'r')
         except IOError:
             print >>sys.stderr, 'Could not open --infile %r' % (
                 options.infile,
@@ -270,9 +273,30 @@ def main():
     if options.follow:
         for sig in (signal.SIGINT, signal.SIGTERM):
             signal.signal(sig, signal.SIG_IGN)
+    fcntl.fcntl(
+        infile,
+        fcntl.F_SETFL,
+        fcntl.fcntl(infile, fcntl.F_GETFL) | os.O_NONBLOCK,
+    )
+    rlist = [infile]
+    wlist = elist = []
+    read = infile.read
     try:
         while True:
-            data = read(CHUNK_SIZE)
+            try:
+                data = read(CHUNK_SIZE)
+            except IOError, exc:
+                if exc.errno != errno.EAGAIN:
+                    raise
+                # Using select instead of more recent alternatives, because:
+                # - we wait on one file descriptor, which is likely to have a
+                #   very low value (1 or 4), so bad performance is not really
+                #   an issue.
+                # - although this is ITI1480A-*linux*, I do not want to
+                #   alienate BSD users by relying on epoll.
+                # Ignore return value, error is detected by empty read.
+                select.select(rlist, wlist, elist)
+                continue
             raw_write(data)
             try:
                 push(data)
