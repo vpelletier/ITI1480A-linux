@@ -297,12 +297,12 @@ def main():
                 # Ignore return value, error is detected by empty read.
                 select.select(rlist, wlist, elist)
                 continue
+            if not data:
+                break
             raw_write(data)
             try:
                 push(data)
             except ParsingDone:
-                break
-            if len(data) < CHUNK_SIZE:
                 break
         stream.stop()
     except IOError, exc:
