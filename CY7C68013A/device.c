@@ -188,7 +188,7 @@ static inline void FPGAConfigureStart(void) {
 static __sbit __at 0x98+1 TI_clear;
 static inline BOOL FPGAConfigureWrite(__xdata unsigned char *buf, unsigned char len) {
     /* Send len bytes from buf to FPGA. */
-    __idata unsigned char preloaded;
+    unsigned char preloaded;
     while (len) {
         /* Do as much as possible before checking TI, to do something useful
         instead of (maybe) just polling TI. */
