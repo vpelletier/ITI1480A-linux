@@ -23,6 +23,9 @@
 #endif
 #define RESETFIFOS() {RESETFIFOS_START(); RESETFIFOS_STOP();}
 
+#define bmDECIS bmBIT7
+#define bmPKTSTAT bmBIT6
+
 /* bmRequestType field masks & values */
 /* direction */
 #define bmREQUESTTYPE_DIRECTION   0x80
@@ -54,6 +57,7 @@
 #define COMMAND_STOP 1
 #define COMMAND_STATUS 2
 #define COMMAND_PAUSE 3
+#define COMMAND_SET_FIFO_LEVEL 4
 #define COMMAND_MEMORY 0xff
 
 #define COMMAND_FPGA_CONFIGURE_START 0
@@ -202,6 +206,9 @@ static inline void FPGAConfigureStart(void) {
     FIFORESET = bmNAKALL | 2; SYNCDELAY;
     EP2FIFOCFG |= bmAUTOIN; SYNCDELAY;
     FIFORESET = 0; SYNCDELAY;
+    /* Initialise programable flag to >=1 uncommitted bytes */
+    EP2FIFOPFH = bmDECIS | bmPKTSTAT;
+    EP2FIFOPFL = 1;
 
     /* Wait for nSTATUS to become low */
     while (IOE & FPGA_nSTATUS);
@@ -387,6 +394,13 @@ BOOL handle_vendorcommand(BYTE cmd) {
                         case COMMAND_PAUSE:
                             CommandPause(subcommand);
                             break;
+                        case COMMAND_SET_FIFO_LEVEL:
+                            EP2FIFOPFL = SETUPDAT[4];
+                            {
+                                BYTE high = SETUPDAT[5];
+                                EP2FIFOPFH = (EP2FIFOPFH & 0xf6) | ((high & 0x02) << 2) | (high & 0x01);
+                            }
+                            break;
                         default:
                             return FALSE;
                     }
@@ -478,7 +492,7 @@ void ibn_isr() __interrupt IBN_ISR {
     IBNIE = 0;
     CLEAR_USBINT();
     if (IBNIRQ & bmEP2IBN) {
-        if (!(EP24FIFOFLGS & bmBIT1)) {
+        if (EP24FIFOFLGS & bmBIT2) {
             INPKTEND = 2;
         }
         IBNIRQ = bmEP2IBN;
