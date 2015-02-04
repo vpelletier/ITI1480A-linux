@@ -171,37 +171,6 @@ class TransferDumpCallback(object):
             result = False
         return result
 
-class terminatingSignalHandler(object):
-    def __init__(self, analyzer, verbose=False):
-        self._analyzer = analyzer
-        self._verbose = verbose
-
-    def __call__(self, sig, stack):
-        if self._verbose:
-            sys.stderr.write('\nExiting...\n')
-        self._analyzer.stopCapture()
-
-class pausingSignalHandler(object):
-    def __init__(self, analyzer, verbose=False):
-        self._analyzer = analyzer
-        self._verbose = verbose
-
-    def __call__(self, sig, stack):
-        self._analyzer.pauseCapture()
-        if self._verbose:
-            sys.stderr.write('\nCapture paused')
-        os.kill(os.getpid(), signal.SIGSTOP)
-
-class resumingSignalHandler(object):
-    def __init__(self, analyzer, verbose=False):
-        self._analyzer = analyzer
-        self._verbose = verbose
-
-    def __call__(self, sig, stack):
-        self._analyzer.continueCapture()
-        if self._verbose:
-            sys.stderr.write('Capture resumed\n')
-
 def main():
     from optparse import OptionParser
     parser = OptionParser()
@@ -245,21 +214,29 @@ def main():
     analyzer = USBAnalyzer(handle)
     analyzer.sendFirmware(open(options.firmware, 'rb'))
 
+    # Call queue: process received signals synchronously.
+    # Asynchronous processing is tricky because capture stop and pause need to
+    # communicate with the analyzer, and complex tricks are needed when libusb
+    # event handling happens "in parallel" (handleEvents + sighandler triggered
+    # at the wrong time).
+    call_queue = []
+    def exit():
+        if verbose:
+            sys.stderr.write('\nExiting...\n')
+        analyzer.stopCapture()
+    def pause():
+        analyzer.pauseCapture()
+        if verbose:
+            sys.stderr.write('\nCapture paused')
+        os.kill(os.getpid(), signal.SIGSTOP)
+        analyzer.continueCapture()
+        if verbose:
+            sys.stderr.write('Capture resumed\n')
+
     # Install signal handlers
-    terminating_handler = terminatingSignalHandler(
-        analyzer,
-        verbose=verbose,
-    )
     for sig in (signal.SIGINT, signal.SIGTERM):
-        signal.signal(sig, terminating_handler)
-    signal.signal(signal.SIGTSTP, pausingSignalHandler(
-        analyzer,
-        verbose=verbose,
-    ))
-    signal.signal(signal.SIGCONT, resumingSignalHandler(
-        analyzer,
-        verbose=verbose,
-    ))
+        signal.signal(sig, lambda sig, stack: call_queue.append(exit))
+    signal.signal(signal.SIGTSTP, lambda sig, stack: call_queue.append(pause))
 
     usb_file_data_reader = usb1.USBTransferHelper()
     transfer_dump_callback = TransferDumpCallback(out_file, verbose=verbose)
@@ -294,6 +271,8 @@ def main():
             except libusb1.USBError, exc:
                 if exc.value != libusb1.LIBUSB_ERROR_INTERRUPTED:
                     raise
+            while call_queue:
+                call_queue.pop(0)()
     finally:
         handle.releaseInterface(0)
 
