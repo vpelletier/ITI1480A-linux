@@ -3,7 +3,7 @@ import sys
 import os
 import usb1
 import libusb1
-from struct import pack
+from struct import pack, unpack
 import time
 import signal
 import errno
@@ -133,6 +133,147 @@ class CompliantUSBAnalyzer(BaseUSBAnalyzer):
             index,
             length,
         )
+
+    def _dumpList(self, offset, name_list):
+        for name, value in zip(name_list, self.xpeek(offset, len(name_list))):
+            if name:
+                print >>sys.stderr,'%20s: %02x' % (name, ord(value))
+
+    def dumpIRQ(self):
+        self._dumpList(0xe650, (
+            'EP2FIFOIE',
+            'EP2FIFOIRQ',
+            'EP4FIFOIE',
+            'EP4FIFOIRQ',
+            'EP6FIFOIE',
+            'EP6FIFOIRQ',
+            'EP8FIFOIE',
+            'EP8FIFOIRQ',
+            'IBNIE',
+            'IBNIRQ',
+            'NAKIE',
+            'NAKIRQ',
+            'USBIE',
+            'USBIRQ',
+            'EPIE',
+            'EPIRQ',
+            'GPIFIE',
+            'GPIFIRQ',
+            'USBERRIE',
+            'USBERRIRQ',
+            'ERRCNTLIM',
+            'CLRERRCNT',
+            'INT2IVEC',
+            'INT4IVEC',
+            'INTSETUP',
+        ))
+
+    def dumpUSBControl(self):
+        self._dumpList(0xe680, (
+            'USBCS',
+            'SUSPEND',
+            'WAKEUPCS',
+            'TOGCTL',
+            'USBFRAMEH',
+            'USBFRAMEL',
+            'MICROFRAME',
+            'FNADDR',
+        ))
+        self._dumpList(0xe68a, (
+            'EP0BCH',
+            'EP0BCL',
+        ))
+        self._dumpList(0xe68d, (
+            'EP1OUTBC',
+        ))
+        self._dumpList(0xe68f, (
+            'EP1INBC',
+            'EP2BCH',
+            'EP2BCL',
+        ))
+        self._dumpList(0xe694, (
+            'EP4BCH',
+            'EP4BCL',
+        ))
+        self._dumpList(0xe698, (
+            'EP6BCH',
+            'EP6BCL',
+        ))
+        self._dumpList(0xe69c, (
+            'EP8BCH',
+            'EP8BCL',
+        ))
+        self._dumpList(0xe6a0, (
+            'EP0CS',
+            'EP1OUTCS',
+            'EP1INCS',
+            'EP2CS',
+            'EP4CS',
+            'EP6CS',
+            'EP8CS',
+            'EP2FIFOFLGS',
+            'EP4FIFOFLGS',
+            'EP6FIFOFLGS',
+            'EP8FIFOFLGS',
+            'EP2FIFOBCH',
+            'EP2FIFOBCL',
+            'EP4FIFOBCH',
+            'EP4FIFOBCL',
+            'EP6FIFOBCH',
+            'EP6FIFOBCL',
+            'EP8FIFOBCH',
+            'EP8FIFOBCL',
+            'SUDPTRH',
+            'SUDPTRL',
+            'SUDPTRCTL',
+        ))
+
+    def dumpUSBAV(self):
+        av_name_list = [
+            'SUDAV_ISR',
+            'SOF_ISR',
+            'SUTOK_ISR',
+            'SUSPEND_ISR',
+            'USBRESET_ISR',
+            'HISPEED_ISR',
+            'EP0ACK_ISR',
+            'SPARE_ISR',
+            'EP0IN _ISR',
+            'EP0OUT_ISR',
+            'EP1IN _ISR',
+            'EP1OUT_ISR',
+            'EP2_ISR',
+            'EP4_ISR',
+            'EP6_ISR',
+            'EP8_ISR',
+            'IBN_ISR',
+            'SPARE_ISR',
+            'EP0PING_ISR',
+            'EP1PING_ISR',
+            'EP2PING_ISR',
+            'EP4PING_ISR',
+            'EP6PING_ISR',
+            'EP8PING_ISR',
+            'ERRLIMIT_ISR',
+            'SPARE_ISR',
+            'SPARE_ISR',
+            'SPARE_ISR',
+            'EP2ISOERR_ISR',
+            'EP2ISOERR_ISR',
+            'EP2ISOERR_ISR',
+            'EP2ISOERR_ISR',
+        ]
+        code_len = len(av_name_list) * 4
+        offset = 0x3f00
+        data = ''
+        while len(data) < code_len:
+            data += self.cpeek(offset + len(data), min(code_len - len(data), 64))
+        for index, name in enumerate(av_name_list):
+            ljmp, addr, pad = unpack('>BHB', data[index * 4:(index + 1) * 4])
+            if name is None:
+                continue
+            assert ljmp == 2, ljmp
+            print >>sys.stderr,'%20s=0x%04x' % (name, addr)
 
     def peek(self, address, length=1):
         return self.readCommand(length, self.COMMAND_MEMORY, self.COMMAND_MEMORY_INTERNAL, address)
