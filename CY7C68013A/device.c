@@ -303,6 +303,9 @@ void main_loop(void) {
 }
 
 void ibn_isr() __interrupt IBN_ISR {
+    /* Prevent further IBN interrupts from happening until we are done
+       processing this one, without preventing other (USB) interrupts from
+       being serviced. */
     BYTE old_ibnie = IBNIE;
     IBNIE = 0;
     CLEAR_USBINT();
