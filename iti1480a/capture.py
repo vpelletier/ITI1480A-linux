@@ -11,17 +11,6 @@ import errno
 VENDOR_ID = 0x16C0
 DEVICE_ID = 0x07A9
 
-COMMAND_DATA_LEN = 61
-COMMAND_PAUSE = '\x03'
-COMMAND_PAUSE_CONTINUE = '\x00'
-COMMAND_PAUSE_PAUSE = '\x01'
-COMMAND_STATUS = '\x02'
-COMMAND_STOP = '\x01'
-COMMAND_FPGA = '\x00'
-COMMAND_FPGA_CONFIGURE_START = '\x00'
-COMMAND_FPGA_CONFIGURE_WRITE = '\x01'
-COMMAND_FPGA_CONFIGURE_STOP = '\x02'
-
 def getDeviceHandle(context, vendor_id, device_id, usb_device=None):
     if usb_device is None:
         handle = context.openByVendorIDAndProductID(vendor_id, device_id)
@@ -45,26 +34,15 @@ def getDeviceHandle(context, vendor_id, device_id, usb_device=None):
                     )
     return handle
 
-class USBAnalyzer(object):
+class BaseUSBAnalyzer(object):
     def __init__(self, usb_handle):
         self._handle = usb_handle
-
-    def writeCommand(self, command, sub_command='\x00', data=''):
-        data_len = len(data)
-        if data_len < COMMAND_DATA_LEN:
-            data = data + '\x00' * (COMMAND_DATA_LEN - data_len)
-        to_write = ''.join((command, sub_command, data, pack('B', data_len)))
-        assert len(to_write) == 64, repr(to_write)
-        self._handle.bulkWrite(1, to_write)
-
-    def readResult(self, length):
-        return self._handle.bulkRead(1, 64)[:length]
 
     def sendFirmware(self, firmware_file):
         read = firmware_file.read
         write = self.writeCommand
 
-        write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_START)
+        write(self.COMMAND_FPGA, self.COMMAND_FPGA_CONFIGURE_START)
         try:
             # Empty device FIFO, discarding data.
             self._handle.bulkRead(2, 2048, 10)
@@ -75,28 +53,91 @@ class USBAnalyzer(object):
         else:
             raise Exception('Read 2k, EP2 FIFO still not empty')
         while True:
-            conf_data = read(COMMAND_DATA_LEN)
+            conf_data = read(self.COMMAND_DATA_LEN)
             if not conf_data:
                 break
             write(
-                COMMAND_FPGA,
-                COMMAND_FPGA_CONFIGURE_WRITE,
+                self.COMMAND_FPGA,
+                self.COMMAND_FPGA_CONFIGURE_WRITE,
                 conf_data,
             )
-        write(COMMAND_FPGA, COMMAND_FPGA_CONFIGURE_STOP)
+        write(self.COMMAND_FPGA, self.COMMAND_FPGA_CONFIGURE_STOP)
 
     def stopCapture(self):
-        self.writeCommand(COMMAND_STOP)
+        self.writeCommand(self.COMMAND_STOP)
 
     def getStatus(self):
-        self.writeCommand(COMMAND_STATUS)
-        return ord(self.readResult(1))
+        return ord(self.readCommand(1, self.COMMAND_STATUS))
 
     def pauseCapture(self):
-        self.writeCommand(COMMAND_PAUSE, COMMAND_PAUSE_PAUSE)
+        self.writeCommand(self.COMMAND_PAUSE, self.COMMAND_PAUSE_PAUSE)
 
     def continueCapture(self):
-        self.writeCommand(COMMAND_PAUSE, COMMAND_PAUSE_CONTINUE)
+        self.writeCommand(self.COMMAND_PAUSE, self.COMMAND_PAUSE_CONTINUE)
+
+class CompatibleUSBAnalyzer(BaseUSBAnalyzer):
+    COMMAND_DATA_LEN = 61
+    COMMAND_PAUSE = '\x03'
+    COMMAND_PAUSE_CONTINUE = '\x00'
+    COMMAND_PAUSE_PAUSE = '\x01'
+    COMMAND_STATUS = '\x02'
+    COMMAND_STOP = '\x01'
+    COMMAND_FPGA = '\x00'
+    COMMAND_FPGA_CONFIGURE_START = '\x00'
+    COMMAND_FPGA_CONFIGURE_WRITE = '\x01'
+    COMMAND_FPGA_CONFIGURE_STOP = '\x02'
+
+    def writeCommand(self, command, sub_command='\x00', data=''):
+        data_len = len(data)
+        if data_len < self.COMMAND_DATA_LEN:
+            data = data + '\x00' * (self.COMMAND_DATA_LEN - data_len)
+        to_write = ''.join((command, sub_command, data, pack('B', data_len)))
+        assert len(to_write) == 64, repr(to_write)
+        self._handle.bulkWrite(1, to_write)
+
+    def readCommand(self, length, command, sub_command='\x00'):
+        self.writeCommand(command, sub_command)
+        return self._handle.bulkRead(1, 64)[:length]
+
+class CompliantUSBAnalyzer(BaseUSBAnalyzer):
+    COMMAND_DATA_LEN = 0x1000 # XXX: Why error on larger values ?
+    VENDOR_COMMAND = 0x10
+    COMMAND_PAUSE = 3
+    COMMAND_PAUSE_CONTINUE = 0
+    COMMAND_PAUSE_PAUSE = 1
+    COMMAND_STATUS = 2
+    COMMAND_STOP = 1
+    COMMAND_FPGA = 0
+    COMMAND_FPGA_CONFIGURE_START = 0
+    COMMAND_FPGA_CONFIGURE_WRITE = 1
+    COMMAND_FPGA_CONFIGURE_STOP = 2
+
+    def writeCommand(self, command, sub_command=0, data='', index=0):
+        self._handle.controlWrite(
+            libusb1.LIBUSB_TYPE_VENDOR | libusb1.LIBUSB_RECIPIENT_DEVICE,
+            self.VENDOR_COMMAND,
+            (command << 8) | sub_command,
+            index,
+            data,
+        )
+
+    def readCommand(self, length, command, sub_command=0, index=0):
+        return self._handle.controlRead(
+            libusb1.LIBUSB_TYPE_VENDOR | libusb1.LIBUSB_RECIPIENT_DEVICE,
+            self.VENDOR_COMMAND,
+            (command << 8) | sub_command,
+            index,
+            length,
+        )
+
+def USBAnalyzer(handle):
+    # Free Software firmware exposes an incompatible, standard-compliant
+    # configuration.
+    if handle.getASCIIStringDescriptor(
+                handle.getDevice()[0].getDescriptor()
+            ) == 'Standard-Compliant':
+        return CompliantUSBAnalyzer(handle)
+    return CompatibleUSBAnalyzer(handle)
 
 class TransferDumpCallback(object):
     __slots__ = (

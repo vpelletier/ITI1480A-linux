@@ -22,12 +22,17 @@
 #include <delay.h>
 #include <setupdat.h>
 
+#define ENABLE_EP0OUT() EPIE|=bmEP0OUT
+#define CLEAR_EP0OUT() CLEAR_USBINT(); EPIRQ=bmEP0OUT
+
 volatile __bit dosud=FALSE;
 volatile __bit dosuspend=FALSE;
+volatile __bit doep0out=FALSE;
 
 // custom functions
 extern void main_loop();
 extern void main_init();
+extern void handle_ep0_out();
 
 void main() {
  main_init();
@@ -44,6 +49,7 @@ void main() {
  NAKIE |= bmIBN;
  IBNIRQ = 0xff;
  IBNIE |= bmEP2IBN;
+ ENABLE_EP0OUT();
 
  EA=1;
 
@@ -62,6 +68,11 @@ void main() {
      if (dosud) {
        dosud=FALSE;
        handle_setupdata();
+     }
+
+     if (doep0out) {
+       doep0out=FALSE;
+       handle_ep0_out();
      }
 
      if (dosuspend) {
@@ -115,4 +126,9 @@ void hispeed_isr() __interrupt HISPEED_ISR {
 void suspend_isr() __interrupt SUSPEND_ISR {
  dosuspend=TRUE;
  CLEAR_SUSPEND();
+}
+
+void ep0out_isr() __interrupt EP0OUT_ISR {
+ doep0out=TRUE;
+ CLEAR_EP0OUT();
 }

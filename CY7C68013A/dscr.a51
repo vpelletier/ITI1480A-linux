@@ -77,27 +77,11 @@ highspd_dscr_end:
 	.db	DSCR_INTERFACE_TYPE	; bDescriptorType
 	.db	0			; bInterfaceNumber
 	.db	0			; bAlternateSetting
-	.db	3			; bNumEndpoints
+	.db	1			; bNumEndpoints
 	.db	0xff			; bInterfaceClass
 	.db	0			; bInterfaceSubClass
 	.db	0			; bInterfaceProtocol
 	.db	0			; iInterface
-; endpoint 1 out
-	.db	DSCR_ENDPOINT_LEN	; bLength
-	.db	DSCR_ENDPOINT_TYPE	; bDescriptorType
-	.db	0x01			; bEndpointAdress
-	.db	ENDPOINT_TYPE_BULK	; bmAttributes
-; XXX: non-standard
-	.dw	0x4000			; wMaxPacketSize
-	.db	0x00			; bInterval
-; endpoint 1 in
-	.db	DSCR_ENDPOINT_LEN	; bLength
-	.db	DSCR_ENDPOINT_TYPE	; bDescriptorType
-	.db	0x81			; bEndpointAdress
-	.db	ENDPOINT_TYPE_BULK	; bmAttributes
-; XXX: non-standard
-	.dw	0x4000			; wMaxPacketSize
-	.db	0x00			; bInterval
 ; endpoint 2 in
 	.db	DSCR_ENDPOINT_LEN	; bLength
 	.db	DSCR_ENDPOINT_TYPE	; bDescriptorType
@@ -201,34 +185,24 @@ string2end:
 string3: ; Configuration 1
 	.db	string3end-string3	; bLength
 	.db	DSCR_STRING_TYPE	; bDescriptorType
+	.db	'S, 0
+	.db	't, 0
+	.db	'a, 0
+	.db	'n, 0
+	.db	'd, 0
+	.db	'a, 0
+	.db	'r, 0
+	.db	'd, 0
+	.db	'-, 0
 	.db	'C, 0
 	.db	'o, 0
 	.db	'm, 0
 	.db	'p, 0
-	.db	'a, 0
-	.db	't, 0
-	.db	'i, 0
-	.db	'b, 0
 	.db	'l, 0
-	.db	'e, 0
-	.db	' , 0
-	.db	'w, 0
 	.db	'i, 0
-	.db	't, 0
-	.db	'h, 0
-	.db	' , 0
-	.db	'I, 0
-	.db	'T, 0
-	.db	'I, 0
-	.db	' , 0
-	.db	's, 0
-	.db	'o, 0
-	.db	'f, 0
-	.db	't, 0
-	.db	'w, 0
 	.db	'a, 0
-	.db	'r, 0
-	.db	'e, 0
+	.db	'n, 0
+	.db	't, 0
 string3end:
 
 ; Canary descriptor: null length, but more importantly null type.
