@@ -34,6 +34,7 @@ extern void main_init();
 extern void handle_suspend();
 extern void handle_wakeup();
 extern void handle_ep0_out();
+extern void timer2_isr() __interrupt TF2_ISR;
 
 void main() {
     main_init();
@@ -49,6 +50,7 @@ void main() {
     IBNIRQ = 0xff;
     IBNIE |= bmEP2IBN;
     ENABLE_EP0OUT();
+    ENABLE_EP2();
 
     EA = 1;
 

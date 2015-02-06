@@ -1,5 +1,6 @@
 #include <autovector.h>
 #include <fx2macros.h>
+#include <fx2ints.h>
 #include <delay.h>
 #include <eputils.h>
 
@@ -71,6 +72,7 @@
 static BYTE config = CONFIG_UNCONFIGURED;
 static __bit fpga_configure_running = FALSE;
 static WORD fpga_configure_to_receive = 0;
+static volatile BYTE ep2_in_count = 0;
 
 //************************** Configuration Handlers *****************************
 BOOL handle_get_descriptor() {
@@ -188,6 +190,19 @@ void main_init(void) {
     SM2 = 1;
 
     EP0BCH = 0; SYNCDELAY; /* As of TRM rev.*D 8.6.1.2 */
+    /* FIFO2PF: >=1 uncommitted bytes */
+    EP2FIFOPFH = bmDECIS | bmPKTSTAT;
+    EP2FIFOPFL = 1;
+
+    /* Timer 2: Used to update EP2FIFOPF depending on the number of transfers
+       committed to USB since previous timer interrupt. */
+    T2CON = 0x00;
+    CKCON &= ~bmBIT5;
+    RCAP2L = 0;
+    RCAP2H = 0;
+    ET2 = 1; /* Enable Timer 2 interrupt */
+    TR2 = 1; /* Timer 2: run */
+
     handle_set_configuration(CONFIG_UNCONFIGURED);
 }
 
@@ -206,9 +221,6 @@ static inline void FPGAConfigureStart(void) {
     FIFORESET = bmNAKALL | 2; SYNCDELAY;
     EP2FIFOCFG |= bmAUTOIN; SYNCDELAY;
     FIFORESET = 0; SYNCDELAY;
-    /* Initialise programable flag to >=1 uncommitted bytes */
-    EP2FIFOPFH = bmDECIS | bmPKTSTAT;
-    EP2FIFOPFL = 1;
 
     /* Wait for nSTATUS to become low */
     while (IOE & FPGA_nSTATUS);
@@ -499,4 +511,54 @@ void ibn_isr() __interrupt IBN_ISR {
     }
     NAKIRQ = bmIBN;
     IBNIE = old_ibnie;
+}
+
+void ep2_isr() __interrupt EP2_ISR {
+    if (ep2_in_count != ~0) {
+        ep2_in_count += 1;
+    }
+    CLEAR_EP2();
+}
+
+/* XXX: Very aggressive thresholds. */
+#define TIMER2_MAX_TIC_COUNT 4
+#define TIMER2_INC_TIC_COUNT 2
+#define TIMER2_DEC_TIC_COUNT 1
+#define EP2FIFO_MAX 512
+void timer2_isr() __interrupt TF2_ISR {
+    /* CPU runs at 48MHz, timer is at /12 and overflows after 2**16, so this
+       interrupts fires every 16.384ms.
+       Check the number of times EP2 transfer happened since previous timer
+       IRQ, and adapt EP2FIFOPF level to:
+       - not commit too small packets when bandwidth is high and host spams
+         with transfer requests (as it should)
+       - not make host wait for buffer to fill up when bandwidth is low */
+    static WORD ep2fifo_level = 1;
+    BYTE in_count = ep2_in_count;
+    BYTE high;
+
+    ep2_in_count = 0;
+    if (in_count > TIMER2_INC_TIC_COUNT) {
+        if (in_count > TIMER2_MAX_TIC_COUNT) {
+            /* Increase faster */
+            ep2fifo_level <<= 1;
+        }
+        ep2fifo_level <<= 1;
+        if (ep2fifo_level > EP2FIFO_MAX) {
+            ep2fifo_level = EP2FIFO_MAX;
+        }
+    } else if (
+        in_count < TIMER2_DEC_TIC_COUNT &&
+        ep2fifo_level & ~1
+    ) {
+        ep2fifo_level >>= 1;
+    } else {
+        goto end;
+    }
+    EP2FIFOPFL = LSB(ep2fifo_level);
+    high = MSB(ep2fifo_level);
+    EP2FIFOPFH = (EP2FIFOPFH & 0xf6) | ((high & 0x02) << 2) | (high & 0x01);
+    ep2fifo_level = ep2fifo_level;
+end:
+    CLEAR_TIMER2();
 }
