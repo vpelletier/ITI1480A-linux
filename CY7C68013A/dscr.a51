@@ -21,6 +21,16 @@ ENDPOINT_TYPE_INT=3
 
 BCD_USB2 = 0x0002
 
+; Measured power consumption:
+; Blank              70mA
+; FX2 programmed    100mA
+; Capture (no Vbus) 180mA
+; Capture (110kB/s) 250mA
+; Capture stopped   180mA
+; Suspended         <10mA (below measurement precision)
+; 250 / 2 = 0x7d
+MAX_POWER = 0x7d
+
     .globl	_dev_dscr, _dev_qual_dscr, _highspd_dscr, _fullspd_dscr, _dev_strings
 ; These need to be in code memory.  If
 ; they aren't you'll have to manully copy them somewhere
@@ -70,7 +80,7 @@ _highspd_dscr:
 	.db	1				; bConfigurationValue
 	.db	3				; iConfiguration
 	.db	0x80				; bmAttributes
-	.db	0x32				; bMaxPower
+	.db	MAX_POWER			; bMaxPower
 highspd_dscr_end:
 ; all the interfaces next
 	.db	DSCR_INTERFACE_LEN	; bLength
@@ -102,7 +112,7 @@ _fullspd_dscr:
 	.db	1				; bConfigurationValue
 	.db	0				; iConfiguration
 	.db	0x80				; bmAttributes
-	.db	0x32				; bMaxPower
+	.db	MAX_POWER			; bMaxPower
 fullspd_dscr_end:
 ; all the interfaces next
 	.db	DSCR_INTERFACE_LEN	; bLength
