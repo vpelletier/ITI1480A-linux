@@ -314,7 +314,6 @@ def _decodeSPLIT(data):
         result['continuation'] = SPLIT_ENDPOINT_CONTINUATION[(speed, end)]
     else:
         result['speed'] = speed
-        result['end'] = end
     return result
 
 def _decodeSSPLIT(data):
