@@ -70,7 +70,6 @@
 
 static BYTE config = CONFIG_UNCONFIGURED;
 static __bit fpga_configure_running = FALSE;
-static WORD fpga_configure_to_receive = 0;
 static volatile BYTE ep2_in_count = 0;
 static inline void FPGAReset(void);
 
@@ -444,8 +443,17 @@ BOOL handle_vendorcommand(BYTE cmd) {
                                     if (!data_length) {
                                         return FALSE;
                                     }
-                                    fpga_configure_to_receive = data_length;
-                                    EP0BCL = 0; /* arm endpoint */
+                                    while (data_length) {
+                                        BYTE received;
+                                        EP0BCL = 0; /* arm endpoint */
+                                        while (EP01STAT & bmEP0BSY);
+                                        received = EP0BCL;
+                                        if (received > data_length ||
+                                                FPGAConfigureWrite(EP0BUF, received)) {
+                                            return FALSE;
+                                        }
+                                        data_length -= received;
+                                    }
                                     break;
                                 case COMMAND_FPGA_CONFIGURE_STOP:
                                     if (data_length) {
@@ -469,25 +477,6 @@ BOOL handle_vendorcommand(BYTE cmd) {
             break;
     }
     return TRUE;
-}
-
-void handle_ep0_out(void) {
-    BYTE received;
-    if (fpga_configure_to_receive) {
-        received = EP0BCL;
-        if (received > fpga_configure_to_receive ||
-                FPGAConfigureWrite(EP0BUF, received)) {
-            fpga_configure_to_receive = 0;
-            EP0CS |= bmHSNAK | bmEPSTALL;
-        } else {
-            fpga_configure_to_receive -= received;
-            if (fpga_configure_to_receive) {
-                EP0BCL = 0; /* re-arm endpoint */
-            } else {
-                EP0CS |= bmHSNAK; /* all received, handshake */
-            }
-        }
-    }
 }
 
 void ibn_isr() __interrupt IBN_ISR {
