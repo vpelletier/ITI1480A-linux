@@ -460,8 +460,9 @@ def main():
 
     if verbose:
         sys.stderr.write(
-            'Capture started\nSIGTSTP (^Z) to pause capture '
-            '(signals the pause to analyser)\nSIGCONT (fg) to unpause\n'
+            'Capture started\n'
+            'SIGTSTP (^Z) to pause capture (signals the pause to analyser)\n'
+            'SIGCONT (fg) to unpause\n'
             'SIGINT (^C) / SIGTERM to gracefuly exit\n'
         )
 
