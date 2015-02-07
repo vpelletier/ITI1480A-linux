@@ -58,7 +58,6 @@
 #define COMMAND_STOP 1
 #define COMMAND_STATUS 2
 #define COMMAND_PAUSE 3
-#define COMMAND_SET_FIFO_LEVEL 4
 #define COMMAND_MEMORY 0xff
 
 #define COMMAND_FPGA_CONFIGURE_START 0
@@ -405,13 +404,6 @@ BOOL handle_vendorcommand(BYTE cmd) {
                             break;
                         case COMMAND_PAUSE:
                             CommandPause(subcommand);
-                            break;
-                        case COMMAND_SET_FIFO_LEVEL:
-                            EP2FIFOPFL = SETUPDAT[4];
-                            {
-                                BYTE high = SETUPDAT[5];
-                                EP2FIFOPFH = (EP2FIFOPFH & 0xf6) | ((high & 0x02) << 2) | (high & 0x01);
-                            }
                             break;
                         default:
                             return FALSE;
