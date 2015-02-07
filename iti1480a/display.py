@@ -196,8 +196,15 @@ class HumanReadable(object):
                     decoded['endpoint'],
                 )
             elif 'port' in decoded:
-                # TODO: (|C|S)SPLIT transactions
-                pass
+                result += '@%03i:%03i %-11s ' % (
+                    decoded['address'],
+                    decoded['port'],
+                    decoded['endpoint_type'],
+                )
+                if 'continuation' in decoded:
+                    result += '%-9s ' % decoded['continuation']
+                else:
+                    result += 'LS ' if decoded['speed'] else 'HS '
             elif 'data' in decoded:
                 if self._verbosity >= 0:
                     assert packet_data is None
