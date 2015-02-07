@@ -508,7 +508,7 @@ void ibn_isr() __interrupt IBN_ISR {
 }
 
 void ep2_isr() __interrupt EP2_ISR {
-    if (ep2_in_count != ~0) {
+    if (ep2_in_count != 0xff) {
         ep2_in_count += 1;
     }
     CLEAR_EP2();
