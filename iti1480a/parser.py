@@ -966,19 +966,19 @@ class Packetiser(BaseAggregator):
                 ):
             duration = tic - self._reset_start_tic
             if duration >= MIN_RESET_TIC:
-                ep0_type = MESSAGE_RESET
+                se0_type = MESSAGE_RESET
             elif duration >= MIN_LS_EOP_TIC:
-                ep0_type = MESSAGE_LS_EOP
+                se0_type = MESSAGE_LS_EOP
             elif duration >= MIN_FS_EOP_TIC:
-                ep0_type = MESSAGE_FS_EOP
+                se0_type = MESSAGE_FS_EOP
             else:
-                ep0_type = None
-            if ep0_type is None:
+                se0_type = None
+            if se0_type is None:
                 pass
-            elif ep0_type != MESSAGE_RESET or \
+            elif se0_type != MESSAGE_RESET or \
                     not self._reset_start_high_speed or \
                     not self._high_speed:
-                self._real_to_top(self._reset_start_tic, ep0_type, duration)
+                self._real_to_top(self._reset_start_tic, se0_type, duration)
             if self._reset_queue:
                 for args, kw in self._reset_queue:
                     self._real_to_top(*args, **kw)
