@@ -68,26 +68,42 @@ RXCMD_VBUS_DICT = {
 }
 
 RXCMD_EVENT_MASK = 0x30
+RXCMD_RX_ACTIVE = 0x10
+RXCMD_HOST_DISCONNECT = 0x20
+RXCMD_RX_ERROR = 0x30
 RXCMD_EVENT_DICT = {
-    0x10: 'RxActive',
-    0x20: 'HostDisconnect',
-    0x30: 'RxError RxActive',
+    RXCMD_RX_ACTIVE: 'RxActive',
+    RXCMD_HOST_DISCONNECT: 'HostDisconnect',
+    RXCMD_RX_ERROR: 'RxError RxActive',
 }
 
 # Event
+EVENT_LS_DEVICE_CONNECTION = 0x0b
+EVENT_FS_DEVICE_CONNECTION = 0x0f
+EVENT_DEVICE_CHIRP = 0x15
+EVENT_HOST_CHIRP = 0x18
+EVENT_HS_IDLE = 0x24
+EVENT_OTG_REQUEST = 0x62
+EVENT_OTG_HNP = 0x69
+EVENT_CAPTURE_PAUSED = 0xd0
+EVENT_CAPTURE_RESUMED = 0xd1
+EVENT_CAPTURE_STARTED = 0xe0
+EVENT_CAPTURE_STOPPED_FIFO = 0xf0
+EVENT_CAPTURE_STOPPED_USER = 0xf1
+
 EVENT_DICT = {
-    0x0b: 'LS device connection',
-    0x0f: 'FS device connection',
-    0x15: 'Device chirp',
-    0x18: 'Host chirp',
-    0x24: 'HS idle',
-    0x62: 'OTG Session request',
-    0x69: 'OTG HNP (Host-role changed)',
-    0xd0: 'Capture paused',
-    0xd1: 'Capture resumed',
-    0xe0: 'Capture started',
-    0xf0: 'Capture stopped (fifo)',
-    0xf1: 'Capture stopped (user)',
+    EVENT_LS_DEVICE_CONNECTION: 'LS device connection',
+    EVENT_FS_DEVICE_CONNECTION: 'FS device connection',
+    EVENT_DEVICE_CHIRP: 'Device chirp',
+    EVENT_HOST_CHIRP: 'Host chirp',
+    EVENT_HS_IDLE: 'HS idle',
+    EVENT_OTG_REQUEST: 'OTG Session request',
+    EVENT_OTG_HNP: 'OTG HNP (Host-role changed)',
+    EVENT_CAPTURE_PAUSED: 'Capture paused',
+    EVENT_CAPTURE_RESUMED: 'Capture resumed',
+    EVENT_CAPTURE_STARTED: 'Capture started',
+    EVENT_CAPTURE_STOPPED_FIFO: 'Capture stopped (fifo)',
+    EVENT_CAPTURE_STOPPED_USER: 'Capture stopped (user)',
 }
 
 # File structure:
@@ -990,15 +1006,15 @@ class Packetiser(BaseAggregator):
                 )
         else:
             self._to_top(tic, MESSAGE_RAW, caption)
-        if data == 0xf or data == 0xb:
+        if data in (EVENT_FS_DEVICE_CONNECTION, EVENT_LS_DEVICE_CONNECTION):
             self._connected = True
-        elif data == 0x15:
+        elif data == EVENT_DEVICE_CHIRP:
             self._device_chirp = True
-        elif data == 0x18 and self._device_chirp:
+        elif data == EVENT_HOST_CHIRP and self._device_chirp:
             self._high_speed = True
-        elif data == 0x24:
+        elif data == EVENT_HS_IDLE:
             self._high_speed = False
-        elif data == 0xf0 or data == 0xf1:
+        elif data in (EVENT_CAPTURE_STOPPED_FIFO, EVENT_CAPTURE_STOPPED_USER):
             raise ParsingDone
 
     def _data(self, tic, data):
@@ -1008,12 +1024,12 @@ class Packetiser(BaseAggregator):
     def _rxcmd(self, tic, data):
         # TODO:
         # - RxError
-        rxactive = data & 0x10
+        rxactive = data & RXCMD_RX_ACTIVE
         if self._rxactive and not rxactive and self._data_list:
             self._to_next.push(self._data_list)
             self._data_list = []
         self._rxactive = rxactive
-        if data & 0x20 and self._connected:
+        if data & RXCMD_HOST_DISCONNECT and self._connected:
             rendered = 'Device disconnected'
             self._connected = False
             self._device_chirp = False
