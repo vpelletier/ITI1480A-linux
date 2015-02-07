@@ -130,6 +130,9 @@ BOOL handle_set_configuration(BYTE cfg) {
 }
 
 void handle_suspend(void) {
+    /* Put FPGA in reset. Otherwise, for some reason Link Power led turns on
+       on resume - and capture cannot continue anyway. */
+    FPGAReset();
     /* Host power LED off */
     OEA &= ~bmBIT3;
 }
@@ -205,12 +208,16 @@ void main_init(void) {
     handle_set_configuration(CONFIG_UNCONFIGURED);
 }
 
-static inline void FPGAConfigureStart(void) {
+static inline void FPGAReset(void) {
     /* Switch to internal clock as FPGA will stop feeding IFCLK */
     IFCONFIG |= bmIFCLKSRC; SYNCDELAY4;
     /* Put FPGA into reset stage. */
     /* Pull nCONFIG down */
     IOE &= ~FPGA_nCONFIG;
+}
+
+static inline void FPGAConfigureStart(void) {
+    FPGAReset();
     /* Pull PE4 up to allow TXD0 signal to reach DCLK */
     IOE |= FPGA_DCLK;
 
