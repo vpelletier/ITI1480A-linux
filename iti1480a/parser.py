@@ -904,7 +904,7 @@ class TransactionAggregator(BaseYaccAggregator):
             trans_type = TRANSACTION_TYPE_DICT[cannon_pid]
         except KeyError:
             if cannon_pid == PID_SPLIT:
-                trans_type = (packet[1][1] & 0x8) and TOKEN_TYPE_CSPLIT or TOKEN_TYPE_SSPLIT
+                trans_type = (packet[1][1] & 0x80) and TOKEN_TYPE_CSPLIT or TOKEN_TYPE_SSPLIT
             else:
                 raise
         self._to_yacc(trans_type, packet)
