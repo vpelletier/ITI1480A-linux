@@ -161,7 +161,15 @@ class HumanReadable(object):
                     self._sof_start = (tic, '%i.%i' % (frame, self._sof_minor))
                 self._sof_count += 1
                 return
-        if data[-1][0] == TOKEN_TYPE_NAK and self._verbosity < 1:
+        if self._verbosity < 1 and (
+                    data[-1][0] == TOKEN_TYPE_NAK or (
+                        data[0][0] == TOKEN_TYPE_SSPLIT and
+                        len(data) == 2
+                    ) or (
+                        data[0][0] == TOKEN_TYPE_CSPLIT and
+                        data[-1][0] == TOKEN_TYPE_NYET
+                    )
+                ):
             return
         result = ''
         packet_data = None
