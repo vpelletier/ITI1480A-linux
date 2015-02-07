@@ -230,7 +230,9 @@ RXCMD_VBUS_HL_DICT = {
 
 # Duration of an SE0 state after which a reset is detected.
 # See 7.1.7.5
-MIN_RESET_TIC = 2500 / TIME_INITIAL_MULTIPLIER # 2.5 us
+MIN_RESET_TIC = 10000000 / TIME_INITIAL_MULTIPLIER # 10ms
+MIN_RESET_FS_TO_CHIRP = 3000000 / TIME_INITIAL_MULTIPLIER # 3ms
+MIN_LS_FS_RESET_TIC = 2500 / TIME_INITIAL_MULTIPLIER # 2.5 us
 # See 7.1.13.2
 MIN_LS_EOP_TIC = 670 / TIME_INITIAL_MULTIPLIER # 670 ns
 MIN_FS_EOP_TIC = 82 / TIME_INITIAL_MULTIPLIER # 82 ns
@@ -342,6 +344,7 @@ MESSAGE_TRANSFER_ERROR = 5
 MESSAGE_LS_EOP = 6
 MESSAGE_FS_EOP = 7
 MESSAGE_INCOMPLETE = 8
+MESSAGE_FS_TO_CHIRP = 9
 
 TOKEN_TYPE_OUT = 'OUT'
 TOKEN_TYPE_ACK = 'ACK'
@@ -917,7 +920,10 @@ class Packetiser(BaseAggregator):
     _vbus = None
     _connected = False
     _device_chirp = False
-    _reset_start_high_speed = _high_speed = False
+    _high_speed = False # Bus operating speed
+    _high_speed_device = False # Device operating speed
+    _full_speed_device = False # Device connected as FS
+    _reset_start_high_speed = False
 
     def __init__(self, to_next, to_top, verbose=False):
         """
@@ -965,7 +971,13 @@ class Packetiser(BaseAggregator):
                     ) != RXCMD_LINESTATE_SE0
                 ):
             duration = tic - self._reset_start_tic
-            if duration >= MIN_RESET_TIC:
+            if duration >= MIN_RESET_FS_TO_CHIRP and \
+                    self._full_speed_device:
+                se0_type = MESSAGE_FS_TO_CHIRP
+            elif duration >= MIN_RESET_TIC:
+                se0_type = MESSAGE_RESET
+            elif duration >= MIN_LS_FS_RESET_TIC and \
+                    not self._high_speed_device:
                 se0_type = MESSAGE_RESET
             elif duration >= MIN_LS_EOP_TIC:
                 se0_type = MESSAGE_LS_EOP
@@ -1006,11 +1018,15 @@ class Packetiser(BaseAggregator):
                 )
         else:
             self._to_top(tic, MESSAGE_RAW, caption)
-        if data in (EVENT_FS_DEVICE_CONNECTION, EVENT_LS_DEVICE_CONNECTION):
+        if data == EVENT_FS_DEVICE_CONNECTION:
+            self._full_speed_device = True
+            self._connected = True
+        elif data == EVENT_LS_DEVICE_CONNECTION:
             self._connected = True
         elif data == EVENT_DEVICE_CHIRP:
             self._device_chirp = True
         elif data == EVENT_HOST_CHIRP and self._device_chirp:
+            self._high_speed_device = True
             self._high_speed = True
         elif data == EVENT_HS_IDLE:
             self._high_speed = False
@@ -1032,7 +1048,9 @@ class Packetiser(BaseAggregator):
         if data & RXCMD_HOST_DISCONNECT and self._connected:
             rendered = 'Device disconnected'
             self._connected = False
+            self._full_speed_device = False
             self._device_chirp = False
+            self._high_speed_device = False
             self._high_speed = False
         else:
             if self._reset_start_tic is None and \

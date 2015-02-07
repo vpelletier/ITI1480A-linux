@@ -85,6 +85,7 @@ class HumanReadable(object):
             MESSAGE_TRANSACTION_ERROR: self._error,
             MESSAGE_LS_EOP: self._ls_eop if verbosity > 2 else noop,
             MESSAGE_FS_EOP: self._fs_eop if verbosity > 2 else noop,
+            MESSAGE_FS_TO_CHIRP: self._fs_to_chirp,
         }
 
     def _print(self, tic, printable, write):
@@ -126,6 +127,12 @@ class HumanReadable(object):
     @staticmethod
     def _reset(_, data):
         return '\x1b[35mDevice reset (%s)\x1b[0m' % (short_tic_to_time(data), )
+
+    @staticmethod
+    def _fs_to_chirp(_, data):
+        return '\x1b[35mFS to chirp trigger (%s)\x1b[0m' % (
+            short_tic_to_time(data),
+        )
 
     @staticmethod
     def _ls_eop(_, data):
