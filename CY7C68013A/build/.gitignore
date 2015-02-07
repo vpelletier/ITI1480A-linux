@@ -1,0 +1,9 @@
+*.lst
+*.rel
+*.rst
+*.asm
+*.mem
+*.map
+*.lk
+*.sym
+dscr.a51

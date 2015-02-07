@@ -58,7 +58,8 @@ options:
   `1480A USB Protocol Analyzer Software`_, found under the name `ITI1480A.spt`
   in installation directory.
 
-- Or building the free software firmware from source, for which you need:
+- Or provided Free Software firmware, available pre-built or from source. If
+  you want to build it you need:
 
   - fx2lib_
 
@@ -87,7 +88,7 @@ edit udev/ITI1480A.rules and adapt below paths.
   python setup.py install
   cp udev/ITI1480A.rules /etc/udev/rules.d/
   cp udev/ITI1480A.sh /lib/udev/
-  cp ulpitest.rbf /lib/firmware/ITI1480A.rbf
+  wget -O /lib/firmware/ITI1480A.rbf http://www.internationaltestinstruments.com/Downloads/UlpiTest.rbf
 
 - ITI's FX2 firmware::
 
@@ -97,11 +98,15 @@ edit udev/ITI1480A.rules and adapt below paths.
   spt2hex may generate several files (ITI1480A_0.ihx, ITI1480A_1.ihx, ...), use
   the highest-numbered one.
 
-- From source::
+- Free Software FX2 firmware:
 
-    cd CY7C68013A
-    FX2LIBDIR=/path_to/fx2lib/ make
-    cp build/ITI1480A.ihx /lib/firmware/
+    To rebuild from source::
+
+      FX2LIBDIR=/path_to/fx2lib/ make -C CY7C68013A
+
+    To install::
+
+      cp CY7C68013A/build/ITI1480A.ihx /lib/firmware/
 
 To test installation, (re)plug your protocol analyser. If the "Host power" led
 turns on within a few seconds, your FX2 firmware was successfully installed and
