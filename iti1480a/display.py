@@ -182,11 +182,11 @@ class HumanReadable(object):
                 result += TOKEN_COLOR[packet[0]]
             except KeyError:
                 assert packet[0] == TOKEN_TYPE_PRE_ERR
-                # PRE if first token in transaction, ERR otherwise.
+                # ERR if part of a SPLIT transaction, PRE otherwise.
                 # Color & name appropriately.
-                result += COLOR_GREEN + 'PRE' \
-                    if data[0][0] == TOKEN_TYPE_PRE_ERR \
-                    else COLOR_RED + 'ERR'
+                result += COLOR_RED + 'ERR' \
+                    if data[0][0] in (TOKEN_TYPE_SSPLIT, TOKEN_TYPE_CSPLIT) \
+                    else COLOR_GREEN + 'PRE'
             else:
                 result += decoded['name'].ljust(7)
             result += '\x1b[0m '
