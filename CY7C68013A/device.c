@@ -72,6 +72,7 @@ static BYTE config = CONFIG_UNCONFIGURED;
 static __bit fpga_configure_running = FALSE;
 static WORD fpga_configure_to_receive = 0;
 static volatile BYTE ep2_in_count = 0;
+static inline void FPGAReset(void);
 
 //************************** Configuration Handlers *****************************
 BOOL handle_get_descriptor() {
