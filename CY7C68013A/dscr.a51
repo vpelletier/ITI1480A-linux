@@ -31,7 +31,7 @@ BCD_USB2 = 0x0002
 ; 250 / 2 = 0x7d
 MAX_POWER = 0x7d
 
-    .globl	_dev_dscr, _dev_qual_dscr, _highspd_dscr, _fullspd_dscr, _dev_strings
+    .globl	_dev_dscr, _dev_qual_dscr, _highspd_dscr, _fullspd_dscr, _dev_strings, _serial_number_dscr
 ; These need to be in code memory.  If
 ; they aren't you'll have to manully copy them somewhere
 ; in code memory otherwise SUDPTRH:L don't work right
@@ -51,7 +51,7 @@ _dev_dscr:
 	.dw	0			; bcdDevice
 	.db	1			; iManufacturer
 	.db	2			; iProduct
-	.db	0			; iSerialNumber
+	.db	3			; iSerialNumber
 	.db	1			; bNumConfigurations
 dev_dscr_end:
 
@@ -78,7 +78,7 @@ _highspd_dscr:
 	.db	(highspd_dscr_realend-_highspd_dscr) / 256
 	.db	1				; bNumInterfaces
 	.db	1				; bConfigurationValue
-	.db	3				; iConfiguration
+	.db	4				; iConfiguration
 	.db	0x80				; bmAttributes
 	.db	MAX_POWER			; bMaxPower
 highspd_dscr_end:
@@ -192,8 +192,22 @@ string2: ; device
 	.db	'A, 0
 string2end:
 
-string3: ; Configuration 1
+string3: ; serial
 	.db	string3end-string3	; bLength
+	.db	DSCR_STRING_TYPE	; bDescriptorType
+_serial_number_dscr:
+	.db	'0, 0
+	.db	'0, 0
+	.db	'0, 0
+	.db	'0, 0
+	.db	'0, 0
+	.db	'0, 0
+	.db	'0, 0
+	.db	'0, 0
+string3end:
+
+string4: ; Configuration 1
+	.db	string4end-string4	; bLength
 	.db	DSCR_STRING_TYPE	; bDescriptorType
 	.db	'S, 0
 	.db	't, 0
@@ -213,7 +227,7 @@ string3: ; Configuration 1
 	.db	'a, 0
 	.db	'n, 0
 	.db	't, 0
-string3end:
+string4end:
 
 ; Canary descriptor: null length, but more importantly null type.
 	.db	0

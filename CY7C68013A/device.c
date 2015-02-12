@@ -3,6 +3,7 @@
 #include <fx2ints.h>
 #include <delay.h>
 #include <eputils.h>
+#include <i2c.h>
 
 #define SYNCDELAY SYNCDELAY3
 #define CLKSPD48 bmCLKSPD1
@@ -58,6 +59,7 @@
 #define COMMAND_STOP 1
 #define COMMAND_STATUS 2
 #define COMMAND_PAUSE 3
+#define COMMAND_I2C 0xfe
 #define COMMAND_MEMORY 0xff
 
 #define COMMAND_FPGA_CONFIGURE_START 0
@@ -72,6 +74,7 @@ static BYTE config = CONFIG_UNCONFIGURED;
 static __bit fpga_configure_running = FALSE;
 static volatile BYTE ep2_in_count = 0;
 static inline void FPGAReset(void);
+extern __code BYTE serial_number_dscr;
 
 //************************** Configuration Handlers *****************************
 BOOL handle_get_descriptor() {
@@ -143,6 +146,29 @@ void handle_wakeup(void) {
 }
 
 //********************  INIT ***********************
+static void readSerialNumber(void) {
+    /* Read serial number from I2C-attached EEPROM.
+    In original firmware, this string appears as string descriptor 0 (which is
+    non-standard, as string descriptor 0 is supposed to list supported
+    languages). It is (YMMV) of the form: RevX_YYY, X being board revision
+    (matches silk-screen PCB markings), and YYY being a serial number, likely
+    scoped to that board revision (matches the number written on the PCB with
+    permanent marker).
+    */
+    /* Note: Below is doing something similar to read_eeprom, but with eight
+    1-byte reads rather than a single 8-byte read. For some reason the latter
+    does not work for me. Anyway, as descriptor string is not ASCII, I need to
+    skip every other byte - so this implementation is simpler. */
+    __xdata BYTE *address = (__xdata BYTE *) &serial_number_dscr;
+    BYTE count = 8;
+    BYTE eeprom_offset[1] = {0x08};
+    i2c_write(0x50, 1, eeprom_offset, 0, NULL);
+    do {
+        i2c_read(0x50, 1, address);
+        address += 2;
+    } while (--count);
+}
+
 void main_init(void) {
     /* Disable extra movx delays */
     CKCON &= ~(bmBIT2 | bmBIT1 | bmBIT0);
@@ -190,6 +216,8 @@ void main_init(void) {
     OEE = FPGA_nCONFIG | FPGA_DCLK | bmBIT2 | bmBIT1 | bmBIT0;
     /* SCON0 = XXXXX100: CLKOUT / 4, mode 0 */
     SM2 = 1;
+
+    readSerialNumber();
 
     EP0BCH = 0; SYNCDELAY; /* As of TRM rev.*D 8.6.1.2 */
     /* FIFO2PF: >=1 uncommitted bytes */
