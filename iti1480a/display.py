@@ -213,6 +213,8 @@ class HumanReadable(object):
             elif 'frame' in decoded:
                 frame = decoded['frame']
                 result += '%4i.%i' % (frame, self._sof_minor)
+            if decoded.get('crc_error'):
+                result += '\x1b[1;31mCRC error\x1b[0m '
         if incomplete:
             result += '\x1b[1;31m(incomplete transaction)\x1b[0m'
         if packet_data:

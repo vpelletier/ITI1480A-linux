@@ -237,6 +237,57 @@ MIN_LS_FS_RESET_TIC = 2500 / TIME_INITIAL_MULTIPLIER # 2.5 us
 MIN_LS_EOP_TIC = 670 / TIME_INITIAL_MULTIPLIER # 670 ns
 MIN_FS_EOP_TIC = 82 / TIME_INITIAL_MULTIPLIER # 82 ns
 
+# CRC5 & CRC16 computation: see 8.3.5
+# Implementation detail: as python integers are not size-constrined,
+# left-shifts are more complex (shift + mask) than right shifts
+# (just shift). CRC remainder is right-shifted, and bit-swapped before
+# returning. As a result, CRC polynomial is also byte-shifted (but once only,
+# at module load).
+def _swap5(value):
+    return (
+        ((value & 0x01) << 4) |
+        ((value & 0x02) << 2) |
+         (value & 0x04) |
+        ((value & 0x08) >> 2) |
+        ((value & 0x10) >> 4)
+    )
+
+def _swap16(value):
+    value = ((value >> 1) & 0x5555) | ((value & 0x5555) << 1)
+    value = ((value >> 2) & 0x3333) | ((value & 0x3333) << 2)
+    value = ((value >> 4) & 0x0f0f) | ((value & 0x0f0f) << 4)
+    value = ((value >> 8) & 0x00ff) | ((value & 0x00ff) << 8)
+    return value
+
+CRC5_POLYNOMIAL  = 0b00101
+CRC5_RESIDUAL    = 0b01100
+_CRC5_POLYNOMIAL = _swap5(CRC5_POLYNOMIAL)
+CRC16_POLYNOMIAL = 0b1000000000000101
+CRC16_RESIDUAL   = 0b1000000000001101
+_CRC16_POLYNOMIAL = _swap16(CRC16_POLYNOMIAL)
+
+def crc5(data):
+    remainder = 0x1f
+    for _, byte in data:
+        for _ in xrange(8):
+            xor_poly = (byte ^ remainder) & 1
+            remainder >>= 1
+            byte >>= 1
+            if xor_poly:
+                remainder ^= _CRC5_POLYNOMIAL
+    return _swap5(remainder)
+
+def crc16(data):
+    remainder = 0xffff
+    for _, byte in data:
+        for _ in xrange(8):
+            xor_poly = (byte ^ remainder) & 1
+            remainder >>= 1
+            byte >>= 1
+            if xor_poly:
+                remainder ^= _CRC16_POLYNOMIAL
+    return _swap16(remainder)
+
 # Standard USB PIDs.
 PID_OUT = 0x1
 PID_ACK = 0x2
@@ -268,7 +319,8 @@ def _decodeToken(data):
         'name': TOKEN_NAME[data[0][1] & 0xf],
         'address': addr & 0x7f,
         'endpoint': (addr >> 7) | ((crc & 0x7) << 1),
-        'crc': crc >> 3
+        'crc': crc >> 3,
+        'crc_error': crc5(data[1:]) != CRC5_RESIDUAL,
     }
 
 DATA_NAME = {
@@ -283,6 +335,7 @@ def _decodeDATA(data):
         'name': DATA_NAME[data[0][1] & 0xf],
         'data': ''.join(chr(x[1]) for x in data[1:-2]),
         'crc': data[-1][1] | (data[-2][1] << 8),
+        'crc_error': crc16(data[1:]) != CRC16_RESIDUAL,
     }
 
 SPLIT_ENDPOINT_TYPE_ISOCHRONOUS = 0x01 << 1
@@ -307,6 +360,7 @@ def _decodeSPLIT(data):
         'port': data[2][1] & 0x7,
         'endpoint_type': SPLIT_ENDPOINT_TYPE_NAME[endpoint_type],
         'crc': data[3][1] >> 3,
+        'crc_error': crc5(data[1:]) != CRC5_RESIDUAL,
     }
     speed = data[2][1] >> 3
     end = data[3][1] & 0x1
@@ -332,6 +386,7 @@ def _decodeSOF(data):
         'name': 'SOF',
         'frame': data[1][1] | ((crc & 0x7) << 8),
         'crc': crc >> 3,
+        'crc_error': crc5(data[1:]) != CRC5_RESIDUAL,
     }
 
 MESSAGE_RAW = 0
