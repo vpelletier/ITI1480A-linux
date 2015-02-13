@@ -193,6 +193,7 @@ string2: ; device
 string2end:
 
 string3: ; serial
+	; placeholder, filed by main_init() through xdata aliasing of pdata
 	.db	string3end-string3	; bLength
 	.db	DSCR_STRING_TYPE	; bDescriptorType
 _serial_number_dscr:
