@@ -220,6 +220,12 @@ void main_init(void) {
     readSerialNumber();
 
     EP0BCH = 0; SYNCDELAY; /* As of TRM rev.*D 8.6.1.2 */
+
+    /* FLAGD is the only flag connected to FPGA, and the FPGA needs to know
+       when the fifo is full. FLADG defaults to FIFO2PF, which by default
+       behaves like FIFO2FF. So map FIFO2FF to FLAGD instead. */
+    PINFLAGSCD = (PINFLAGSCD & 0xf0) | 0xc0;
+
     /* FIFO2PF: >=1 uncommitted bytes */
     EP2FIFOPFH = bmDECIS | bmPKTSTAT;
     EP2FIFOPFL = 1;
