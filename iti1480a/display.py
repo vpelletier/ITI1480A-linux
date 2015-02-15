@@ -252,7 +252,7 @@ def main():
         'should exit.',
     )
     parser.add_option('-f', '--follow', action='store_true',
-        help='Ignore SIGKINT & SIGTERM so all input is read.')
+        help='Ignore SIGINT & SIGTERM so all input is read.')
     (options, args) = parser.parse_args()
     if options.infile == '-':
         infile = sys.stdin
