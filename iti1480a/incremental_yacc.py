@@ -86,6 +86,7 @@ def push(self, token):
             sym = YaccSymbol()
             sym.name = pname
             sym.value = None
+            sym.type = None
             if plen:
                 targ = symstack[-plen-1:]
                 targ[0] = sym
