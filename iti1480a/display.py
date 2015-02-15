@@ -141,23 +141,28 @@ class HumanReadable(object):
 
     def _transaction(self, tic, data, incomplete=False):
         if data[0][0] == TOKEN_TYPE_SOF:
-            if self._verbosity < 2:
-                return
-            assert len(data) == 1
+            sof_data, = data
             try:
-                frame = decode(data[0])['frame']
+                decoded = decode(sof_data)
             except IndexError:
                 return
-            if frame == self._sof_major:
-                self._sof_minor += 1
-            else:
-                self._sof_major = frame
-                self._sof_minor = 0
-            if self._verbosity <= 3:
-                if not self._sof_count:
-                    self._sof_start = (tic, '%i.%i' % (frame, self._sof_minor))
-                self._sof_count += 1
-                return
+            if not decoded['crc_error']:
+                if self._verbosity < 2:
+                    return
+                frame = decoded['frame']
+                if frame == self._sof_major:
+                    self._sof_minor += 1
+                else:
+                    self._sof_major = frame
+                    self._sof_minor = 0
+                if self._verbosity <= 3:
+                    if not self._sof_count:
+                        self._sof_start = (
+                            tic,
+                            '%i.%i' % (frame, self._sof_minor),
+                        )
+                    self._sof_count += 1
+                    return
         if self._verbosity < 1 and (
                     data[-1][0] == TOKEN_TYPE_NAK or (
                         data[0][0] == TOKEN_TYPE_SSPLIT and
@@ -209,7 +214,10 @@ class HumanReadable(object):
                 result += '%3iB ' % len(decoded['data'])
             elif 'frame' in decoded:
                 frame = decoded['frame']
-                result += '%4i.%i' % (frame, self._sof_minor)
+                result += '%4i%s ' % (
+                    frame,
+                    ('' if decoded['crc_error'] else '.%i' % self._sof_minor),
+                )
             if decoded.get('crc_error'):
                 result += '\x1b[1;31mCRC error\x1b[0m '
         if incomplete:
