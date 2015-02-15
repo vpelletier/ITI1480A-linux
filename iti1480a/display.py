@@ -112,13 +112,10 @@ class HumanReadable(object):
         self._sof_count = 0
 
     def push(self, tic, message_type, data):
-        if self._sof_count and (
-                    message_type != MESSAGE_TRANSACTION or
-                    data[0][0] != TOKEN_TYPE_SOF
-                ):
-            self._printSOFCount()
         printable = self._dispatch[message_type](tic, data)
         if printable is not None:
+            if self._sof_count:
+                self._printSOFCount()
             self._print(tic, printable, self._write)
 
     def _error(self, tic, data):
