@@ -2,7 +2,6 @@
 import sys
 import os
 import usb1
-import libusb1
 from struct import pack, unpack
 import time
 import signal
@@ -41,9 +40,8 @@ class BaseUSBAnalyzer(object):
             # Empty device FIFO, discarding data.
             self._handle.bulkRead(2, 2048, 10)
             self._handle.bulkRead(2, 2048, 10)
-        except libusb1.USBError, exc:
-            if exc.value != libusb1.LIBUSB_ERROR_TIMEOUT:
-                raise
+        except usb1.USBErrorTimeout:
+            pass
         else:
             raise Exception('Read 2k, EP2 FIFO still not empty')
         while True:
@@ -112,7 +110,7 @@ class CompliantUSBAnalyzer(BaseUSBAnalyzer):
 
     def writeCommand(self, command, sub_command=0, data='', index=0):
         self._handle.controlWrite(
-            libusb1.LIBUSB_TYPE_VENDOR | libusb1.LIBUSB_RECIPIENT_DEVICE,
+            usb1.TYPE_VENDOR | usb1.RECIPIENT_DEVICE,
             self.VENDOR_COMMAND,
             (command << 8) | sub_command,
             index,
@@ -121,7 +119,7 @@ class CompliantUSBAnalyzer(BaseUSBAnalyzer):
 
     def readCommand(self, length, command, sub_command=0, index=0):
         return self._handle.controlRead(
-            libusb1.LIBUSB_TYPE_VENDOR | libusb1.LIBUSB_RECIPIENT_DEVICE,
+            usb1.TYPE_VENDOR | usb1.RECIPIENT_DEVICE,
             self.VENDOR_COMMAND,
             (command << 8) | sub_command,
             index,
@@ -436,7 +434,7 @@ def main():
     usb_file_data_reader = usb1.USBTransferHelper()
     transfer_dump_callback = TransferDumpCallback(out_file, verbose=verbose)
     usb_file_data_reader.setEventCallback(
-        libusb1.LIBUSB_TRANSFER_COMPLETED,
+        usb1.TRANSFER_COMPLETED,
         transfer_dump_callback,
     )
 
@@ -464,9 +462,8 @@ def main():
         while any(x.isSubmitted() for x in reader_list):
             try:
                 context.handleEvents()
-            except libusb1.USBError, exc:
-                if exc.value != libusb1.LIBUSB_ERROR_INTERRUPTED:
-                    raise
+            except usb1.USBErrorInterrupted:
+                pass
             while call_queue:
                 call_queue.pop(0)()
     finally:
