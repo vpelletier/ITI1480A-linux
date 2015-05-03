@@ -13,26 +13,20 @@ DEVICE_ID = 0x07A9
 
 def getDeviceHandle(context, vendor_id, device_id, usb_device=None):
     if usb_device is None:
-        handle = context.openByVendorIDAndProductID(vendor_id, device_id)
-    else:
-        handle = None
-        bus_number, device_address = usb_device
-        for device in context.getDeviceList():
-            if bus_number != device.getBusNumber() \
-                  or device_address != device.getDeviceAddress():
-                continue
-            else:
-                if (device.getVendorID(), device.getProductID()) == (
-                        vendor_id, device_id):
-                    handle = device.open()
-                    break
-                else:
-                    raise ValueError(
-                        'Device at %03i.%03i is not of expected type: '
-                        '%04x.%04x, %04x.%04x expected' %
-                        usb_device + (vendor_id, device_id),
-                    )
-    return handle
+        return context.openByVendorIDAndProductID(vendor_id, device_id)
+    bus_number, device_address = usb_device
+    for device in context.getDeviceList():
+        if bus_number != device.getBusNumber() \
+              or device_address != device.getDeviceAddress():
+            continue
+        if (device.getVendorID() == vendor_id and
+            device.getProductID() == device_id):
+            return device.open()
+        raise ValueError(
+            'Device at %03i.%03i is not of expected type: '
+            '%04x.%04x, %04x.%04x expected' %
+            usb_device + (vendor_id, device_id),
+        )
 
 class BaseUSBAnalyzer(object):
     def __init__(self, usb_handle):
