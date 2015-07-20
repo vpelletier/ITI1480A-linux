@@ -46,19 +46,15 @@ class BaseUSBAnalyzer(object):
     def __init__(self, usb_handle):
         self._handle = usb_handle
 
+    def _afterFPGAConfigureStart(self):
+        pass
+
     def sendFirmware(self, firmware_file):
         read = firmware_file.read
         write = self.writeCommand
 
         write(self.COMMAND_FPGA, self.COMMAND_FPGA_CONFIGURE_START)
-        try:
-            # Empty device FIFO, discarding data.
-            self._handle.bulkRead(2, 2048, 10)
-            self._handle.bulkRead(2, 2048, 10)
-        except (usb1.USBErrorTimeout, usb1.USBErrorIO):
-            pass
-        else:
-            raise Exception('Read 2k, EP2 FIFO still not empty')
+        self._afterFPGAConfigureStart()
         while True:
             conf_data = read(self.COMMAND_DATA_LEN)
             if not conf_data:
@@ -122,6 +118,16 @@ class CompliantUSBAnalyzer(BaseUSBAnalyzer):
     COMMAND_MEMORY_INTERNAL = 0
     COMMAND_MEMORY_EXTERNAL = 1
     COMMAND_MEMORY_CODE = 2
+
+    def _afterFPGAConfigureStart(self):
+        try:
+            # Empty device FIFO, discarding data.
+            self._handle.bulkRead(2, 2048, 10)
+            self._handle.bulkRead(2, 2048, 10)
+        except usb1.USBErrorTimeout:
+            pass
+        else:
+            raise Exception('Read 2k, EP2 FIFO still not empty')
 
     def writeCommand(self, command, sub_command=0, data='', index=0):
         self._handle.controlWrite(
