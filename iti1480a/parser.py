@@ -1198,31 +1198,31 @@ class ReorderedStream(BaseAggregator):
                         tic_count |= (p2 & 0xff00) << 4
                         if packet_len > 2:
                             tic_count |= (p2 & 0xff) << 20
-                            if packet_type == TYPE_TIME_DELTA:
-                                tic += tic_count
-                                continue
-                            try:
-                                p3 = next_data()
-                            except StopIteration:
-                                self._remain = p1, p2
-                                break
-                            assert p3 & 0xff == 0, hex(p3)
-                            payload = p3 >> 8
+                            payload = None
                         else:
                             payload = p2 & 0xff
                     else:
-                        try:
-                            payload = next_data()
-                        except StopIteration:
-                            self._remain = p1,
-                            break
-                        assert payload & 0xff == 0, hex(payload)
-                        payload >>= 8
+                        payload = None
                 else:
                     payload = p1 & 0xff
                 tic += tic_count
                 if packet_type:
+                    if payload is None:
+                        try:
+                            payload = next_data()
+                        except StopIteration:
+                            if packet_len == 1:
+                                self._remain = p1,
+                            elif packet_len == 3:
+                                self._remain = p1, p2
+                            else:
+                                raise ValueError(packet_len)
+                            break
+                        assert payload & 0xff == 0, hex(payload)
+                        payload >>= 8
                     out(tic, packet_type, payload)
+                else:
+                    assert payload == 0
         finally:
             self._tic = tic
 
