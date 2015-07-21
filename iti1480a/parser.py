@@ -1176,54 +1176,52 @@ class ReorderedStream(BaseAggregator):
                 for x in xrange(0, len(data) - 1, 2)
             )
         next_data = itertools.chain(self._remain, reader).next
-        try:
-            while True:
-                try:
-                    p1 = next_data()
-                except StopIteration:
-                    self._remain = ()
-                    break
-                head = p1 >> 8
-                packet_type = head >> TYPE_SHIFT
-                packet_len = (head >> LENGTH_SHIFT) & LENGTH_MASK
-                tic_count = head & TIC_HEAD_MASK
-                if packet_len:
-                    tic_count |= (p1 & 0xff) << 4
-                    if packet_len > 1:
-                        try:
-                            p2 = next_data()
-                        except StopIteration:
-                            self._remain = p1,
-                            break
-                        tic_count |= (p2 & 0xff00) << 4
-                        if packet_len > 2:
-                            tic_count |= (p2 & 0xff) << 20
-                            payload = None
-                        else:
-                            payload = p2 & 0xff
-                    else:
+        while True:
+            try:
+                p1 = next_data()
+            except StopIteration:
+                self._remain = ()
+                break
+            head = p1 >> 8
+            packet_type = head >> TYPE_SHIFT
+            packet_len = (head >> LENGTH_SHIFT) & LENGTH_MASK
+            tic_count = head & TIC_HEAD_MASK
+            if packet_len:
+                tic_count |= (p1 & 0xff) << 4
+                if packet_len > 1:
+                    try:
+                        p2 = next_data()
+                    except StopIteration:
+                        self._remain = p1,
+                        break
+                    tic_count |= (p2 & 0xff00) << 4
+                    if packet_len > 2:
+                        tic_count |= (p2 & 0xff) << 20
                         payload = None
+                    else:
+                        payload = p2 & 0xff
                 else:
-                    payload = p1 & 0xff
-                tic += tic_count
-                if packet_type:
-                    if payload is None:
-                        try:
-                            payload = next_data()
-                        except StopIteration:
-                            if packet_len == 1:
-                                self._remain = p1,
-                            elif packet_len == 3:
-                                self._remain = p1, p2
-                            else:
-                                raise ValueError(packet_len)
-                            break
-                        assert payload & 0xff == 0, hex(payload)
-                        payload >>= 8
-                    out(tic, packet_type, payload)
-                else:
-                    assert payload == 0
-        finally:
+                    payload = None
+            else:
+                payload = p1 & 0xff
+            tic += tic_count
+            if packet_type:
+                if payload is None:
+                    try:
+                        payload = next_data()
+                    except StopIteration:
+                        if packet_len == 1:
+                            self._remain = p1,
+                        elif packet_len == 3:
+                            self._remain = p1, p2
+                        else:
+                            raise ValueError(packet_len)
+                        break
+                    assert payload & 0xff == 0, hex(payload)
+                    payload >>= 8
+                out(tic, packet_type, payload)
+            else:
+                assert payload == 0
             self._tic = tic
 
     def stop(self):
