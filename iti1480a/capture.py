@@ -413,76 +413,76 @@ def main():
     else:
         out_file = open(options.out, 'wb', 0)
     verbose = options.verbose
-    context = usb1.LibUSBContext()
-    handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
-    if handle is None:
-        print >>sys.stderr, 'ITI1480A USB Analyzer not found'
-        sys.exit(1)
-    handle.claimInterface(0)
-    analyzer = USBAnalyzer(handle)
-    analyzer.sendFirmware(open(options.firmware, 'rb'))
+    with usb1.USBContext() as context:
+        handle = getDeviceHandle(context, VENDOR_ID, DEVICE_ID, usb_device)
+        if handle is None:
+            print >>sys.stderr, 'ITI1480A USB Analyzer not found'
+            sys.exit(1)
+        handle.claimInterface(0)
+        analyzer = USBAnalyzer(handle)
+        analyzer.sendFirmware(open(options.firmware, 'rb'))
 
-    # Call queue: process received signals synchronously.
-    # Asynchronous processing is tricky because capture stop and pause need to
-    # communicate with the analyzer, and complex tricks are needed when libusb
-    # event handling happens "in parallel" (handleEvents + sighandler triggered
-    # at the wrong time).
-    call_queue = []
-    def exit():
-        if verbose:
-            sys.stderr.write('\nExiting...\n')
-        analyzer.stopCapture()
-    def pause():
-        analyzer.pauseCapture()
-        if verbose:
-            sys.stderr.write('\nCapture paused')
-        os.kill(os.getpid(), signal.SIGSTOP)
-        analyzer.continueCapture()
-        if verbose:
-            sys.stderr.write('Capture resumed\n')
+        # Call queue: process received signals synchronously.
+        # Asynchronous processing is tricky because capture stop and pause need to
+        # communicate with the analyzer, and complex tricks are needed when libusb
+        # event handling happens "in parallel" (handleEvents + sighandler triggered
+        # at the wrong time).
+        call_queue = []
+        def exit():
+            if verbose:
+                sys.stderr.write('\nExiting...\n')
+            analyzer.stopCapture()
+        def pause():
+            analyzer.pauseCapture()
+            if verbose:
+                sys.stderr.write('\nCapture paused')
+            os.kill(os.getpid(), signal.SIGSTOP)
+            analyzer.continueCapture()
+            if verbose:
+                sys.stderr.write('Capture resumed\n')
 
-    # Install signal handlers
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        signal.signal(sig, lambda sig, stack: call_queue.append(exit))
-    signal.signal(signal.SIGTSTP, lambda sig, stack: call_queue.append(pause))
+        # Install signal handlers
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            signal.signal(sig, lambda sig, stack: call_queue.append(exit))
+        signal.signal(signal.SIGTSTP, lambda sig, stack: call_queue.append(pause))
 
-    usb_file_data_reader = usb1.USBTransferHelper()
-    transfer_dump_callback = TransferDumpCallback(out_file, verbose=verbose)
-    usb_file_data_reader.setEventCallback(
-        usb1.TRANSFER_COMPLETED,
-        transfer_dump_callback,
-    )
-
-    reader_list = []
-    append = reader_list.append
-    for _ in xrange(64):
-        data_reader = handle.getTransfer()
-        data_reader.setBulk(
-            0x82,
-            0x8000,
-            callback=usb_file_data_reader,
-        )
-        data_reader.submit()
-        append(data_reader)
-
-    if verbose:
-        sys.stderr.write(
-            'Capture started\n'
-            'SIGTSTP (^Z) to pause capture (signals the pause to analyser)\n'
-            'SIGCONT (fg) to unpause\n'
-            'SIGINT (^C) / SIGTERM to gracefuly exit\n'
+        usb_file_data_reader = usb1.USBTransferHelper()
+        transfer_dump_callback = TransferDumpCallback(out_file, verbose=verbose)
+        usb_file_data_reader.setEventCallback(
+            usb1.TRANSFER_COMPLETED,
+            transfer_dump_callback,
         )
 
-    try:
-        while any(x.isSubmitted() for x in reader_list):
-            try:
-                context.handleEvents()
-            except usb1.USBErrorInterrupted:
-                pass
-            while call_queue:
-                call_queue.pop(0)()
-    finally:
-        handle.releaseInterface(0)
+        reader_list = []
+        append = reader_list.append
+        for _ in xrange(64):
+            data_reader = handle.getTransfer()
+            data_reader.setBulk(
+                0x82,
+                0x8000,
+                callback=usb_file_data_reader,
+            )
+            data_reader.submit()
+            append(data_reader)
+
+        if verbose:
+            sys.stderr.write(
+                'Capture started\n'
+                'SIGTSTP (^Z) to pause capture (signals the pause to analyser)\n'
+                'SIGCONT (fg) to unpause\n'
+                'SIGINT (^C) / SIGTERM to gracefuly exit\n'
+            )
+
+        try:
+            while any(x.isSubmitted() for x in reader_list):
+                try:
+                    context.handleEvents()
+                except usb1.USBErrorInterrupted:
+                    pass
+                while call_queue:
+                    call_queue.pop(0)()
+        finally:
+            handle.releaseInterface(0)
 
 if __name__ == '__main__':
     main()
