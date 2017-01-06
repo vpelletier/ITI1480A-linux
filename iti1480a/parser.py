@@ -966,16 +966,16 @@ class TransactionAggregator(BaseYaccAggregator):
         assert packet
         tic, pid = packet[0]
         cannon_pid = pid & 0xf
-        if cannon_pid != pid >> 4 ^ 0xf:
-            self._to_top(tic, MESSAGE_RAW, '(bad pid) 0x' + ' 0x'.join('%02x' % (x[1], ) for x in packet))
-            return
         try:
+            if cannon_pid != pid >> 4 ^ 0xf:
+                raise KeyError
             trans_type = TRANSACTION_TYPE_DICT[cannon_pid]
         except KeyError:
             if cannon_pid == PID_SPLIT:
                 trans_type = (packet[1][1] & 0x80) and TOKEN_TYPE_CSPLIT or TOKEN_TYPE_SSPLIT
             else:
-                raise
+                self._to_top(tic, MESSAGE_TRANSACTION_ERROR, '(bad pid) 0x' + ' 0x'.join('%02x' % (x[1], ) for x in packet))
+                return
         self._to_yacc(trans_type, packet)
 
 class Packetiser(BaseAggregator):
