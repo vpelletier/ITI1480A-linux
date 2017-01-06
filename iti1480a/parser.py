@@ -1216,7 +1216,8 @@ class ReorderedStream(BaseAggregator):
                 else:
                     payload = p1 & 0xff
                 tic += tic_count
-                out(tic, packet_type, payload)
+                if packet_type:
+                    out(tic, packet_type, payload)
         finally:
             self._tic = tic
 
