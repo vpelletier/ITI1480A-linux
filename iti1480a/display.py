@@ -134,7 +134,7 @@ class HumanReadable(object):
             self._print(tic, printable, self._write)
 
     def _error(self, tic, data):
-        self._print(tic, '\x1b[41m%r\x1b[0m' % (data, ), self._error_write)
+        self._print(tic, '\x1b[41m%s\x1b[0m' % (data, ), self._error_write)
 
     @staticmethod
     def _reset(_, data):
