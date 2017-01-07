@@ -892,16 +892,21 @@ class _TransactionAggregator(_BaseYaccAggregator):
     def p_error(self, p):
         # XXX: relying on undocumented properties
         parser = self._parser
-        error_tokens = [x.value for x in parser.symstack if isinstance(x, LexToken)]
+        if p is None:
+            error_tokens = [x.value for x in parser.symstack if isinstance(x, LexToken)]
+        else:
+            # Maybe we just finished a valid transaction and the next one has a
+            # bogus start. Fake an EOF to force a reduce.
+            parser.push(None)
+            error_tokens = [p.value]
         if error_tokens:
             self._to_next(error_tokens[0][1][0][0], MESSAGE_INCOMPLETE, error_tokens)
-            # Restart parser and try again.
-            if hasattr(parser, 'startPush'):
-                parser.startPush()
-            else:
-                parser.restart()
-            parser.errok()
-            return p
+        # Restart parser and try again.
+        if hasattr(parser, 'startPush'):
+            parser.startPush()
+        else:
+            parser.restart()
+        parser.errok()
 
     @staticmethod
     def p_token(p):
