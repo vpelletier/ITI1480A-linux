@@ -80,9 +80,8 @@ def hexdump(data):
     return '\n'.join(result)
 
 class HumanReadable(object):
-    def __init__(self, write, error, verbosity):
+    def __init__(self, write, verbosity):
         self._write = write
-        self._error_write = error
         self._verbosity = verbosity
         self._sof_start = (None, None)
         self._sof_count = 0
@@ -134,7 +133,7 @@ class HumanReadable(object):
             self._print(tic, printable, self._write)
 
     def _error(self, tic, data):
-        self._print(tic, '\x1b[41m%s\x1b[0m' % (data, ), self._error_write)
+        self._print(tic, '\x1b[41m%s\x1b[0m' % (data, ), self._write)
 
     @staticmethod
     def _reset(_, data):
@@ -302,8 +301,10 @@ def main():
             sys.exit(1)
     else:
         raw_write = lambda x: None
-    human_readable = HumanReadable(write, sys.stderr.write,
-        options.verbose - options.quiet)
+    human_readable = HumanReadable(
+        write,
+        options.verbose - options.quiet,
+    )
     stream = ReorderedStream(
         Packetiser(
             TransactionAggregator(
