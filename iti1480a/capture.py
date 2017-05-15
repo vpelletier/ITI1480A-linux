@@ -55,7 +55,7 @@ class BaseUSBAnalyzer(object):
             # Empty device FIFO, discarding data.
             self._handle.bulkRead(2, 2048, 10)
             self._handle.bulkRead(2, 2048, 10)
-        except usb1.USBErrorTimeout:
+        except (usb1.USBErrorTimeout, usb1.USBErrorIO):
             pass
         else:
             raise Exception('Read 2k, EP2 FIFO still not empty')
