@@ -300,9 +300,8 @@ class CompliantUSBAnalyzer(BaseUSBAnalyzer):
 def USBAnalyzer(handle):
     # Free Software firmware exposes an incompatible, standard-compliant
     # configuration.
-    if handle.getASCIIStringDescriptor(
-                handle.getDevice()[0].getDescriptor()
-            ) == 'Standard-Compliant':
+    string_descriptor = handle.getDevice()[0].getDescriptor()
+    if string_descriptor and handle.getASCIIStringDescriptor(string_descriptor) == 'Standard-Compliant':
         return CompliantUSBAnalyzer(handle)
     return CompatibleUSBAnalyzer(handle)
 
