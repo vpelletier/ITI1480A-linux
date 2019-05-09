@@ -26,6 +26,7 @@ import platform
 # Monkey-patch for ply.yacc defining startPush and push methods.
 from . import incremental_yacc
 
+_DEBUG = bool(os.environ.get('ITI1480A_DEBUG'))
 PYPY = platform.python_implementation() == 'PyPy'
 LITTLE_ENDIAN = sys.byteorder == 'little'
 c_ushort_p = POINTER(c_ushort)
@@ -493,7 +494,7 @@ class _BaseYaccAggregator(object):
         self._parser = parser = yacc(
             module=self,
             start=self._start,
-            debug=bool(os.environ.get('ITI1480A_DEBUG')),
+            debug=_DEBUG,
             debugfile=self.__class__.__name__ + '_parser.out',
             errorlog=_DummyLogger(),
             write_tables=False,
@@ -606,8 +607,7 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
 
     @staticmethod
     def p_transfers(p):
-        """transfers : transfer
-                     | transfers transfer
+        """transfers : transfer transfers
                      | empty
         """
 
@@ -855,8 +855,7 @@ class _TransactionAggregator(_BaseYaccAggregator):
 
     @staticmethod
     def p_transactions(p):
-        """transactions : transaction
-                        | transactions transaction
+        """transactions : transaction transactions
                         | empty
         """
 
@@ -1227,3 +1226,8 @@ class ReorderedStream(BaseAggregator):
     def stop(self):
         self._out.stop()
 
+if _DEBUG:
+    # Instanciate all yacc-using classes, to get all _*_parser.out files.
+    NOOP = lambda *args, **kw: None
+    _Endpoint0TransferAggregator(NOOP, NOOP).stop()
+    _TransactionAggregator(NOOP, NOOP).stop()
