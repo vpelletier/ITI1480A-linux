@@ -607,7 +607,7 @@ class _Endpoint0TransferAggregator(_BaseYaccAggregator):
 
     @staticmethod
     def p_transfers(p):
-        """transfers : transfer transfers
+        """transfers : transfers transfer
                      | empty
         """
 
@@ -855,7 +855,7 @@ class _TransactionAggregator(_BaseYaccAggregator):
 
     @staticmethod
     def p_transactions(p):
-        """transactions : transaction transactions
+        """transactions : transactions transaction
                         | empty
         """
 
